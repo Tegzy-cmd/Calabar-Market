@@ -85,6 +85,19 @@ export const orders: any[] = [ // Using any for seeding simplicity
         deliveryFee: 4.50,
         total: 14.98,
     },
+     {
+        id: 'order-abcde',
+        user: users[0],
+        vendor: vendors[1],
+        items: [{ product: products[2], quantity: 1 }, { product: products[3], quantity: 1 }],
+        status: 'delivered',
+        deliveryAddress: '789 Pine Ln, Calabar, Nigeria',
+        createdAt: new Date(Date.now() - 3600000 * 72).toISOString(),
+        rider: riders[0],
+        subtotal: 23.98,
+        deliveryFee: 5.00,
+        total: 28.98,
+    },
 ];
 
 
@@ -166,13 +179,27 @@ export const getAllOrders = async (): Promise<Order[]> => {
     const orders: Order[] = await Promise.all(ordersData.map(async orderData => {
         const user = await fetchDocumentById<User>('users', orderData.userId);
         const vendor = await fetchDocumentById<Omit<Vendor, 'products'>>('vendors', orderData.vendorId);
-        // This is simplified; in a real app, you might want to fetch more details
+        
+        const items: OrderItem[] = await Promise.all(
+            orderData.items.map(async (item: { productId: string; quantity: number, price: number }) => {
+                const product = await fetchDocumentById<Product>('products', item.productId);
+                // Important: Use the price from the order item if available, otherwise fallback to product price
+                return { 
+                    product: { ...product!, price: item.price || product!.price }, 
+                    quantity: item.quantity 
+                };
+            })
+        );
+        
         return {
             ...orderData,
             user: user!,
-            vendor: vendor!
+            vendor: vendor!,
+            items: items,
         } as Order;
     }));
     
     return orders;
 }
+
+    
