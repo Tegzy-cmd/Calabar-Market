@@ -4,6 +4,8 @@ export type User = {
   email: string;
   role: 'user' | 'vendor' | 'admin' | 'rider';
   avatarUrl: string;
+  phoneNumber?: string;
+  addresses?: string[];
 };
 
 export type Product = {

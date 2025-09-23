@@ -12,21 +12,45 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { getUserById } from '@/lib/data';
+import type { User } from '@/lib/types';
+
 
 export default function CheckoutPage() {
   const { items, total } = useCart();
-  const { user, loading } = useAuth();
+  const { user: authUser, loading } = useAuth();
+  const [appUser, setAppUser] = useState<User | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState<string>('');
   const router = useRouter();
   
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !authUser) {
       router.push('/login?redirect=/checkout');
     }
-  }, [user, loading, router]);
+    
+    if (authUser) {
+        const fetchUser = async () => {
+            const user = await getUserById(authUser.uid);
+            setAppUser(user);
+            if (user?.addresses && user.addresses.length > 0) {
+                setSelectedAddress(user.addresses[0]);
+            }
+        }
+        fetchUser();
+    }
+
+  }, [authUser, loading, router]);
 
 
-  if (loading || !user) {
+  if (loading || !authUser || !appUser) {
     return (
         <div className="flex flex-col min-h-screen">
             <AppHeader />
@@ -53,10 +77,9 @@ export default function CheckoutPage() {
   }
   
   const deliveryInfo = {
-    name: user.displayName || 'John Doe',
-    email: user.email || 'john.doe@example.com',
-    address: '123 Main St, Calabar, Nigeria',
-    phone: user.phoneNumber || '+234 801 234 5678'
+    name: appUser.name || 'John Doe',
+    email: appUser.email || 'john.doe@example.com',
+    phone: appUser.phoneNumber || '+234 801 234 5678'
   };
 
 
@@ -84,7 +107,20 @@ export default function CheckoutPage() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="address">Delivery Address</Label>
-                    <Input id="address" defaultValue={deliveryInfo.address} />
+                    {(appUser.addresses && appUser.addresses.length > 0) ? (
+                        <Select value={selectedAddress} onValueChange={setSelectedAddress}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select an address" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {appUser.addresses.map((address, index) => (
+                                    <SelectItem key={index} value={address}>{address}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    ) : (
+                         <Input id="address" placeholder="123 Main St, Calabar, Nigeria" />
+                    )}
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>

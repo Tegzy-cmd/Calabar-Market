@@ -31,6 +31,8 @@ import { placeholderImages } from '@/lib/placeholder-images';
 const userFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   email: z.string().email('Invalid email address.'),
+  phoneNumber: z.string().optional(),
+  address: z.string().optional(),
 });
 
 type UserFormValues = z.infer<typeof userFormSchema>;
@@ -47,19 +49,35 @@ export function UserForm({ user, isOpen, onOpenChange }: UserFormProps) {
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
-    defaultValues: user ? { name: user.name, email: user.email } : {},
+    defaultValues: user ? { 
+        name: user.name, 
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        address: user.addresses?.[0] || ''
+    } : {
+        name: '',
+        email: '',
+        phoneNumber: '',
+        address: ''
+    },
   });
 
   const onSubmit = (values: UserFormValues) => {
     startTransition(async () => {
-        const userData = {
+        const userData: Partial<User> = {
             ...values,
             role: 'user' as const,
-            avatarUrl: user?.avatarUrl || placeholderImages.find(p => p.id === 'user-avatar-1')?.imageUrl || ''
+            avatarUrl: user?.avatarUrl || placeholderImages.find(p => p.id === 'user-avatar-1')?.imageUrl || '',
+            addresses: values.address ? [values.address] : [],
         }
+        
+        // Remove address if we are not passing it
+        if(!values.address) delete userData.addresses;
+
+
       const result = user
         ? await updateUser(user.id, userData)
-        : await createUser(userData);
+        : await createUser(userData as Omit<User, 'id'>);
 
       if (result.success) {
         toast({ title: 'Success', description: result.message });
@@ -103,6 +121,32 @@ export function UserForm({ user, isOpen, onOpenChange }: UserFormProps) {
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input placeholder="john.doe@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phoneNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="+234 801 234 5678" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="123 Main St, Calabar" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

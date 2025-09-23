@@ -7,8 +7,8 @@ const findImage = (id: string) => placeholderImages.find(p => p.id === id)?.imag
 
 // --- Mock Data (for seeding) ---
 export const users: User[] = [
-  { id: 'user-1', name: 'John Doe', email: 'john.doe@example.com', role: 'user', avatarUrl: findImage('user-avatar-1') },
-  { id: 'user-2', name: 'Jane Smith', email: 'jane.smith@example.com', role: 'user', avatarUrl: findImage('user-avatar-2') },
+  { id: 'user-1', name: 'John Doe', email: 'john.doe@example.com', role: 'user', avatarUrl: findImage('user-avatar-1'), phoneNumber: '+2348012345678', addresses: ['123 Main St, Calabar, Nigeria'] },
+  { id: 'user-2', name: 'Jane Smith', email: 'jane.smith@example.com', role: 'user', avatarUrl: findImage('user-avatar-2'), phoneNumber: '+2348012345679', addresses: ['456 Oak Ave, Calabar, Nigeria', '789 Pine Ln, Calabar, Nigeria'] },
   { id: 'vendor-admin-1', name: 'Burger Queen Admin', email: 'admin@burgerqueen.com', role: 'vendor', avatarUrl: findImage('vendor-logo-1') },
   { id: 'admin-1', name: 'App Admin', email: 'admin@calabareats.com', role: 'admin', avatarUrl: findImage('user-avatar-1') },
 ];
@@ -171,6 +171,7 @@ export async function getOrderById(id: string): Promise<Order | null> {
 
 
 export const getProductById = async (id: string) => await fetchDocumentById<Product>('products', id);
+export const getUserById = async (id: string) => await fetchDocumentById<User>('users', id);
 export const getRiders = async () => await fetchCollection<Rider>('riders');
 export const getUsers = async () => await fetchCollection<User>('users');
 export const getAllOrders = async (): Promise<Order[]> => {

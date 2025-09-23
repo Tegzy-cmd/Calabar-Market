@@ -93,6 +93,7 @@ export async function createUser(data: Omit<User, 'id'>) {
     try {
         await addDoc(collection(db, 'users'), data);
         revalidatePath('/admin/users');
+        revalidatePath('/checkout');
         return { success: true, message: 'User created successfully.' };
     } catch (e: any) {
         return { success: false, error: e.message };
@@ -103,6 +104,7 @@ export async function updateUser(id: string, data: Partial<User>) {
     try {
         await updateDoc(doc(db, 'users', id), data);
         revalidatePath('/admin/users');
+        revalidatePath('/checkout');
         return { success: true, message: 'User updated successfully.' };
     } catch (e: any) {
         return { success: false, error: e.message };
@@ -113,6 +115,7 @@ export async function deleteUser(id: string) {
     try {
         await deleteDoc(doc(db, 'users', id));
         revalidatePath('/admin/users');
+        revalidatePath('/checkout');
         return { success: true, message: 'User deleted successfully.' };
     } catch (e: any) {
         return { success: false, error: e.message };
