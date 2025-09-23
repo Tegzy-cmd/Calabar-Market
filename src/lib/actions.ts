@@ -31,11 +31,9 @@ export async function seedDatabase() {
 
     // Seed vendors
     const vendorsCollection = collection(db, 'vendors');
-    vendors.forEach((vendorData: Vendor) => {
-      // Don't include nested products array in the vendor document
-      const { products, ...vendor } = vendorData;
-      const docRef = doc(vendorsCollection, vendor.id);
-      batch.set(docRef, vendor);
+    vendors.forEach((vendorData: Omit<Vendor, 'products'>) => {
+      const docRef = doc(vendorsCollection, vendorData.id);
+      batch.set(docRef, vendorData);
     });
 
     // Seed products
@@ -117,6 +115,40 @@ export async function deleteUser(id: string) {
         revalidatePath('/admin/users');
         revalidatePath('/checkout');
         return { success: true, message: 'User deleted successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+// Vendor Actions
+export async function createVendor(data: Omit<Vendor, 'id' | 'products'>) {
+    try {
+        await addDoc(collection(db, 'vendors'), data);
+        revalidatePath('/admin/vendors');
+        return { success: true, message: 'Vendor created successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function updateVendor(id: string, data: Partial<Omit<Vendor, 'id' | 'products'>>) {
+    try {
+        await updateDoc(doc(db, 'vendors', id), data);
+        revalidatePath('/admin/vendors');
+        revalidatePath(`/browse/vendors/${id}`);
+        return { success: true, message: 'Vendor updated successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function deleteVendor(id: string) {
+    try {
+        // Note: In a real app, you might want to handle what happens to products of a deleted vendor.
+        await deleteDoc(doc(db, 'vendors', id));
+        revalidatePath('/admin/vendors');
+        revalidatePath('/browse');
+        return { success: true, message: 'Vendor deleted successfully.' };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
