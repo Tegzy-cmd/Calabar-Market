@@ -77,7 +77,7 @@ export default async function AdminUsersPage() {
                             <div className="flex items-center gap-3">
                                 <Avatar>
                                     <AvatarImage src={user.avatarUrl} alt={user.name} />
-                                    <AvatarFallback>{user.name[0]}</AvatarFallback>
+                                    <AvatarFallback>{user.name ? user.name[0] : 'U'}</AvatarFallback>
                                 </Avatar>
                                 <div className="font-medium">
                                     <p>{user.name}</p>
