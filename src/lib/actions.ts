@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import {
@@ -6,9 +7,10 @@ import {
   type AssignBestDeliveryRiderInput,
 } from '@/ai/flows/assign-best-delivery-rider';
 import { db } from './firebase';
-import { collection, writeBatch, doc } from 'firebase/firestore';
+import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { users, vendors, products, riders, orders } from './data';
-import type { Vendor } from './types';
+import type { User, Vendor } from './types';
+import { revalidatePath } from 'next/cache';
 
 
 export async function handleAssignRider(input: AssignBestDeliveryRiderInput) {
@@ -83,4 +85,36 @@ export async function seedDatabase() {
     console.error("Error seeding database:", e);
     return { success: false, error: e.message || 'An unexpected error occurred during seeding.' };
   }
+}
+
+
+// User Actions
+export async function createUser(data: Omit<User, 'id'>) {
+    try {
+        await addDoc(collection(db, 'users'), data);
+        revalidatePath('/admin/users');
+        return { success: true, message: 'User created successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function updateUser(id: string, data: Partial<User>) {
+    try {
+        await updateDoc(doc(db, 'users', id), data);
+        revalidatePath('/admin/users');
+        return { success: true, message: 'User updated successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function deleteUser(id: string) {
+    try {
+        await deleteDoc(doc(db, 'users', id));
+        revalidatePath('/admin/users');
+        return { success: true, message: 'User deleted successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
 }
