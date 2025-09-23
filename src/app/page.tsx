@@ -76,8 +76,8 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-      <footer className="py-6 border-t bg-muted/50">
-        <div className="container mx-auto px-4 md:px-6 text-center text-muted-foreground">
+      <footer className="py-6 bg-primary">
+        <div className="container mx-auto px-4 md:px-6 text-center text-primary-foreground">
           &copy; {new Date().getFullYear()} Calabar Eats. All rights reserved.
         </div>
       </footer>
