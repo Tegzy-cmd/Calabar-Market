@@ -15,13 +15,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Users, Store, Bike, ShoppingCart, DollarSign } from "lucide-react";
-import { orders, vendors } from "@/lib/data";
-
-const totalUsers = 1250;
-const totalVendors = 45;
-const totalRiders = 80;
-const totalOrders = 5430;
+import { Users, Store, ShoppingCart, DollarSign } from "lucide-react";
+import { getAllOrders, getUsers, getVendors } from "@/lib/data";
+import type { Order } from "@/lib/types";
 
 const data = [
   { name: "Jan", total: Math.floor(Math.random() * 5000) + 1000 },
@@ -38,7 +34,15 @@ const data = [
   { name: "Dec", total: Math.floor(Math.random() * 5000) + 1000 },
 ];
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  const orders = await getAllOrders();
+  const users = await getUsers();
+  const vendors = await getVendors();
+
+  const totalUsers = users.length;
+  const totalVendors = vendors.length;
+  const totalOrders = orders.length;
+
   const recentOrders = orders.slice(0, 5);
 
   return (
@@ -117,7 +121,7 @@ export default function AdminDashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {recentOrders.map((order) => (
+                {recentOrders.map((order: Order) => (
                   <TableRow key={order.id}>
                     <TableCell>
                       <div className="font-medium">{order.user.name}</div>

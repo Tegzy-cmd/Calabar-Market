@@ -44,7 +44,7 @@ export default function BrowsePage({ searchParams }: SearchParams) {
 }
 
 async function VendorGrid({ category }: { category?: 'food' | 'groceries' }) {
-  const vendors = getVendors(category);
+  const vendors = await getVendors(category);
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {vendors.map((vendor) => (

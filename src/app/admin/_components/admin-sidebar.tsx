@@ -16,7 +16,7 @@ import {
   Store,
   Bike,
   Settings,
-  LogOut,
+  Database,
 } from 'lucide-react';
 import { UserNav } from '@/components/shared/user-nav';
 import { usePathname } from 'next/navigation';
@@ -27,6 +27,11 @@ const menuItems = [
   { href: '/admin/users', icon: Users, label: 'Users' },
   { href: '/admin/vendors', icon: Store, label: 'Vendors' },
   { href: '/admin/riders', icon: Bike, label: 'Riders' },
+];
+
+const secondaryMenuItems = [
+    { href: '/admin/seed', icon: Database, label: 'Seed Data' },
+    { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
 export function AdminSidebar() {
@@ -59,11 +64,19 @@ export function AdminSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-            <SidebarMenuItem>
-                 <SidebarMenuButton icon={<Settings />} tooltip="Settings">
-                    Settings
-                </SidebarMenuButton>
-            </SidebarMenuItem>
+            {secondaryMenuItems.map((item) => (
+                 <SidebarMenuItem key={item.href}>
+                    <Link href={item.href} legacyBehavior passHref>
+                        <SidebarMenuButton
+                            isActive={pathname === item.href}
+                            icon={<item.icon />}
+                            tooltip={item.label}
+                        >
+                            {item.label}
+                        </SidebarMenuButton>
+                    </Link>
+                 </SidebarMenuItem>
+            ))}
             <SidebarMenuItem>
                 <UserNav />
             </SidebarMenuItem>

@@ -6,22 +6,23 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { User, MapPin, Phone, Clock } from "lucide-react";
 import { AssignRiderTool } from "./_components/assign-rider-tool";
+import type { Rider } from "@/lib/types";
 
-export default function VendorOrderDetailPage({ params }: { params: { id: string } }) {
-  const order = getOrderById(params.id);
-  const riders = getRiders();
+export default async function VendorOrderDetailPage({ params }: { params: { id: string } }) {
+  const order = await getOrderById(params.id);
+  const allRiders = await getRiders();
 
   if (!order) {
     notFound();
   }
   
-  const availableRiders = riders.filter(r => r.status === 'available');
+  const availableRiders = allRiders.filter((r: Rider) => r.status === 'available');
 
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-headline font-bold">Order #{order.id.split('-')[1]}</h1>
+          <h1 className="text-3xl font-headline font-bold">Order #{params.id.substring(0,7)}</h1>
           <p className="text-muted-foreground flex items-center gap-2 mt-1">
             <Clock className="w-4 h-4" /> Placed on {new Date(order.createdAt).toLocaleString()}
           </p>
@@ -85,7 +86,7 @@ export default function VendorOrderDetailPage({ params }: { params: { id: string
                 </CardContent>
             </Card>
 
-            <AssignRiderTool order={order} allRiders={riders} />
+            <AssignRiderTool order={order} allRiders={allRiders} />
 
         </div>
       </div>

@@ -36,7 +36,7 @@ export type OrderStatus = 'placed' | 'preparing' | 'dispatched' | 'delivered' | 
 export type Order = {
   id: string;
   user: User;
-  vendor: Vendor;
+  vendor: Omit<Vendor, 'products'>;
   items: OrderItem[];
   status: OrderStatus;
   deliveryAddress: string;
