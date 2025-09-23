@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -41,7 +42,7 @@ export function VendorSidebar() {
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href} legacyBehavior passHref>
+              <Link href={item.href}>
                 <SidebarMenuButton
                   isActive={pathname.startsWith(item.href) && (item.href !== '/vendor' || pathname === '/vendor')}
                   icon={<item.icon />}
