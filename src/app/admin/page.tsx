@@ -16,11 +16,11 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Users, Store, ShoppingCart, DollarSign, Crown, PackageCheck, Utensils, Carrot } from "lucide-react";
-import { getAllOrders, getUsers, getVendors, getProductById, getVendorById } from "@/lib/data";
-import type { Order, Vendor, Product, OrderStatus } from "@/lib/types";
-import { OverviewChart } from "./_components/overview-chart";
+import { getAllOrders, getUsers, getVendors } from "@/lib/data";
+import type { Order, OrderStatus } from "@/lib/types";
 import { CategoryChart } from "./_components/category-chart";
 import { cn } from "@/lib/utils";
+import { SalesOverview } from "./_components/sales-overview";
 
 export default async function AdminDashboardPage() {
   const orders = await getAllOrders();
@@ -35,17 +35,6 @@ export default async function AdminDashboardPage() {
   const recentOrders = orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
 
   // --- Detailed Analytics ---
-
-  // Sales by month for OverviewChart
-  const salesByMonth = Array.from({ length: 12 }, (_, i) => ({
-    name: new Date(0, i).toLocaleString('default', { month: 'short' }),
-    total: 0,
-  }));
-
-  orders.forEach(order => {
-    const month = new Date(order.createdAt).getMonth();
-    salesByMonth[month].total += order.total;
-  });
   
   // Sales by category for CategoryChart
   const salesByCategory = { food: 0, groceries: 0 };
@@ -175,15 +164,7 @@ export default async function AdminDashboardPage() {
        </div>
 
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="lg:col-span-4">
-          <CardHeader>
-            <CardTitle>Sales Overview</CardTitle>
-             <CardDescription>Monthly sales performance.</CardDescription>
-          </CardHeader>
-          <CardContent className="pl-2">
-            <OverviewChart data={salesByMonth} />
-          </CardContent>
-        </Card>
+        <SalesOverview orders={orders} />
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Sales by Category</CardTitle>
