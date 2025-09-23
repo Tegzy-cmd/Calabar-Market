@@ -12,7 +12,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OverviewChart } from "./overview-chart";
 import type { Order } from '@/lib/types';
-import { getWeek, getMonth, getYear, format, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, eachWeekOfInterval, parseISO } from 'date-fns';
+import { getWeek, getMonth, getYear, format, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, eachWeekOfInterval, parseISO, subMonths, subWeeks, subDays, isWithinInterval } from 'date-fns';
 
 type Period = 'daily' | 'weekly' | 'monthly';
 
@@ -20,65 +20,69 @@ export function SalesOverview({ orders }: { orders: Order[] }) {
   const [period, setPeriod] = useState<Period>('monthly');
 
   const processData = (period: Period) => {
+    const now = new Date();
     if (period === 'monthly') {
-      const salesByMonth = Array.from({ length: 12 }, (_, i) => ({
-        name: format(new Date(0, i), 'MMM'),
+      const last3Months = Array.from({ length: 3 }, (_, i) => subMonths(now, 2 - i));
+      const salesByMonth = last3Months.map(month => ({
+        name: format(month, 'MMM'),
         total: 0,
       }));
 
       orders.forEach(order => {
-        const month = getMonth(parseISO(order.createdAt));
-        salesByMonth[month].total += order.total;
+        const orderDate = parseISO(order.createdAt);
+        if (isWithinInterval(orderDate, { start: subMonths(now, 3), end: now })) {
+          const monthIndex = last3Months.findIndex(m => getMonth(m) === getMonth(orderDate) && getYear(m) === getYear(orderDate));
+          if (monthIndex !== -1) {
+            salesByMonth[monthIndex].total += order.total;
+          }
+        }
       });
       return salesByMonth;
     }
 
     if (period === 'weekly') {
-      const salesByWeek: { [key: string]: { name: string, total: number } } = {};
-      const year = getYear(new Date());
+        const last3WeeksStarts = Array.from({ length: 3 }, (_, i) => startOfWeek(subWeeks(now, 2 - i), { weekStartsOn: 1 }));
 
-      const weeksInYear = eachWeekOfInterval({
-        start: startOfYear(new Date(year, 0, 1)),
-        end: endOfYear(new Date(year, 11, 31)),
-      });
+        const salesByWeek = last3WeeksStarts.map(weekStart => ({
+            name: `W${getWeek(weekStart, { weekStartsOn: 1 })}`,
+            total: 0
+        }));
 
-      weeksInYear.forEach((weekStart, i) => {
-        const weekNumber = i + 1;
-        salesByWeek[weekNumber] = { name: `W${weekNumber}`, total: 0 };
-      });
-      
-      orders.forEach(order => {
-        const date = parseISO(order.createdAt);
-        if (getYear(date) === year) {
-            const weekNumber = getWeek(date, { weekStartsOn: 1 });
-             if (salesByWeek[weekNumber]) {
-                salesByWeek[weekNumber].total += order.total;
+        orders.forEach(order => {
+            const orderDate = parseISO(order.createdAt);
+            if(isWithinInterval(orderDate, { start: subWeeks(now, 3), end: now })) {
+                const weekNumber = getWeek(orderDate, { weekStartsOn: 1 });
+                const weekIndex = salesByWeek.findIndex(w => w.name === `W${weekNumber}`);
+                if (weekIndex !== -1) {
+                    salesByWeek[weekIndex].total += order.total;
+                }
             }
-        }
-      });
-      
-      return Object.values(salesByWeek);
+        });
+        return salesByWeek;
     }
     
     if (period === 'daily') {
-        const salesByDay: { [key: string]: { name: string, total: number } } = {};
-        const last30Days = eachDayOfInterval({
-            start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-            end: new Date()
+        const last7Days = eachDayOfInterval({
+            start: subDays(now, 6),
+            end: now
         });
 
-        last30Days.forEach(day => {
-            const dayKey = format(day, 'MMM d');
-            salesByDay[dayKey] = { name: dayKey, total: 0 };
-        })
+        const salesByDay = last7Days.map(day => ({
+            name: format(day, 'MMM d'),
+            total: 0
+        }));
 
         orders.forEach(order => {
-            const dayKey = format(parseISO(order.createdAt), 'MMM d');
-            if(salesByDay[dayKey]) {
-                salesByDay[dayKey].total += order.total;
+            const orderDate = parseISO(order.createdAt);
+             if(isWithinInterval(orderDate, { start: subDays(now, 6), end: now })) {
+                const dayKey = format(orderDate, 'MMM d');
+                const dayIndex = salesByDay.findIndex(d => d.name === dayKey);
+                if(dayIndex !== -1) {
+                    salesByDay[dayIndex].total += order.total;
+                }
             }
         });
-        return Object.values(salesByDay);
+        return salesByDay;
     }
     
     return [];
