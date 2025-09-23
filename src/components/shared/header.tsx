@@ -1,12 +1,19 @@
+
+'use client';
+
 import Link from "next/link";
 import { ShoppingCart, LogIn, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/shared/user-nav";
 import { Logo } from "@/components/shared/logo";
+import { useCart } from "@/hooks/use-cart";
+import { Badge } from "@/components/ui/badge";
 
 export function AppHeader() {
   // This would come from an auth hook in a real app
   const isAuthenticated = false; 
+  const { items } = useCart();
+  const totalItems = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -27,9 +34,10 @@ export function AppHeader() {
           </Link>
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-4">
-          <Button variant="ghost" size="icon" asChild>
+          <Button variant="ghost" size="icon" className="relative" asChild>
             <Link href="/cart">
               <ShoppingCart className="h-5 w-5" />
+              {totalItems > 0 && <Badge className="absolute -right-2 -top-2 h-5 w-5 justify-center p-0">{totalItems}</Badge>}
               <span className="sr-only">Shopping Cart</span>
             </Link>
           </Button>

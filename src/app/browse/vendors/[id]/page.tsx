@@ -1,15 +1,22 @@
+
+'use client';
+
 import Image from 'next/image';
 import { getVendorById } from '@/lib/data';
 import type { Product } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AppHeader } from '@/components/shared/header';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { PlusCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useCart } from '@/hooks/use-cart';
+import { useToast } from '@/hooks/use-toast';
 
-export default function VendorDetailPage({ params }: { params: { id: string } }) {
-  const vendor = getVendorById(params.id);
+export default function VendorDetailPage() {
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const vendor = getVendorById(id);
 
   if (!vendor) {
     notFound();
@@ -56,6 +63,16 @@ export default function VendorDetailPage({ params }: { params: { id: string } })
 }
 
 function ProductCard({ product }: { product: Product }) {
+    const { addToCart } = useCart();
+    const { toast } = useToast();
+
+    const handleAddToCart = () => {
+        addToCart(product);
+        toast({
+            title: "Added to cart!",
+            description: `${product.name} has been added to your cart.`,
+        })
+    }
     return (
         <Card className="h-full flex flex-col">
             <CardHeader className="p-0">
@@ -74,7 +91,7 @@ function ProductCard({ product }: { product: Product }) {
             </CardContent>
             <CardFooter className="p-4 flex justify-between items-center">
                 <p className="font-semibold text-lg">${product.price.toFixed(2)}</p>
-                <Button size="sm">
+                <Button size="sm" onClick={handleAddToCart}>
                     <PlusCircle className="h-4 w-4 mr-2" />
                     Add
                 </Button>
