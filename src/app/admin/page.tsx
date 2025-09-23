@@ -17,9 +17,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Users, Store, ShoppingCart, DollarSign, Crown, PackageCheck, Utensils, Carrot } from "lucide-react";
 import { getAllOrders, getUsers, getVendors, getProductById, getVendorById } from "@/lib/data";
-import type { Order, Vendor, Product } from "@/lib/types";
+import type { Order, Vendor, Product, OrderStatus } from "@/lib/types";
 import { OverviewChart } from "./_components/overview-chart";
 import { CategoryChart } from "./_components/category-chart";
+import { cn } from "@/lib/utils";
 
 export default async function AdminDashboardPage() {
   const orders = await getAllOrders();
@@ -81,6 +82,38 @@ export default async function AdminDashboardPage() {
 
   const topVendor = [...topVendorStats.entries()].sort((a, b) => b[1].sales - a[1].sales)[0]?.[1] || { name: 'N/A', sales: 0 };
   const topProduct = [...topProductStats.entries()].sort((a, b) => b[1].sales - a[1].sales)[0]?.[1] || { name: 'N/A', sales: 0 };
+
+  const getStatusVariant = (status: OrderStatus): "default" | "secondary" | "destructive" | "outline" => {
+    switch (status) {
+      case 'delivered':
+        return 'default';
+      case 'cancelled':
+        return 'destructive';
+      case 'dispatched':
+          return 'secondary';
+      case 'preparing':
+          return 'outline';
+      default:
+        return 'secondary';
+    }
+  };
+
+  const getStatusColor = (status: OrderStatus) => {
+    switch (status) {
+        case 'delivered':
+            return 'bg-green-500 hover:bg-green-600';
+        case 'dispatched':
+            return 'bg-blue-500 hover:bg-blue-600';
+        case 'preparing':
+            return 'bg-orange-500 hover:bg-orange-600 text-white';
+        case 'placed':
+            return 'bg-gray-500 hover:bg-gray-600';
+        case 'cancelled':
+            return 'bg-red-500 hover:bg-red-600';
+        default:
+            return '';
+    }
+  }
 
 
   return (
@@ -193,7 +226,10 @@ export default async function AdminDashboardPage() {
                     <TableCell>{order.vendor.name}</TableCell>
                     <TableCell className="text-right">${order.total.toFixed(2)}</TableCell>
                     <TableCell>
-                      <Badge variant={order.status === "delivered" ? "default" : "secondary"}>
+                       <Badge 
+                        variant={getStatusVariant(order.status)}
+                        className={cn("capitalize", getStatusColor(order.status))}
+                      >
                         {order.status}
                       </Badge>
                     </TableCell>
@@ -221,5 +257,3 @@ function StatCard({ title, value, icon, description }: { title: string, value: s
         </Card>
     )
 }
-
-    
