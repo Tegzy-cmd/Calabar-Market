@@ -11,14 +11,22 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export default function CartPage() {
-  const { items, total, removeFromCart, updateQuantity } = useCart();
+  const { items, total, removeFromCart, updateQuantity, clearCart } = useCart();
   const isAuthenticated = false; // Mock authentication status
 
   return (
     <div className="flex flex-col min-h-screen">
       <AppHeader />
       <main className="flex-1 container mx-auto px-4 md:px-6 py-8">
-        <h1 className="text-3xl font-bold font-headline mb-8">Your Cart</h1>
+        <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold font-headline">Your Cart</h1>
+            {items.length > 0 && (
+                <Button variant="destructive" size="sm" onClick={clearCart}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Empty Cart
+                </Button>
+            )}
+        </div>
         {items.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-xl text-muted-foreground mb-4">Your cart is empty.</p>
