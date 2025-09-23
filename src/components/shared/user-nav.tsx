@@ -13,14 +13,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
-import { CreditCard, LogOut, Settings, User } from "lucide-react"
+import { CreditCard, LogOut, Settings, User, LayoutDashboard, ShoppingCart, Package } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
+import { usePathname } from "next/navigation";
 
 export function UserNav() {
   const { user: currentUser } = useAuth();
   const { toast } = useToast();
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     await auth.signOut();
@@ -33,6 +35,15 @@ export function UserNav() {
   if (!currentUser) return null;
 
   const userInitials = currentUser.displayName?.split(' ').map(n => n[0]).join('') || 'U';
+
+  const isAdmin = pathname.startsWith('/admin');
+  const isVendor = pathname.startsWith('/vendor');
+
+  const getDashboardLink = () => {
+    if (isAdmin) return "/admin";
+    if (isVendor) return "/vendor";
+    return "/browse";
+  }
 
   return (
     <DropdownMenu>
@@ -55,18 +66,42 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
+           <DropdownMenuItem asChild>
+            <Link href={getDashboardLink()}>
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              <span>Dashboard</span>
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/profile">
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-             <Link href="/orders">
-                <CreditCard className="mr-2 h-4 w-4" />
-                <span>My Orders</span>
-             </Link>
-          </DropdownMenuItem>
+           {!isAdmin && !isVendor && (
+             <DropdownMenuItem asChild>
+               <Link href="/orders">
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  <span>My Orders</span>
+               </Link>
+            </DropdownMenuItem>
+           )}
+            {isVendor && (
+              <>
+                 <DropdownMenuItem asChild>
+                  <Link href="/vendor/orders">
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      <span>Orders</span>
+                  </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                  <Link href="/vendor/products">
+                      <Package className="mr-2 h-4 w-4" />
+                      <span>Products</span>
+                  </Link>
+                  </DropdownMenuItem>
+              </>
+            )}
           <DropdownMenuItem asChild>
              <Link href="/settings">
                 <Settings className="mr-2 h-4 w-4" />

@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -27,8 +28,9 @@ export default async function AdminDashboardPage() {
   const totalUsers = users.length;
   const totalVendors = vendors.length;
   const totalOrders = orders.length;
+  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
 
-  const recentOrders = orders.slice(0, 5);
+  const recentOrders = orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
 
   return (
     <div className="space-y-8">
@@ -37,7 +39,7 @@ export default async function AdminDashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Revenue"
-          value="$45,231.89"
+          value={`$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
           description="+20.1% from last month"
         />
