@@ -14,17 +14,17 @@ import { ArrowLeft } from "lucide-react";
 
 export default function SignupPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-       <div className="absolute top-4 left-4">
-          <Button variant="outline" asChild>
-            <Link href="/" className="flex items-center gap-2">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-secondary">
+       <div className="absolute top-6 left-6">
+          <Button variant="ghost" asChild>
+            <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="w-4 h-4"/>
                 Back to Home
             </Link>
           </Button>
       </div>
-      <Card className="w-full max-w-md mx-auto shadow-2xl shadow-primary/10">
-        <CardHeader className="space-y-2 text-center">
+      <Card className="w-full max-w-md mx-auto shadow-2xl shadow-primary/10 border-t-4 border-primary">
+        <CardHeader className="space-y-2 text-center pt-8">
           <Logo className="justify-center"/>
           <CardTitle className="text-2xl font-headline">Create an account</CardTitle>
           <CardDescription>
@@ -65,7 +65,7 @@ export default function SignupPage() {
           </div>
           <div className="mt-4 text-center text-sm">
             Already have an account?{" "}
-            <Link href="/login" className="underline">
+            <Link href="/login" className="underline text-primary font-medium">
               Login
             </Link>
           </div>

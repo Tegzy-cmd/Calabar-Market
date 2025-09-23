@@ -26,18 +26,19 @@ export default function LandingPage() {
               priority
             />
           )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-black/10" />
           <div className="container mx-auto px-4 md:px-6 grid md:grid-cols-2 gap-8 items-center relative z-10">
-            <div className="space-y-6 bg-background/80 backdrop-blur-sm p-8 rounded-lg">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-headline font-bold text-primary">
+            <div className="space-y-6">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-headline font-extrabold text-white drop-shadow-lg">
                 Your Cravings, Delivered.
               </h1>
-              <p className="text-lg md:text-xl text-foreground/80">
+              <p className="text-lg md:text-xl text-white/90 drop-shadow-md">
                 From local restaurants to your favorite grocery stores, Calabar
                 Eats brings the best of the city to your doorstep.
               </p>
               <div className="flex gap-4">
-                <Button asChild size="lg" className="font-bold">
-                  <Link href="#categories">
+                <Button asChild size="lg" className="font-bold text-lg">
+                  <Link href="/browse">
                     Start Your Order <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
@@ -46,7 +47,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="categories" className="py-16 md:py-24">
+        <section id="categories" className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4 md:px-6">
             <div className="text-center space-y-4 mb-12">
               <h2 className="text-3xl md:text-4xl font-headline font-bold">
@@ -75,7 +76,7 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-      <footer className="py-6 border-t">
+      <footer className="py-6 border-t bg-muted/50">
         <div className="container mx-auto px-4 md:px-6 text-center text-muted-foreground">
           &copy; {new Date().getFullYear()} Calabar Eats. All rights reserved.
         </div>
@@ -99,13 +100,13 @@ function CategoryCard({ title, description, icon, href, image }: { title: string
                 data-ai-hint={image.imageHint}
                 />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
             <div className="absolute bottom-0 left-0 p-6">
-                <div className="bg-primary/80 backdrop-blur-sm p-3 rounded-full mb-4 w-fit">
+                <div className="bg-primary/90 backdrop-blur-sm p-3 rounded-full mb-4 w-fit shadow-lg">
                     {React.cloneElement(icon as React.ReactElement, { className: "h-8 w-8 text-primary-foreground" })}
                 </div>
-                <h3 className="text-2xl font-bold font-headline text-primary-foreground">{title}</h3>
-                <p className="text-primary-foreground/90">{description}</p>
+                <h3 className="text-2xl font-bold font-headline text-primary-foreground drop-shadow-md">{title}</h3>
+                <p className="text-primary-foreground/90 drop-shadow-sm">{description}</p>
             </div>
           </div>
         </CardContent>
