@@ -1,0 +1,94 @@
+import { getOrderById, getRiders } from "@/lib/data";
+import { notFound } from "next/navigation";
+import Image from "next/image";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { User, MapPin, Phone, Clock } from "lucide-react";
+import { AssignRiderTool } from "./_components/assign-rider-tool";
+
+export default function VendorOrderDetailPage({ params }: { params: { id: string } }) {
+  const order = getOrderById(params.id);
+  const riders = getRiders();
+
+  if (!order) {
+    notFound();
+  }
+  
+  const availableRiders = riders.filter(r => r.status === 'available');
+
+  return (
+    <div className="space-y-8">
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-headline font-bold">Order #{order.id.split('-')[1]}</h1>
+          <p className="text-muted-foreground flex items-center gap-2 mt-1">
+            <Clock className="w-4 h-4" /> Placed on {new Date(order.createdAt).toLocaleString()}
+          </p>
+        </div>
+        <Badge className="capitalize text-lg py-1 px-4" variant={order.status === 'delivered' ? 'default' : 'secondary'}>{order.status}</Badge>
+      </div>
+      
+      <div className="grid md:grid-cols-3 gap-8">
+        <div className="md:col-span-2 space-y-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Order Items</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-4">
+                {order.items.map(item => (
+                  <li key={item.product.id} className="flex items-center gap-4">
+                    <Image
+                      src={item.product.imageUrl}
+                      alt={item.product.name}
+                      width={64}
+                      height={64}
+                      className="rounded-md object-cover"
+                    />
+                    <div className="flex-1">
+                      <p className="font-semibold">{item.product.name}</p>
+                      <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
+                    </div>
+                    <p className="font-semibold">${(item.product.price * item.quantity).toFixed(2)}</p>
+                  </li>
+                ))}
+              </ul>
+              <Separator className="my-6" />
+              <div className="space-y-2 text-right">
+                <p>Subtotal: <span className="font-semibold">${order.subtotal.toFixed(2)}</span></p>
+                <p>Delivery Fee: <span className="font-semibold">${order.deliveryFee.toFixed(2)}</span></p>
+                <p className="text-xl font-bold">Total: <span className="text-primary">${order.total.toFixed(2)}</span></p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Customer Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center gap-3">
+                        <User className="w-5 h-5 text-muted-foreground"/>
+                        <span className="font-medium">{order.user.name}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <MapPin className="w-5 h-5 text-muted-foreground"/>
+                        <span className="text-sm">{order.deliveryAddress}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <Phone className="w-5 h-5 text-muted-foreground"/>
+                        <span className="text-sm">+234 801 234 5678</span>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <AssignRiderTool order={order} allRiders={riders} />
+
+        </div>
+      </div>
+    </div>
+  );
+}
