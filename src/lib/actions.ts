@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -5,7 +6,7 @@ import {
   type AssignBestDeliveryRiderInput,
 } from '@/ai/flows/assign-best-delivery-rider';
 import { db } from './firebase';
-import { collection, writeBatch } from 'firebase/firestore';
+import { collection, writeBatch, doc } from 'firebase/firestore';
 import { users, vendors, products, riders, orders } from './data';
 import type { Vendor } from './types';
 
