@@ -12,6 +12,7 @@ import Link from 'next/link';
 
 export default function CartPage() {
   const { items, total, removeFromCart, updateQuantity } = useCart();
+  const isAuthenticated = false; // Mock authentication status
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -82,7 +83,11 @@ export default function CartPage() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full">Proceed to Checkout</Button>
+                  <Button className="w-full" asChild>
+                     <Link href={isAuthenticated ? "/checkout" : "/login?redirect=/checkout"}>
+                      Proceed to Checkout
+                    </Link>
+                  </Button>
                 </CardFooter>
               </Card>
             </div>
