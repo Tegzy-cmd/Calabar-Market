@@ -8,10 +8,11 @@ import { UserNav } from "@/components/shared/user-nav";
 import { Logo } from "@/components/shared/logo";
 import { useCart } from "@/hooks/use-cart";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/use-auth";
+import { Skeleton } from "../ui/skeleton";
 
 export function AppHeader() {
-  // This would come from an auth hook in a real app
-  const isAuthenticated = false; 
+  const { user: isAuthenticated, loading } = useAuth();
   const { items } = useCart();
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
 
@@ -41,7 +42,14 @@ export function AppHeader() {
               <span className="sr-only">Shopping Cart</span>
             </Link>
           </Button>
-          {isAuthenticated ? (
+          {loading ? (
+            <div className="flex items-center space-x-2">
+              <Skeleton className="h-8 w-8 rounded-full" />
+              <div className="hidden sm:flex flex-col space-y-1">
+                 <Skeleton className="h-4 w-20" />
+              </div>
+            </div>
+          ) : isAuthenticated ? (
             <UserNav />
           ) : (
             <div className="hidden sm:flex items-center space-x-2">

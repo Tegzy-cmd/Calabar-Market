@@ -5,6 +5,7 @@ import { AppHeader } from '@/components/shared/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/hooks/use-auth';
 import { useCart } from '@/hooks/use-cart';
 import { MinusCircle, PlusCircle, Trash2 } from 'lucide-react';
 import Image from 'next/image';
@@ -12,7 +13,7 @@ import Link from 'next/link';
 
 export default function CartPage() {
   const { items, total, removeFromCart, updateQuantity, clearCart } = useCart();
-  const isAuthenticated = false; // Mock authentication status
+  const { user: isAuthenticated } = useAuth();
 
   return (
     <div className="flex flex-col min-h-screen">

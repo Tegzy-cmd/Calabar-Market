@@ -1,3 +1,6 @@
+
+'use client';
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,8 +14,34 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 import { ArrowLeft } from "lucide-react";
+import { auth } from '@/lib/firebase';
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SignupPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleGoogleSignUp = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      toast({
+        title: "Account created!",
+        description: "You have successfully signed up.",
+      });
+      router.push('/browse');
+    } catch (error) {
+      console.error("Error during Google sign-up:", error);
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "There was a problem with your sign-up.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-secondary">
        <div className="absolute top-6 left-6">
@@ -59,7 +88,7 @@ export default function SignupPage() {
             <Button type="submit" className="w-full font-bold">
               Create an account
             </Button>
-             <Button variant="outline" className="w-full">
+             <Button variant="outline" className="w-full" onClick={handleGoogleSignUp}>
               Sign up with Google
             </Button>
           </div>

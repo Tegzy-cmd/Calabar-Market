@@ -4,6 +4,7 @@ import { Inter, Poppins } from 'next/font/google';
 import { Toaster } from "@/components/ui/toaster";
 import './globals.css';
 import { CartProvider } from '@/hooks/cart-provider';
+import { AuthProvider } from '@/hooks/auth-provider';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const poppins = Poppins({ 
@@ -25,9 +26,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="light">
       <body className={`${inter.variable} ${poppins.variable} font-body antialiased`}>
-        <CartProvider>
-            {children}
-        </CartProvider>
+        <AuthProvider>
+            <CartProvider>
+                {children}
+            </CartProvider>
+        </AuthProvider>
         <Toaster />
       </body>
     </html>

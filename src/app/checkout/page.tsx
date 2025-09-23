@@ -10,25 +10,31 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function CheckoutPage() {
   const { items, total } = useCart();
+  const { user, loading } = useAuth();
+  const router = useRouter();
   
-  // In a real app, you'd get this from your auth context/hook
-  const isAuthenticated = true;
-  const user = {
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    address: '123 Main St, Calabar, Nigeria',
-    phone: '+234 801 234 5678'
-  };
-
-  if (!isAuthenticated) {
-    // This is a client-side redirect, a server-side one would be better in a real app
-    if(typeof window !== 'undefined') {
-        window.location.href = '/login?redirect=/checkout';
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login?redirect=/checkout');
     }
-    return null; // Or a loading spinner
+  }, [user, loading, router]);
+
+
+  if (loading || !user) {
+    return (
+        <div className="flex flex-col min-h-screen">
+            <AppHeader />
+            <main className="flex-1 container mx-auto px-4 md:px-6 py-8 text-center">
+                <p>Loading...</p>
+            </main>
+        </div>
+    )
   }
 
   if (items.length === 0) {
@@ -45,6 +51,14 @@ export default function CheckoutPage() {
         </div>
     )
   }
+  
+  const deliveryInfo = {
+    name: user.displayName || 'John Doe',
+    email: user.email || 'john.doe@example.com',
+    address: '123 Main St, Calabar, Nigeria',
+    phone: user.phoneNumber || '+234 801 234 5678'
+  };
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -61,20 +75,20 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="name">Full Name</Label>
-                        <Input id="name" defaultValue={user.name} />
+                        <Input id="name" defaultValue={deliveryInfo.name} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
-                        <Input id="email" type="email" defaultValue={user.email} />
+                        <Input id="email" type="email" defaultValue={deliveryInfo.email} />
                     </div>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="address">Delivery Address</Label>
-                    <Input id="address" defaultValue={user.address} />
+                    <Input id="address" defaultValue={deliveryInfo.address} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" type="tel" defaultValue={user.phone} />
+                    <Input id="phone" type="tel" defaultValue={deliveryInfo.phone} />
                 </div>
               </CardContent>
             </Card>
