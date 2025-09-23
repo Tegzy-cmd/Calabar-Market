@@ -9,6 +9,7 @@ import {
   SidebarMenuItem,
   SidebarFooter,
   SidebarTrigger,
+  SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/shared/logo';
 import {
@@ -63,7 +64,8 @@ export function AdminSidebar() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className='mt-auto'>
+        <SidebarSeparator />
         <SidebarMenu>
             {secondaryMenuItems.map((item) => (
                  <SidebarMenuItem key={item.href}>
@@ -78,10 +80,11 @@ export function AdminSidebar() {
                     </Link>
                  </SidebarMenuItem>
             ))}
-            <SidebarMenuItem>
-                <UserNav />
-            </SidebarMenuItem>
         </SidebarMenu>
+        <SidebarSeparator />
+        <div className="p-2 flex justify-center">
+            <UserNav />
+        </div>
       </SidebarFooter>
     </>
   );
