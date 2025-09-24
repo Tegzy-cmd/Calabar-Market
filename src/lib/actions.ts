@@ -6,7 +6,7 @@ import { auth, db } from './firebase';
 import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp, collectionGroup, getDocs as getDocsFromFirestore, query, where, orderBy } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { users, vendors, products, dispatchers, orders, getDispatchers, getAllOrders } from './data';
-import type { User, Vendor, Dispatcher, Product, OrderStatus, ChatMessage, DispatcherVehicle } from './types';
+import type { User, Vendor, Dispatcher, Product, OrderStatus, ChatMessage, DispatcherVehicle, Order } from './types';
 import { revalidatePath } from 'next/cache';
 import { placeholderImages } from './placeholder-images';
 import { getServerSession } from './auth';
@@ -293,21 +293,21 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
         // Automatic dispatcher assignment logic
         if (status === 'preparing' && session.user.role === 'vendor' && !orderData.dispatcherId) {
             const allDispatchers = await getDispatchers();
-            const allActiveOrders = await getAllOrders();
-            const activeDispatcherIds = new Set(
-                allActiveOrders
-                    .filter(o => o.status === 'dispatched' || o.status === 'preparing')
-                    .map(o => o.dispatcher?.id)
-                    .filter((id): id is string => !!id)
+            
+            // Get all active orders to find out which dispatchers are busy
+            const activeOrdersQuery = query(collection(db, 'orders'), where('status', 'in', ['preparing', 'dispatched']));
+            const activeOrdersSnap = await getDocsFromFirestore(activeOrdersQuery);
+            const busyDispatcherIds = new Set(
+                activeOrdersSnap.docs.map(d => d.data().dispatcherId).filter(Boolean)
             );
 
+            // Find dispatchers who are not busy
             const availableDispatchers = allDispatchers.filter(
-                d => d.status === 'available' && !activeDispatcherIds.has(d.id)
+                dispatcher => !busyDispatcherIds.has(dispatcher.id)
             );
-
 
             if (availableDispatchers.length > 0) {
-                // Randomly select a dispatcher
+                // Randomly select an available dispatcher
                 const randomIndex = Math.floor(Math.random() * availableDispatchers.length);
                 const assignedDispatcher = availableDispatchers[randomIndex];
                 
@@ -315,9 +315,11 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
                 await updateDoc(doc(db, 'dispatchers', assignedDispatcher.id), { status: 'on-delivery' });
 
             } else {
+                 // If no dispatcher is available, just update status to preparing
                  await updateDoc(orderRef, { status: 'preparing' });
             }
         } else {
+            // For all other status updates
             await updateDoc(orderRef, { status });
         }
         
@@ -484,5 +486,6 @@ export async function getMessages(orderId: string): Promise<ChatMessage[]> {
         return [];
     }
 }
+
 
 
