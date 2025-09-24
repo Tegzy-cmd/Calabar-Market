@@ -50,7 +50,7 @@ export default function CartPage() {
                     />
                     <div className="flex-1">
                       <p className="font-semibold">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+                      <p className="text-sm text-muted-foreground">₦{item.price.toFixed(2)}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
                           <MinusCircle className="h-4 w-4" />
@@ -62,7 +62,7 @@ export default function CartPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                        <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                        <p className="font-semibold">₦{(item.price * item.quantity).toFixed(2)}</p>
                         <Button variant="ghost" size="icon" className="text-muted-foreground" onClick={() => removeFromCart(item.id)}>
                             <Trash2 className="h-4 w-4" />
                         </Button>
@@ -79,16 +79,16 @@ export default function CartPage() {
                 <CardContent className="space-y-4">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>₦{total.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Delivery Fee</span>
-                    <span>$5.00</span>
+                    <span>₦500.00</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>${(total + 5.00).toFixed(2)}</span>
+                    <span>₦{(total + 500.00).toFixed(2)}</span>
                   </div>
                 </CardContent>
                 <CardFooter>

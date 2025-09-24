@@ -111,7 +111,7 @@ function ProductTable({ products }: { products: Product[] }) {
                             <Image src={product.imageUrl} alt={product.name} width={40} height={40} className="rounded-md object-cover" />
                         </TableCell>
                         <TableCell className="font-medium">{product.name}</TableCell>
-                        <TableCell>${product.price.toFixed(2)}</TableCell>
+                        <TableCell>₦{product.price.toFixed(2)}</TableCell>
                         <TableCell>{product.stock}</TableCell>
                     </TableRow>
                 ))}

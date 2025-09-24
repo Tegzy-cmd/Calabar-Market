@@ -112,7 +112,7 @@ export default async function AdminDashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Revenue"
-          value={`$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={`₦${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
           description="+20.1% from last month"
         />
@@ -141,23 +141,23 @@ export default async function AdminDashboardPage() {
             title="Top Vendor"
             value={topVendor.name}
             icon={<Crown className="h-4 w-4 text-muted-foreground" />}
-            description={`$${topVendor.sales.toFixed(2)} in sales`}
+            description={`₦${topVendor.sales.toFixed(2)} in sales`}
         />
         <StatCard
             title="Top Product"
             value={topProduct.name}
             icon={<PackageCheck className="h-4 w-4 text-muted-foreground" />}
-            description={`$${topProduct.sales.toFixed(2)} in sales`}
+            description={`₦${topProduct.sales.toFixed(2)} in sales`}
         />
          <StatCard
             title="Top Category: Food"
-            value={`$${salesByCategory.food.toFixed(2)}`}
+            value={`₦${salesByCategory.food.toFixed(2)}`}
             icon={<Utensils className="h-4 w-4 text-muted-foreground" />}
             description={`${((salesByCategory.food / totalRevenue) * 100).toFixed(1)}% of total revenue`}
         />
          <StatCard
             title="Top Category: Groceries"
-            value={`$${salesByCategory.groceries.toFixed(2)}`}
+            value={`₦${salesByCategory.groceries.toFixed(2)}`}
             icon={<Carrot className="h-4 w-4 text-muted-foreground" />}
             description={`${((salesByCategory.groceries / totalRevenue) * 100).toFixed(1)}% of total revenue`}
         />
@@ -205,7 +205,7 @@ export default async function AdminDashboardPage() {
                       </div>
                     </TableCell>
                     <TableCell>{order.vendor.name}</TableCell>
-                    <TableCell className="text-right">${order.total.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">₦{order.total.toFixed(2)}</TableCell>
                     <TableCell>
                        <Badge 
                         variant={getStatusVariant(order.status)}

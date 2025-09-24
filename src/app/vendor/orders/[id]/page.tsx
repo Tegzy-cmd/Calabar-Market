@@ -1,3 +1,4 @@
+
 import { getOrderById, getDispatchers } from "@/lib/data";
 import { notFound } from "next/navigation";
 import Image from "next/image";
@@ -51,15 +52,15 @@ export default async function VendorOrderDetailPage({ params }: { params: { id: 
                       <p className="font-semibold">{item.product.name}</p>
                       <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
                     </div>
-                    <p className="font-semibold">${(item.product.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-semibold">₦{(item.product.price * item.quantity).toFixed(2)}</p>
                   </li>
                 ))}
               </ul>
               <Separator className="my-6" />
               <div className="space-y-2 text-right">
-                <p>Subtotal: <span className="font-semibold">${order.subtotal.toFixed(2)}</span></p>
-                <p>Delivery Fee: <span className="font-semibold">${order.deliveryFee.toFixed(2)}</span></p>
-                <p className="text-xl font-bold">Total: <span className="text-primary">${order.total.toFixed(2)}</span></p>
+                <p>Subtotal: <span className="font-semibold">₦{order.subtotal.toFixed(2)}</span></p>
+                <p>Delivery Fee: <span className="font-semibold">₦{order.deliveryFee.toFixed(2)}</span></p>
+                <p className="text-xl font-bold">Total: <span className="text-primary">₦{order.total.toFixed(2)}</span></p>
               </div>
             </CardContent>
           </Card>

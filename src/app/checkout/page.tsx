@@ -139,23 +139,23 @@ export default function CheckoutPage() {
                     {items.map(item => (
                         <li key={item.id} className="flex justify-between items-center">
                             <span>{item.name} x {item.quantity}</span>
-                            <span>${(item.price * item.quantity).toFixed(2)}</span>
+                            <span>₦{(item.price * item.quantity).toFixed(2)}</span>
                         </li>
                     ))}
                 </ul>
                 <Separator />
                  <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>₦{total.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Delivery Fee</span>
-                    <span>$5.00</span>
+                    <span>₦500.00</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>${(total + 5.00).toFixed(2)}</span>
+                    <span>₦{(total + 500.00).toFixed(2)}</span>
                   </div>
               </CardContent>
             </Card>

@@ -64,7 +64,7 @@ function ProductCard({ product }: { product: Product }) {
         </CardDescription>
       </CardContent>
       <CardFooter className="p-4 flex justify-between items-center bg-muted/50">
-        <p className="font-semibold text-lg">${product.price.toFixed(2)}</p>
+        <p className="font-semibold text-lg">₦{product.price.toFixed(2)}</p>
         <Badge variant={product.stock > 0 ? "secondary" : "destructive"}>
           {product.stock > 0 ? `${product.stock} in stock` : "Out of Stock"}
         </Badge>

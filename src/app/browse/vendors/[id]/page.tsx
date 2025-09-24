@@ -76,7 +76,7 @@ function ProductCard({ product }: { product: Product }) {
                 <CardDescription className="text-sm mt-1">{product.description}</CardDescription>
             </CardContent>
             <CardFooter className="p-4 flex justify-between items-center">
-                <p className="font-semibold text-lg">${product.price.toFixed(2)}</p>
+                <p className="font-semibold text-lg">₦{product.price.toFixed(2)}</p>
                 <AddToCartButton product={product} />
             </CardFooter>
         </Card>

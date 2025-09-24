@@ -37,7 +37,7 @@ export default function PaymentPage() {
     }
   };
 
-  const grandTotal = total + 5.00; // Including delivery fee
+  const grandTotal = total + 500.00; // Including delivery fee
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -48,7 +48,7 @@ export default function PaymentPage() {
             <CardHeader>
               <CardTitle>Complete Your Payment</CardTitle>
               <CardDescription>
-                Enter your card details to finalize your order. Total amount is <strong>${grandTotal.toFixed(2)}</strong>.
+                Enter your card details to finalize your order. Total amount is <strong>₦{grandTotal.toFixed(2)}</strong>.
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
@@ -86,7 +86,7 @@ export default function PaymentPage() {
               </CardContent>
               <CardFooter>
                 <Button type="submit" className="w-full" disabled={isProcessing}>
-                  {isProcessing ? 'Processing...' : `Pay $${grandTotal.toFixed(2)}`}
+                  {isProcessing ? 'Processing...' : `Pay ₦${grandTotal.toFixed(2)}`}
                 </Button>
               </CardFooter>
             </form>
