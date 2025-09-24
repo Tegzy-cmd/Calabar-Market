@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -48,6 +49,7 @@ export default function LoginPage() {
         email: user.email,
         role: user.role,
         avatarUrl: user.avatarUrl,
+        vendorId: user.vendorId,
         dispatcherId: user.dispatcherId,
       });
        Cookies.set('session_user', userString, { expires: 1 });

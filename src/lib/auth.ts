@@ -1,4 +1,5 @@
 
+
 'use server';
 import { cookies }from 'next/headers';
 import type { User } from '@/lib/types';
@@ -25,31 +26,12 @@ export async function getServerSession(): Promise<Session | null> {
       const user = JSON.parse(userCookie.value) as User;
       const session: Session = { user };
 
-      if (user.role === 'vendor') {
-        // Fetch the user document from Firestore to get the vendorId
-        const userDocRef = doc(db, 'users', user.id);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists()) {
-          const userData = userDocSnap.data() as User;
-          if (userData.vendorId) {
-            session.vendorId = userData.vendorId;
-          } else {
-             // Fallback: If vendorId is not on user, query vendors collection by ownerId
-            const q = query(collection(db, 'vendors'), where('ownerId', '==', user.id));
-            const vendorQuerySnap = await getDocs(q);
-            if (!vendorQuerySnap.empty) {
-                session.vendorId = vendorQuerySnap.docs[0].id;
-            }
-          }
-        }
+      if (user.role === 'vendor' && user.vendorId) {
+        session.vendorId = user.vendorId;
       }
       
-      if (user.role === 'dispatcher') {
-         const userDoc = await getDoc(doc(db, 'users', user.id));
-          if (userDoc.exists()) {
-             const userData = userDoc.data() as User;
-             session.dispatcherId = userData.id; // Dispatcher ID is the user ID
-          }
+      if (user.role === 'dispatcher' && user.dispatcherId) {
+         session.dispatcherId = user.dispatcherId;
       }
 
       return session;
