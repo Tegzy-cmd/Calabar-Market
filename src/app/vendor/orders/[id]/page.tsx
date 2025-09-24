@@ -203,7 +203,9 @@ export default function VendorOrderDetailPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Dispatcher</CardTitle>
-                    <CardDescription>Assign a dispatcher when the order is ready.</CardDescription>
+                    <CardDescription>
+                      {order.dispatcher ? "Dispatcher assigned" : "Assign a dispatcher when the order is ready."}
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
                    {order.dispatcher ? (
