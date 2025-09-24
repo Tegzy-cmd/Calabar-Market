@@ -54,10 +54,9 @@ export default function VendorOrderDetailPage() {
         const orderData = { id: docSnap.id, ...docSnap.data() };
 
         // Fetch related documents just like getOrderById does
-        const [user, vendor, dispatcher, items] = await Promise.all([
+        const [user, vendor, items] = await Promise.all([
           getUserById(orderData.userId),
           getVendorById(orderData.vendorId),
-          orderData.dispatcherId ? getDispatcherById(orderData.dispatcherId) : Promise.resolve(undefined),
           Promise.all(
             (orderData.items || []).map(async (item: { productId: string; quantity: number; price: number }) => {
               const product = await getProductById(item.productId);
@@ -73,6 +72,11 @@ export default function VendorOrderDetailPage() {
             setOrder(null); // or handle error
             return;
         }
+
+        // Conditionally fetch dispatcher only if dispatcherId exists
+        const dispatcher = orderData.dispatcherId 
+            ? await getDispatcherById(orderData.dispatcherId) 
+            : undefined;
         
         const fullOrder = {
             ...orderData,

@@ -63,7 +63,7 @@ export function OrderStatusUpdater({ order, role }: OrderStatusUpdaterProps) {
          {role === 'vendor' && order.status === 'preparing' && (
             <DropdownMenuItem disabled>
                 <Send className="mr-2 h-4 w-4" />
-                <span>Dispatcher being assigned...</span>
+                <span>Dispatcher Assigned</span>
             </DropdownMenuItem>
         )}
       </DropdownMenuContent>
