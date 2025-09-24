@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { MoreHorizontal, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Trash2, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -26,6 +26,7 @@ import type { Vendor } from '@/lib/types';
 import { deleteVendor } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { VendorForm } from './vendor-form';
+import Link from 'next/link';
 
 export function VendorActions({ vendor }: { vendor?: Vendor }) {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -85,6 +86,12 @@ export function VendorActions({ vendor }: { vendor?: Vendor }) {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem onSelect={() => setIsFormOpen(true)}>Edit</DropdownMenuItem>
+           <DropdownMenuItem asChild>
+              <Link href={`/admin/vendors/${vendor.id}/products`}>
+                <Package className="mr-2 h-4 w-4" />
+                View Products
+              </Link>
+            </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => setIsConfirmOpen(true)} className="text-destructive">
             <Trash2 className="mr-2 h-4 w-4" />
