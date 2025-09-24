@@ -1,4 +1,5 @@
 
+
 import type { User, Vendor, Product, Order, Dispatcher, OrderItem, OrderStatus } from './types';
 import { placeholderImages } from './placeholder-images';
 import { db } from './firebase';
@@ -22,12 +23,29 @@ export const dispatchers: Dispatcher[] = [
 ];
 
 export const products: Product[] = [
+  // Vendor 1: Burger Queen
   { id: 'prod-1', vendorId: 'vendor-1', name: 'Classic Burger', description: 'A delicious classic beef burger.', price: 8.99, stock: 100, imageUrl: findImage('product-burger') },
   { id: 'prod-2', vendorId: 'vendor-1', name: 'Cheese Burger', description: 'Classic burger with a slice of cheddar.', price: 9.99, stock: 80, imageUrl: findImage('product-burger') },
+  { id: 'prod-11', vendorId: 'vendor-1', name: 'French Fries', description: 'Crispy golden french fries.', price: 3.99, stock: 200, imageUrl: "https://picsum.photos/seed/fries/400/300" },
+
+  // Vendor 2: Pizza Palace
   { id: 'prod-3', vendorId: 'vendor-2', name: 'Pepperoni Pizza', description: 'Classic pizza with pepperoni.', price: 12.99, stock: 50, imageUrl: findImage('product-pizza') },
   { id: 'prod-4', vendorId: 'vendor-2', name: 'Margherita Pizza', description: 'Simple and delicious tomato and cheese pizza.', price: 10.99, stock: 60, imageUrl: findImage('product-pizza') },
+  { id: 'prod-12', vendorId: 'vendor-2', name: 'Garlic Bread', description: 'Warm bread with garlic butter.', price: 4.99, stock: 70, imageUrl: "https://picsum.photos/seed/garlicbread/400/300" },
+  
+  // Vendor 3: Green Grocer
   { id: 'prod-5', vendorId: 'vendor-3', name: 'Fresh Apples', description: 'A bag of crisp red apples.', price: 4.99, stock: 200, imageUrl: findImage('product-apples') },
   { id: 'prod-6', vendorId: 'vendor-3', name: 'Sourdough Bread', description: 'A loaf of freshly baked sourdough bread.', price: 5.49, stock: 40, imageUrl: findImage('product-bread') },
+  { id: 'prod-13', vendorId: 'vendor-3', name: 'Organic Carrots', description: 'A bunch of fresh organic carrots.', price: 2.99, stock: 150, imageUrl: "https://picsum.photos/seed/carrots/400/300" },
+  { id: 'prod-14', vendorId: 'vendor-3', name: 'Fresh Milk', description: '1 litre of fresh pasteurized milk.', price: 1.99, stock: 100, imageUrl: "https://picsum.photos/seed/milk/400/300" },
+  
+  // Vendor 4: Sushi Spot
+  { id: 'prod-7', vendorId: 'vendor-4', name: 'Salmon Roll', description: 'Fresh salmon and avocado.', price: 11.99, stock: 30, imageUrl: "https://picsum.photos/seed/sushi1/400/300" },
+  { id: 'prod-8', vendorId: 'vendor-4', name: 'Tuna Nigiri', description: 'Slices of fresh tuna over rice.', price: 14.99, stock: 25, imageUrl: "https://picsum.photos/seed/sushi2/400/300" },
+
+  // Vendor 5: Taco Town
+  { id: 'prod-9', vendorId: 'vendor-5', name: 'Beef Tacos', description: 'Three crispy tacos with seasoned beef.', price: 9.99, stock: 60, imageUrl: "https://picsum.photos/seed/tacos1/400/300" },
+  { id: 'prod-10', vendorId: 'vendor-5', name: 'Chicken Burrito', description: 'A large burrito filled with chicken and rice.', price: 12.99, stock: 40, imageUrl: "https://picsum.photos/seed/burrito1/400/300" },
 ];
 
 export const vendors: Omit<Vendor, 'products'>[] = [
@@ -54,6 +72,22 @@ export const vendors: Omit<Vendor, 'products'>[] = [
     category: 'groceries',
     logoUrl: findImage('vendor-logo-3'),
     bannerUrl: findImage('vendor-banner-3'),
+  },
+  {
+    id: 'vendor-4',
+    name: 'Sushi Spot',
+    description: 'Fresh and delicious sushi.',
+    category: 'food',
+    logoUrl: "https://picsum.photos/seed/sushilogo/100/100",
+    bannerUrl: "https://picsum.photos/seed/sushibanner/600/400",
+  },
+  {
+    id: 'vendor-5',
+    name: 'Taco Town',
+    description: 'Your favorite Mexican street food.',
+    category: 'food',
+    logoUrl: "https://picsum.photos/seed/tacologo/100/100",
+    bannerUrl: "https://picsum.photos/seed/tacobanner/600/400",
   },
 ];
 
@@ -99,6 +133,31 @@ export const orders: any[] = [ // Using any for seeding simplicity
         deliveryFee: 5.00,
         total: 28.98,
     },
+    {
+        id: 'order-fghij',
+        user: users[1],
+        vendor: vendors[3],
+        items: [{ product: products[6], quantity: 2 }],
+        status: 'dispatched',
+        deliveryAddress: '456 Oak Ave, Calabar, Nigeria',
+        createdAt: new Date(Date.now() - 3600000 * 1.5).toISOString(),
+        dispatcher: dispatchers[3],
+        subtotal: 23.98,
+        deliveryFee: 4.00,
+        total: 27.98,
+    },
+    {
+        id: 'order-klmno',
+        user: users[0],
+        vendor: vendors[4],
+        items: [{ product: products[8], quantity: 3 }, { product: products[9], quantity: 1 }],
+        status: 'cancelled',
+        deliveryAddress: '123 Main St, Calabar, Nigeria',
+        createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
+        subtotal: 42.96,
+        deliveryFee: 5.50,
+        total: 48.46,
+    },
 ];
 
 
@@ -107,8 +166,11 @@ export const orders: any[] = [ // Using any for seeding simplicity
 // Helper to convert Firestore Timestamps
 function processDoc(doc: any) {
     const data = doc.data();
-    if (data.createdAt && data.createdAt instanceof Timestamp) {
-        data.createdAt = data.createdAt.toDate().toISOString();
+    // Convert all Timestamp fields to ISO strings
+    for (const key in data) {
+        if (data[key] instanceof Timestamp) {
+            data[key] = data[key].toDate().toISOString();
+        }
     }
     return { id: doc.id, ...data };
 }
@@ -224,5 +286,7 @@ export const getAllOrders = async (): Promise<Order[]> => {
     
     return orders;
 }
+
+    
 
     
