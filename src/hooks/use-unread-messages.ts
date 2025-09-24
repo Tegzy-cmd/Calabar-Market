@@ -21,6 +21,8 @@ export function useUnreadMessages(orderId: string, currentUserRole: 'user' | 've
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (snapshot.empty) return;
+      
       const latestMessage = snapshot.docs[0]?.data() as ChatMessage;
 
       if (latestMessage && latestMessage.senderId !== appUser.id) {
