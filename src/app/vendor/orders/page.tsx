@@ -1,4 +1,5 @@
 
+
 import { getServerSession } from "@/lib/auth";
 import { getOrdersByVendorId } from "@/lib/data";
 import { redirect } from "next/navigation";
@@ -42,4 +43,3 @@ export default async function VendorOrdersPage() {
       </div>
     );
 }
-

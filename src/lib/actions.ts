@@ -300,9 +300,11 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
                 const randomIndex = Math.floor(Math.random() * availableDispatchers.length);
                 const assignedDispatcherId = availableDispatchers[randomIndex].id;
                 
-                await updateDoc(orderRef, { status, dispatcherId: assignedDispatcherId });
+                // When a dispatcher is assigned, the status should be 'dispatched'
+                await updateDoc(orderRef, { status: 'dispatched', dispatcherId: assignedDispatcherId });
             } else {
-                 await updateDoc(orderRef, { status });
+                 // No available dispatcher, so just update the status to 'preparing'
+                 await updateDoc(orderRef, { status: 'preparing' });
             }
         } else {
             await updateDoc(orderRef, { status });
@@ -464,4 +466,3 @@ export async function getMessages(orderId: string): Promise<ChatMessage[]> {
         return [];
     }
 }
-

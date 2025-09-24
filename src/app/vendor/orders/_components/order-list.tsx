@@ -72,4 +72,3 @@ export function OrderList({ orders }: { orders: Order[] }) {
         </Table>
     )
 }
-

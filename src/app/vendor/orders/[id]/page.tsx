@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { getOrderById } from "@/lib/data";
@@ -140,7 +141,7 @@ export default function VendorOrderDetailPage() {
                     </div>
                     <div className="flex items-center gap-3">
                         <Phone className="w-5 h-5 text-muted-foreground"/>
-                        <span className="text-sm">+234 801 234 5678</span>
+                        <span className="text-sm">{order.user.phoneNumber || 'Not provided'}</span>
                     </div>
                 </CardContent>
             </Card>
@@ -164,7 +165,7 @@ export default function VendorOrderDetailPage() {
                             <CheckCircle2 className="h-4 w-4" />
                             <AlertTitle>Assignment Pending</AlertTitle>
                             <AlertDescription>
-                                A dispatcher will be automatically assigned when you mark the order as 'preparing'.
+                                A dispatcher will be assigned when you mark the order as 'preparing'.
                             </AlertDescription>
                         </Alert>
                    )}

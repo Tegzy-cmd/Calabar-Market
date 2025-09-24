@@ -23,7 +23,7 @@ export function OrderStatusUpdater({ order, role }: OrderStatusUpdaterProps) {
     startTransition(async () => {
       const result = await updateOrderStatus(order.id, status);
       if (result.success) {
-        toast({ title: 'Success', description: `Order status updated to ${status}.` });
+        toast({ title: 'Success', description: `Order status updated.` });
       } else {
         toast({ title: 'Error', description: result.error, variant: 'destructive' });
       }
@@ -32,7 +32,6 @@ export function OrderStatusUpdater({ order, role }: OrderStatusUpdaterProps) {
 
   const vendorActions: { status: OrderStatus; label: string; icon: React.ReactNode; condition: boolean }[] = [
     { status: 'preparing', label: 'Mark as Preparing', icon: <Package className="mr-2 h-4 w-4" />, condition: order.status === 'placed' },
-    { status: 'dispatched', label: 'Mark as Dispatched', icon: <Send className="mr-2 h-4 w-4" />, condition: order.status === 'preparing' && !!order.dispatcher },
   ];
 
   const dispatcherActions: { status: OrderStatus; label: string; icon: React.ReactNode; condition: boolean }[] = [
@@ -42,6 +41,10 @@ export function OrderStatusUpdater({ order, role }: OrderStatusUpdaterProps) {
 
   const actions = role === 'vendor' ? vendorActions : dispatcherActions;
   const availableActions = actions.filter(action => action.condition);
+
+  if (availableActions.length === 0 && role === 'vendor' && order.status !== 'placed') {
+      return null;
+  }
 
   return (
     <DropdownMenu>
@@ -57,7 +60,7 @@ export function OrderStatusUpdater({ order, role }: OrderStatusUpdaterProps) {
             <span>{action.label}</span>
           </DropdownMenuItem>
         ))}
-         {role === 'vendor' && order.status === 'preparing' && !order.dispatcher && (
+         {role === 'vendor' && order.status === 'preparing' && (
             <DropdownMenuItem disabled>
                 <Send className="mr-2 h-4 w-4" />
                 <span>Dispatcher being assigned...</span>
