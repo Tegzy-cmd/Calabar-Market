@@ -2,6 +2,8 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 import type { User } from '@/lib/types';
+import { db } from './firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 // This is a placeholder for a real session management system.
 // In a production app, you would use a library like next-auth or a custom solution with JWTs.
@@ -24,11 +26,13 @@ export async function getServerSession(): Promise<Session | null> {
       const session: Session = { user };
 
       if (user.role === 'vendor') {
-        // In a real app, you might have a mapping from a user ID to a vendor ID.
-        // For this demo, we'll hardcode a mapping.
-        // Let's assume vendor-admin-1 is linked to vendor-1
-        if (user.id === 'vendor-admin-1') {
-            session.vendorId = 'vendor-1';
+        // Fetch the user document from Firestore to get the vendorId
+        const userDoc = await getDoc(doc(db, 'users', user.id));
+        if (userDoc.exists()) {
+          const userData = userDoc.data() as User & { vendorId?: string };
+          if (userData.vendorId) {
+            session.vendorId = userData.vendorId;
+          }
         }
       }
       
