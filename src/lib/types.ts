@@ -1,5 +1,3 @@
-
-
 export type User = {
   id: string;
   name: string;
@@ -39,7 +37,7 @@ export type OrderItem = {
   quantity: number;
 };
 
-export type OrderStatus = 'placed' | 'preparing' | 'dispatched' | 'delivered' | 'cancelled';
+export type OrderStatus = 'placed' | 'preparing' | 'dispatched' | 'awaiting-confirmation' | 'delivered' | 'cancelled';
 
 export type Order = {
   id: string;

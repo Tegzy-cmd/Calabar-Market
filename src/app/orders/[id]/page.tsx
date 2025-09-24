@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { notFound, useParams } from "next/navigation";
@@ -7,17 +5,19 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Phone, Clock, Truck, Store, CheckCircle, Package, CircleDot, MessageSquare, Star } from "lucide-react";
+import { User, MapPin, Phone, Clock, Truck, Store, CheckCircle, Package, CircleDot, MessageSquare, Star, Hand, ShieldCheck } from "lucide-react";
 import { AppHeader } from "@/components/shared/header";
 import { cn } from "@/lib/utils";
 import type { OrderStatus, Order as OrderType } from "@/lib/types";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { ChatRoom } from "@/components/shared/chat-room";
 import { useUnreadMessages } from '@/hooks/use-unread-messages';
-import { db, onSnapshot, doc, getDocs, collection, query, where, getDoc } from '@/lib/firebase';
+import { db, onSnapshot, doc, getDoc, getDocs, collection, query, where, Timestamp } from '@/lib/firebase';
 import type { Product, Dispatcher, User as UserType, Vendor } from '@/lib/types';
 import { DispatcherRating } from "@/components/shared/dispatcher-rating";
+import { updateOrderStatus } from "@/lib/actions";
+import { useToast } from "@/hooks/use-toast";
 
 
 const getStatusColor = (status: OrderStatus) => {
@@ -26,6 +26,8 @@ const getStatusColor = (status: OrderStatus) => {
             return 'bg-green-500 hover:bg-green-600';
         case 'dispatched':
             return 'bg-blue-500 hover:bg-blue-600';
+        case 'awaiting-confirmation':
+            return 'bg-yellow-500 hover:bg-yellow-600';
         case 'preparing':
             return 'bg-orange-500 hover:bg-orange-600 text-white';
         case 'placed':
@@ -41,6 +43,7 @@ const statusTimeline = [
     { status: 'placed', icon: CircleDot, text: 'Order Placed' },
     { status: 'preparing', icon: Package, text: 'Order Preparing' },
     { status: 'dispatched', icon: Truck, text: 'Order Dispatched' },
+    { status: 'awaiting-confirmation', icon: Hand, text: 'Pending Confirmation' },
     { status: 'delivered', icon: CheckCircle, text: 'Order Delivered' },
 ];
 
@@ -54,6 +57,8 @@ export default function OrderDetailPage() {
   const [isRatingOpen, setIsRatingOpen] = useState(false);
   const { hasUnread: hasUnreadVendor, resetUnread: resetUnreadVendor } = useUnreadMessages(id, 'vendor');
   const { hasUnread: hasUnreadDispatcher, resetUnread: resetUnreadDispatcher } = useUnreadMessages(id, 'dispatcher');
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
   
   useEffect(() => {
     if (!id) return;
@@ -118,12 +123,35 @@ export default function OrderDetailPage() {
     resetUnreadDispatcher();
   }
 
+  const handleConfirmDelivery = () => {
+    if (!order) return;
+    startTransition(async () => {
+        const result = await updateOrderStatus(order.id, 'delivered');
+        if (result.success) {
+            toast({
+                title: 'Order Confirmed!',
+                description: 'You have successfully confirmed the delivery.',
+            })
+        } else {
+            toast({
+                title: 'Error',
+                description: result.error,
+                variant: 'destructive',
+            })
+        }
+    })
+  }
+
   if (!order) {
     // You might want a better loading state here
     return <div>Loading...</div>;
   }
   
-  const currentStatusIndex = statusTimeline.findIndex(item => item.status === order.status);
+  let currentStatusIndex = statusTimeline.findIndex(item => item.status === order.status);
+  // If order is delivered, we want to show the full timeline as active
+  if (order.status === 'delivered') {
+      currentStatusIndex = statusTimeline.length - 1;
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -174,7 +202,7 @@ export default function OrderDetailPage() {
                     <MessageSquare className="mr-2 h-4 w-4" />
                     Chat with Vendor
                 </Button>
-                {order.status === 'dispatched' && order.dispatcher && (
+                {order.dispatcher && (order.status === 'dispatched' || order.status === 'awaiting-confirmation') && (
                     <Button variant="outline" onClick={handleOpenDispatcherChat} className="relative">
                         {hasUnreadDispatcher && (
                             <span className="absolute -top-1 -right-1 flex h-3 w-3">
@@ -186,7 +214,7 @@ export default function OrderDetailPage() {
                         Chat with Dispatcher
                     </Button>
                 )}
-                <Badge className={cn("capitalize text-lg py-1 px-4 text-white", getStatusColor(order.status))}>{order.status}</Badge>
+                <Badge className={cn("capitalize text-lg py-1 px-4 text-white", getStatusColor(order.status))}>{order.status.replace('-', ' ')}</Badge>
             </div>
         </div>
         
@@ -208,7 +236,7 @@ export default function OrderDetailPage() {
                                         <div className={cn("h-10 w-10 rounded-full flex items-center justify-center bg-muted border-2", { "bg-primary text-primary-foreground border-primary": isActive })}>
                                             <item.icon className="w-5 h-5"/>
                                         </div>
-                                        <div className={cn("flex-1 h-1", index === statusTimeline.length - 1 ? 'bg-transparent' : 'bg-border', {'bg-primary': isCompleted || (isActive && index === statusTimeline.length -2) })}></div>
+                                        <div className={cn("flex-1 h-1", index === statusTimeline.length - 1 ? 'bg-transparent' : 'bg-border', {'bg-primary': isCompleted || (isActive && index < statusTimeline.length -1) })}></div>
                                     </div>
                                     <p className={cn("text-sm mt-2 text-muted-foreground", { "text-foreground font-medium": isActive })}>{item.text}</p>
                                 </div>
@@ -217,6 +245,23 @@ export default function OrderDetailPage() {
                     </div>
                 </CardContent>
             </Card>
+
+            {order.status === 'awaiting-confirmation' && (
+                <Card className="bg-primary/10 border-primary">
+                    <CardHeader className="flex-row items-center gap-4">
+                        <ShieldCheck className="w-8 h-8 text-primary" />
+                        <div>
+                            <CardTitle>Confirm Your Delivery</CardTitle>
+                            <CardDescription className="text-primary/80">Your dispatcher has marked this order as delivered. Please confirm to complete the order.</CardDescription>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <Button className="w-full" onClick={handleConfirmDelivery} disabled={isPending}>
+                            {isPending ? "Confirming..." : "I Have Received My Order"}
+                        </Button>
+                    </CardContent>
+                </Card>
+            )}
 
             <Card>
                 <CardHeader>

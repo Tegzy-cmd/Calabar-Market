@@ -283,66 +283,23 @@ export async function createDispatcherAndUser(data: {
 
     } catch (e: any) {
         console.error("Error creating dispatcher and user:", e);
-        // Basic cleanup attempt
         if (uid) {
-            // In a real app, you'd use Admin SDK to delete the user.
+            // In a real app, you would use the Admin SDK to delete the auth user if the DB operations fail.
         }
         return { success: false, error: e.message || 'An unexpected error occurred.' };
     }
 }
 
-
-// Order Status Action
-export async function updateOrderStatus(orderId: string, status: OrderStatus, dispatcherId?: string) {
-    try {
-        const session = await getServerSession();
-        if (!session) {
-            return { success: false, error: 'Unauthorized' };
-        }
-
-        const orderRef = doc(db, 'orders', orderId);
-        
-        let updateData: { status: OrderStatus; dispatcherId?: string } = { status };
-
-        // Handle dispatcher assignment when moving to 'preparing'
-        if (status === 'preparing') {
-             if (dispatcherId) {
-                updateData.dispatcherId = dispatcherId;
-            } else {
-                // Fetch available dispatchers and assign one randomly
-                const q = query(collection(db, 'dispatchers'), where('status', '==', 'available'));
-                const querySnapshot = await getDocsFromFirestore(q);
-                const availableDispatchers = querySnapshot.docs.map(d => d.id);
-
-                if (availableDispatchers.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * availableDispatchers.length);
-                    updateData.dispatcherId = availableDispatchers[randomIndex];
-                } else {
-                    console.warn('No available dispatchers to assign.');
-                    // Don't assign a dispatcher if none are available
-                }
-            }
-        }
-        
-        await updateDoc(orderRef, updateData);
-
-        revalidatePath(`/vendor/orders`);
-        revalidatePath(`/vendor/orders/${orderId}`);
-        revalidatePath(`/dispatcher`);
-        revalidatePath(`/orders/${orderId}`);
-        revalidatePath('/admin');
-
-        return { success: true, message: `Order status updated to ${status}.` };
-    } catch (e: any) {
-        return { success: false, error: e.message };
-    }
-}
-
-
 // Vendor Actions
 export async function createVendor(data: Omit<Vendor, 'id' | 'products'>) {
     try {
-        await addDoc(collection(db, 'vendors'), data);
+        const session = await getServerSession();
+        if (!session || session.user.role !== 'admin') {
+            throw new Error('Unauthorized');
+        }
+
+        const vendorData = { ...data, products: [] };
+        await addDoc(collection(db, 'vendors'), vendorData);
         revalidatePath('/admin/vendors');
         return { success: true, message: 'Vendor created successfully.' };
     } catch (e: any) {
@@ -352,6 +309,11 @@ export async function createVendor(data: Omit<Vendor, 'id' | 'products'>) {
 
 export async function updateVendor(id: string, data: Partial<Omit<Vendor, 'id' | 'products'>>) {
     try {
+        const session = await getServerSession();
+        if (!session || (session.user.role !== 'admin' && session.vendorId !== id)) {
+            throw new Error('Unauthorized');
+        }
+
         await updateDoc(doc(db, 'vendors', id), data);
         revalidatePath('/admin/vendors');
         revalidatePath(`/browse/vendors/${id}`);
@@ -364,11 +326,76 @@ export async function updateVendor(id: string, data: Partial<Omit<Vendor, 'id' |
 
 export async function deleteVendor(id: string) {
     try {
-        // Note: In a real app, you might want to handle what happens to products of a deleted vendor.
+         const session = await getServerSession();
+        if (!session || session.user.role !== 'admin') {
+            throw new Error('Unauthorized');
+        }
         await deleteDoc(doc(db, 'vendors', id));
+        // Also delete associated products
+        const productsQuery = query(collection(db, 'products'), where('vendorId', '==', id));
+        const productsSnapshot = await getDocsFromFirestore(productsQuery);
+        const batch = writeBatch(db);
+        productsSnapshot.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+
         revalidatePath('/admin/vendors');
-        revalidatePath('/browse');
         return { success: true, message: 'Vendor deleted successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+// Product Actions
+export async function createProduct(data: Omit<Product, 'id'>) {
+    try {
+        const session = await getServerSession();
+        if (!session || (session.user.role !== 'admin' && session.vendorId !== data.vendorId)) {
+            throw new Error('Unauthorized');
+        }
+
+        await addDoc(collection(db, 'products'), data);
+        revalidatePath('/vendor/products');
+        revalidatePath('/admin/vendors');
+        return { success: true, message: 'Product created successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function updateProduct(id: string, data: Partial<Product>) {
+    try {
+        const session = await getServerSession();
+        const product = await getDoc(doc(db, 'products', id));
+        if(!product.exists()) throw new Error('Product not found');
+
+        const productData = product.data();
+        if (!session || (session.user.role !== 'admin' && session.vendorId !== productData.vendorId)) {
+            throw new Error('Unauthorized');
+        }
+        await updateDoc(doc(db, 'products', id), data);
+        revalidatePath('/vendor/products');
+        revalidatePath('/admin/vendors');
+        return { success: true, message: 'Product updated successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function deleteProduct(id: string) {
+    try {
+        const session = await getServerSession();
+        const product = await getDoc(doc(db, 'products', id));
+        if(!product.exists()) throw new Error('Product not found');
+
+        const productData = product.data();
+        if (!session || (session.user.role !== 'admin' && session.vendorId !== productData.vendorId)) {
+            throw new Error('Unauthorized');
+        }
+
+        await deleteDoc(doc(db, 'products', id));
+        revalidatePath('/vendor/products');
+        revalidatePath('/admin/vendors');
+        return { success: true, message: 'Product deleted successfully.' };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
@@ -377,18 +404,24 @@ export async function deleteVendor(id: string) {
 // Dispatcher Actions
 export async function createDispatcher(data: Omit<Dispatcher, 'id'>) {
     try {
-        // In a real app, you might want to create an associated user account.
-        // For now, this just creates the dispatcher profile.
-        const docRef = await addDoc(collection(db, 'dispatchers'), data);
+        const session = await getServerSession();
+        if (!session || session.user.role !== 'admin') {
+            throw new Error('Unauthorized');
+        }
+        await addDoc(collection(db, 'dispatchers'), data);
         revalidatePath('/admin/riders');
-        return { success: true, message: 'Dispatcher created successfully.', dispatcherId: docRef.id };
+        return { success: true, message: 'Dispatcher created successfully.' };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
 }
 
-export async function updateDispatcher(id: string, data: Partial<Omit<Dispatcher, 'id'>>) {
+export async function updateDispatcher(id: string, data: Partial<Dispatcher>) {
     try {
+         const session = await getServerSession();
+        if (!session || session.user.role !== 'admin') {
+            throw new Error('Unauthorized');
+        }
         await updateDoc(doc(db, 'dispatchers', id), data);
         revalidatePath('/admin/riders');
         return { success: true, message: 'Dispatcher updated successfully.' };
@@ -399,6 +432,10 @@ export async function updateDispatcher(id: string, data: Partial<Omit<Dispatcher
 
 export async function deleteDispatcher(id: string) {
     try {
+         const session = await getServerSession();
+        if (!session || session.user.role !== 'admin') {
+            throw new Error('Unauthorized');
+        }
         await deleteDoc(doc(db, 'dispatchers', id));
         revalidatePath('/admin/riders');
         return { success: true, message: 'Dispatcher deleted successfully.' };
@@ -407,132 +444,129 @@ export async function deleteDispatcher(id: string) {
     }
 }
 
-// Product Actions
-export async function createProduct(data: Omit<Product, 'id'>) {
+// Order Status
+export async function updateOrderStatus(orderId: string, status: OrderStatus, dispatcherId?: string) {
     try {
-        await addDoc(collection(db, 'products'), data);
-        revalidatePath('/vendor/products');
-        return { success: true, message: 'Product created successfully.' };
+        const orderRef = doc(db, 'orders', orderId);
+        const updateData: any = { status };
+        
+        // This is the main logic for dispatcher assignment
+        if (status === 'preparing' && dispatcherId) {
+            updateData.dispatcherId = dispatcherId;
+            // Also update the dispatcher's status to 'on-delivery'
+            const dispatcherRef = doc(db, 'dispatchers', dispatcherId);
+            await updateDoc(dispatcherRef, { status: 'on-delivery' });
+            revalidatePath('/admin/riders');
+        }
+
+        // When order is delivered or cancelled, make dispatcher available again
+        if (status === 'delivered' || status === 'cancelled') {
+            const orderSnap = await getDoc(orderRef);
+            const order = orderSnap.data() as Order;
+            if (order.dispatcherId) {
+                 const dispatcherRef = doc(db, 'dispatchers', order.dispatcherId);
+                 // Only update if dispatcher is not busy with another order.
+                 // This is a simplification; a real app would need more robust logic
+                 // to track multiple concurrent deliveries.
+                 await updateDoc(dispatcherRef, { status: 'available', completedDispatches: (await getDoc(dispatcherRef)).data()?.completedDispatches + 1 });
+                 revalidatePath('/admin/riders');
+            }
+        }
+
+
+        await updateDoc(orderRef, updateData);
+
+        revalidatePath(`/orders/${orderId}`);
+        revalidatePath(`/vendor/orders`);
+        revalidatePath(`/vendor/orders/${orderId}`);
+        revalidatePath('/dispatcher');
+        revalidatePath('/admin');
+        return { success: true };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
 }
 
-export async function updateProduct(id: string, data: Partial<Omit<Product, 'id'>>) {
-    try {
-        await updateDoc(doc(db, 'products', id), data);
-        revalidatePath('/vendor/products');
-        return { success: true, message: 'Product updated successfully.' };
-    } catch (e: any) {
-        return { success: false, error: e.message };
-    }
-}
+export async function rateDispatcher(orderId: string, dispatcherId: string, rating: number) {
+  try {
+    const session = await getServerSession();
+    const orderRef = doc(db, 'orders', orderId);
+    const orderSnap = await getDoc(orderRef);
+    const orderData = orderSnap.data() as Order;
 
-export async function deleteProduct(id: string) {
-    try {
-        await deleteDoc(doc(db, 'products', id));
-        revalidatePath('/vendor/products');
-        return { success: true, message: 'Product deleted successfully.' };
-    } catch (e: any) {
-        return { success: false, error: e.message };
+    if (!session || session.user.id !== orderData.userId) {
+      throw new Error('Unauthorized');
     }
+    if (orderData.dispatcherRating) {
+      throw new Error('This order has already been rated.');
+    }
+    
+    // Update the rating on the order itself
+    await updateDoc(orderRef, { dispatcherRating: rating });
+
+    // Update the dispatcher's average rating
+    const dispatcherRef = doc(db, 'dispatchers', dispatcherId);
+    await runTransaction(db, async (transaction) => {
+      const dispatcherSnap = await transaction.get(dispatcherRef);
+      if (!dispatcherSnap.exists()) {
+        throw new Error("Dispatcher not found!");
+      }
+      const dispatcherData = dispatcherSnap.data() as Dispatcher;
+      const oldRating = dispatcherData.rating || 0;
+      const completedDispatches = dispatcherData.completedDispatches || 0;
+      
+      const newTotalRatingPoints = (oldRating * completedDispatches) + rating;
+      const newAverageRating = newTotalRatingPoints / (completedDispatches + 1);
+
+      transaction.update(dispatcherRef, { rating: newAverageRating });
+    });
+
+
+    revalidatePath(`/orders/${orderId}`);
+    revalidatePath('/dispatcher');
+
+    return { success: true };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
 }
 
 
 // Chat Actions
-type SendMessageData = {
-    orderId: string;
-    text: string;
-    senderId: string;
-    senderName: string;
-    senderRole: 'user' | 'vendor' | 'dispatcher';
-}
-
-export async function sendMessage(data: SendMessageData) {
+export async function sendMessage(data: Omit<ChatMessage, 'id' | 'timestamp'>) {
     try {
         const { orderId, ...messageData } = data;
+        if (!orderId) {
+            throw new Error('Order ID is required to send a message.');
+        }
         const message = {
             ...messageData,
             timestamp: Timestamp.now(),
         };
         await addDoc(collection(db, `orders/${orderId}/messages`), message);
-        
-        // No revalidation needed as we are using real-time listeners on the client
         return { success: true };
     } catch (e: any) {
-        console.error("Error sending message:", e);
         return { success: false, error: e.message };
     }
 }
 
 export async function getMessages(orderId: string): Promise<ChatMessage[]> {
     try {
-        const messagesCol = collection(db, `orders/${orderId}/messages`);
-        const q = query(messagesCol, orderBy('timestamp', 'asc'));
+        if (!orderId) return [];
+        const q = query(collection(db, `orders/${orderId}/messages`), orderBy('timestamp', 'asc'));
         const querySnapshot = await getDocsFromFirestore(q);
-
         return querySnapshot.docs.map(doc => {
-             const data = doc.data();
-             return {
+            const data = doc.data();
+            return {
                 id: doc.id,
                 ...data,
                 timestamp: data.timestamp.toDate().toISOString(),
-             } as ChatMessage
+            } as ChatMessage;
         });
     } catch (e: any) {
-        console.error("Error fetching messages:", e);
+        console.error("Error getting messages:", e);
         return [];
     }
 }
 
-
-export async function rateDispatcher(orderId: string, dispatcherId: string, rating: number) {
-    try {
-        const orderRef = doc(db, 'orders', orderId);
-        const dispatcherRef = doc(db, 'dispatchers', dispatcherId);
-
-        await runTransaction(db, async (transaction) => {
-            const orderDoc = await transaction.get(orderRef);
-            const dispatcherDoc = await transaction.get(dispatcherRef);
-
-            if (!orderDoc.exists() || !dispatcherDoc.exists()) {
-                throw new Error("Order or Dispatcher not found.");
-            }
-
-            const orderData = orderDoc.data() as Order;
-            if (orderData.dispatcherRating) {
-                throw new Error("This order has already been rated.");
-            }
-
-            const dispatcherData = dispatcherDoc.data() as Dispatcher;
-
-            // Calculate new average rating
-            const currentRatingTotal = dispatcherData.rating * dispatcherData.completedDispatches;
-            const newCompletedDispatches = dispatcherData.completedDispatches + 1;
-            const newAverageRating = (currentRatingTotal + rating) / newCompletedDispatches;
-
-            // Update dispatcher
-            transaction.update(dispatcherRef, {
-                rating: newAverageRating,
-                // In a real app, you might want to increment completed dispatches when the order is 'delivered',
-                // not when rated, but this is fine for the demo.
-            });
-
-            // Update order to mark as rated
-            transaction.update(orderRef, {
-                dispatcherRating: rating,
-            });
-        });
-        
-        revalidatePath(`/orders/${orderId}`);
-        revalidatePath('/dispatcher');
-        revalidatePath('/admin/riders');
-
-        return { success: true, message: "Thank you for your feedback!" };
-
-    } catch (e: any) {
-        console.error("Error rating dispatcher:", e);
-        return { success: false, error: e.message || "An unexpected error occurred." };
-    }
-}
     

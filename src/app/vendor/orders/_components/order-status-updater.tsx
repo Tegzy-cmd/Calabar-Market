@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useTransition } from 'react';
@@ -50,11 +49,11 @@ export function OrderStatusUpdater({ order, role }: OrderStatusUpdaterProps) {
       action: () => handleUpdateStatus('dispatched')
     },
     { 
-      status: 'delivered', 
+      status: 'awaiting-confirmation', 
       label: 'Mark as Delivered', 
       icon: <Check className="mr-2 h-4 w-4" />, 
       condition: order.status === 'dispatched',
-      action: () => handleUpdateStatus('delivered')
+      action: () => handleUpdateStatus('awaiting-confirmation')
     },
   ];
 
