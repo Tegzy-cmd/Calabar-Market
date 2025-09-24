@@ -293,7 +293,7 @@ export async function createDispatcherAndUser(data: {
 
 
 // Order Status Action
-export async function updateOrderStatus(orderId: string, status: OrderStatus) {
+export async function updateOrderStatus(orderId: string, status: OrderStatus, dispatcherId?: string) {
     try {
         const session = await getServerSession();
         if (!session) {
@@ -301,42 +301,15 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
         }
 
         const orderRef = doc(db, 'orders', orderId);
-        const orderSnap = await getDoc(orderRef);
-        if (!orderSnap.exists()) {
-             return { success: false, error: 'Order not found.' };
-        }
-        const orderData = orderSnap.data();
+        
+        let updateData: { status: OrderStatus; dispatcherId?: string } = { status };
 
-        // Automatic dispatcher assignment logic
-        if (status === 'preparing' && session.user.role === 'vendor' && !orderData.dispatcherId) {
-            
-            const allDispatchers = await getDispatchers();
-            const availableDispatchers = allDispatchers.filter(d => d.status === 'available');
-
-            if (availableDispatchers.length > 0) {
-                const randomIndex = Math.floor(Math.random() * availableDispatchers.length);
-                const assignedDispatcher = availableDispatchers[randomIndex];
-                
-                await updateDoc(orderRef, { status: 'preparing', dispatcherId: assignedDispatcher.id });
-            } else {
-                // No available dispatchers, just update status
-                await updateDoc(orderRef, { status: 'preparing' });
-                console.warn("Order marked as preparing, but no dispatchers are available.");
-            }
-
-        } else if (status === 'preparing') {
-             await updateDoc(orderRef, { status: 'preparing' });
-        } else {
-            // For all other status updates
-            await updateDoc(orderRef, { status });
+        // If a dispatcher is being assigned, add it to the update.
+        if (status === 'preparing' && dispatcherId) {
+            updateData.dispatcherId = dispatcherId;
         }
         
-        // If dispatcher marks as delivered, update their status to available
-        if (status === 'delivered' && session.user.role === 'dispatcher' && orderData.dispatcherId) {
-            // Logic to set dispatcher status can be removed if status is derived
-            // from active orders instead of being stored on the dispatcher document.
-        }
-
+        await updateDoc(orderRef, updateData);
 
         revalidatePath(`/vendor/orders`);
         revalidatePath(`/vendor/orders/${orderId}`);

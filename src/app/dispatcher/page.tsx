@@ -15,6 +15,7 @@ import { MapPin, Store, Check, Bike, Star, Wallet } from "lucide-react";
 import { OrderStatusUpdater } from "../vendor/orders/_components/order-status-updater";
 import { isToday, parseISO } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 
 const getStatusColor = (status: OrderStatus) => {
     switch (status) {
@@ -36,6 +37,8 @@ const getStatusColor = (status: OrderStatus) => {
 export default function DispatcherDashboardPage() {
     const { appUser, loading } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
+    const { toast } = useToast();
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
 
     useEffect(() => {
         if (loading) return;
@@ -48,31 +51,47 @@ export default function DispatcherDashboardPage() {
         if (!appUser.dispatcherId) return;
 
         const ordersRef = collection(db, 'orders');
-        // Using 'in' is more scalable and often avoids needing custom indexes for simple cases.
-        // Instead of '!=', we specify the statuses we *do* want.
         const q = query(
             ordersRef, 
             where('dispatcherId', '==', appUser.dispatcherId),
-            where('status', 'in', ['placed', 'preparing', 'dispatched', 'delivered'])
+            where('status', 'in', ['preparing', 'dispatched', 'delivered'])
         );
 
         const unsubscribe = onSnapshot(q, async (snapshot) => {
             const fetchedOrders: Order[] = await Promise.all(
                 snapshot.docs.map(doc => processOrderDoc(doc))
             );
-            setOrders(fetchedOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+            
+            const sortedOrders = fetchedOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+            // Check for new assignments on subsequent snapshots
+            if (!isInitialLoad) {
+                const newAssignments = sortedOrders.filter(newOrder => 
+                    !orders.some(oldOrder => oldOrder.id === newOrder.id) && newOrder.status === 'preparing'
+                );
+
+                if (newAssignments.length > 0) {
+                    toast({
+                        title: "New Delivery Task!",
+                        description: `You have been assigned a new order #${newAssignments[0].id.substring(0,7)} from ${newAssignments[0].vendor.name}.`,
+                    });
+                }
+            }
+            
+            setOrders(sortedOrders);
+            setIsInitialLoad(false);
         });
 
         // Cleanup subscription on unmount
         return () => unsubscribe();
-    }, [appUser, loading]);
+    }, [appUser, loading, toast, orders, isInitialLoad]);
 
 
     if (loading || !appUser || !appUser.dispatcherId) {
         return <p>Loading dashboard...</p>
     }
 
-    const activeOrders = orders.filter(o => o.status === 'dispatched' || o.status === 'preparing' || o.status === 'placed');
+    const activeOrders = orders.filter(o => o.status === 'dispatched' || o.status === 'preparing');
     const completedOrders = orders.filter(o => o.status === 'delivered');
     const completedToday = completedOrders.filter(o => isToday(parseISO(o.createdAt))).length;
     const earningsToday = completedToday * 300; // Assume ₦300 per delivery

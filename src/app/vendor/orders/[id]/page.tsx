@@ -7,9 +7,9 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Phone, Clock, CheckCircle2, MessageSquare } from "lucide-react";
+import { User, MapPin, Phone, Clock, CheckCircle2, MessageSquare, AlertCircle } from "lucide-react";
 import type { OrderStatus, Order as OrderType, Product, OrderItem } from "@/lib/types";
-import { OrderStatusUpdater } from "../_components/order-status-updater";
+import { OrderActions } from "../_components/order-actions";
 import { cn } from "@/lib/utils";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { useParams } from "next/navigation";
@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { ChatRoom } from "@/components/shared/chat-room";
 import { useUnreadMessages } from "@/hooks/use-unread-messages";
 import { db, onSnapshot, doc } from '@/lib/firebase';
+import { OrderStatusUpdater } from "../_components/order-status-updater";
 
 
 const getStatusColor = (status: OrderStatus) => {
@@ -43,6 +44,7 @@ export default function VendorOrderDetailPage() {
   const [order, setOrder] = useState<OrderType | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { hasUnread, resetUnread } = useUnreadMessages(id, 'vendor');
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   
   useEffect(() => {
     if (!id) return;
@@ -117,6 +119,7 @@ export default function VendorOrderDetailPage() {
         onOpenChange={setIsChatOpen}
         title={`Chat with ${order.user.name}`}
       />
+      <OrderActions order={order} isOpen={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen} />
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-headline font-bold">Order #{id.substring(0,7)}</h1>
@@ -199,7 +202,7 @@ export default function VendorOrderDetailPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Dispatcher</CardTitle>
-                    <CardDescription>Dispatcher assignment is now automated.</CardDescription>
+                    <CardDescription>Assign a dispatcher when the order is ready.</CardDescription>
                 </CardHeader>
                 <CardContent>
                    {order.dispatcher ? (
@@ -211,11 +214,11 @@ export default function VendorOrderDetailPage() {
                             </div>
                         </div>
                    ) : (
-                        <Alert>
-                            <CheckCircle2 className="h-4 w-4" />
-                            <AlertTitle>Assignment Pending</AlertTitle>
+                        <Alert variant="destructive">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>No Dispatcher Assigned</AlertTitle>
                             <AlertDescription>
-                                A dispatcher will be assigned when you mark the order as 'preparing'.
+                                Mark the order as 'preparing' to assign a dispatcher.
                             </AlertDescription>
                         </Alert>
                    )}
