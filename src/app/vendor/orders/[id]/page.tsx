@@ -2,14 +2,14 @@
 import { getOrderById, getDispatchers } from "@/lib/data";
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Phone, Clock } from "lucide-react";
-import { AssignDispatcherTool } from "./_components/assign-rider-tool";
-import type { Dispatcher, OrderStatus } from "@/lib/types";
+import { User, MapPin, Phone, Clock, CheckCircle2 } from "lucide-react";
+import type { OrderStatus } from "@/lib/types";
 import { OrderStatusUpdater } from "../_components/order-status-updater";
 import { cn } from "@/lib/utils";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 const getStatusColor = (status: OrderStatus) => {
     switch (status) {
@@ -30,14 +30,11 @@ const getStatusColor = (status: OrderStatus) => {
 
 export default async function VendorOrderDetailPage({ params }: { params: { id: string } }) {
   const order = await getOrderById(params.id);
-  const allDispatchers = await getDispatchers();
 
   if (!order) {
     notFound();
   }
   
-  const availableDispatchers = allDispatchers.filter((r: Dispatcher) => r.status === 'available');
-
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-start">
@@ -109,7 +106,31 @@ export default async function VendorOrderDetailPage({ params }: { params: { id: 
                 </CardContent>
             </Card>
 
-            <AssignDispatcherTool order={order} allDispatchers={allDispatchers} />
+            <Card>
+                <CardHeader>
+                    <CardTitle>Dispatcher</CardTitle>
+                    <CardDescription>Dispatcher assignment is now automated.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                   {order.dispatcher ? (
+                        <div className="flex items-center gap-4">
+                            <Image src={order.dispatcher.avatarUrl} alt={order.dispatcher.name} width={50} height={50} className="rounded-full" />
+                            <div>
+                                <p className="font-bold">{order.dispatcher.name}</p>
+                                <p className="text-sm text-muted-foreground">{order.dispatcher.vehicle}</p>
+                            </div>
+                        </div>
+                   ) : (
+                        <Alert>
+                            <CheckCircle2 className="h-4 w-4" />
+                            <AlertTitle>Assignment Pending</AlertTitle>
+                            <AlertDescription>
+                                A dispatcher will be automatically assigned when you mark the order as 'preparing'.
+                            </AlertDescription>
+                        </Alert>
+                   )}
+                </CardContent>
+            </Card>
 
         </div>
       </div>

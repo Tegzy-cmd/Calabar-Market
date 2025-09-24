@@ -1,10 +1,6 @@
 
 'use server';
 
-import {
-  assignBestDeliveryDispatcher,
-  type AssignBestDeliveryDispatcherInput,
-} from '@/ai/flows/assign-best-delivery-rider';
 import { auth, db } from './firebase';
 import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp, collectionGroup, getDocs as getDocsFromFirestore } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
@@ -45,37 +41,6 @@ export async function createOrder(orderData: CreateOrderData) {
         return { success: false, error: e.message || 'An unexpected error occurred.' };
     }
 }
-
-
-export async function handleAssignDispatcher(input: AssignBestDeliveryDispatcherInput) {
-  try {
-    const result = await assignBestDeliveryDispatcher(input);
-    return { data: result };
-  } catch (e: any) {
-    console.error(e);
-    return { error: e.message || "An unexpected error occurred." };
-  }
-}
-
-export async function confirmDispatcherAssignment(orderId: string, dispatcherId: string) {
-    try {
-        const session = await getServerSession();
-        if (!session || (session.user.role !== 'vendor' && session.user.role !== 'admin')) {
-            return { success: false, error: 'Unauthorized' };
-        }
-
-        await updateDoc(doc(db, 'orders', orderId), {
-            dispatcherId,
-        });
-
-        revalidatePath(`/vendor/orders/${orderId}`);
-        revalidatePath(`/admin`); // Revalidate admin dashboard
-        return { success: true, message: 'Dispatcher assigned successfully.' };
-    } catch (e: any) {
-        return { success: false, error: e.message };
-    }
-}
-
 
 export async function seedDatabase() {
   try {
@@ -278,18 +243,11 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
             const availableDispatchers = allDispatchers.filter(d => d.status === 'available');
 
             if (availableDispatchers.length > 0) {
-                const assignmentResult = await assignBestDeliveryDispatcher({
-                    orderId: orderId,
-                    vendorId: orderData.vendorId,
-                    deliveryLocation: orderData.deliveryAddress,
-                    eligibleDispatcherIds: availableDispatchers.map(d => d.id),
-                });
+                // Randomly select a dispatcher
+                const randomIndex = Math.floor(Math.random() * availableDispatchers.length);
+                const assignedDispatcherId = availableDispatchers[randomIndex].id;
                 
-                if (assignmentResult.dispatcherId) {
-                    await updateDoc(orderRef, { status, dispatcherId: assignmentResult.dispatcherId });
-                } else {
-                     await updateDoc(orderRef, { status });
-                }
+                await updateDoc(orderRef, { status, dispatcherId: assignedDispatcherId });
             } else {
                  await updateDoc(orderRef, { status });
             }
