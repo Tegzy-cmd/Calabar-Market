@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCart } from '@/hooks/use-cart';
-import { CreditCard, Lock, Calendar, AlertCircle } from 'lucide-react';
+import { CreditCard, Lock, Calendar, AlertCircle, Loader } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/use-auth';
 import { createOrder } from '@/lib/actions';
@@ -126,7 +126,14 @@ export default function PaymentPage() {
               </CardContent>
               <CardFooter>
                 <Button type="submit" className="w-full" disabled={isProcessing}>
-                  {isProcessing ? 'Processing...' : `Pay ₦${grandTotal.toFixed(2)}`}
+                  {isProcessing ? (
+                    <>
+                      <Loader className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    `Pay ₦${grandTotal.toFixed(2)}`
+                  )}
                 </Button>
               </CardFooter>
             </form>
