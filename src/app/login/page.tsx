@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,23 +16,55 @@ import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 import { ArrowLeft } from "lucide-react";
 import { auth } from '@/lib/firebase';
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { useRouter } from "next/navigation";
+import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/hooks/use-auth';
 
 export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isPending, setIsPending] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { syncUser } = useAuth();
+  const redirectUrl = searchParams.get('redirect') || '/browse';
 
-  const handleGoogleLogin = async () => {
-    const provider = new GoogleAuthProvider();
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsPending(true);
     try {
-      await signInWithPopup(auth, provider);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      await syncUser(userCredential.user);
       toast({
         title: "Logged in successfully!",
         description: "Welcome back.",
       });
-      router.push('/browse');
+      router.push(redirectUrl);
+    } catch (error: any) {
+      console.error("Error during email login:", error);
+      toast({
+        title: "Login Failed",
+        description: error.message || "There was a problem with your login.",
+        variant: "destructive",
+      });
+    } finally {
+        setIsPending(false);
+    }
+  };
+
+
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      await syncUser(result.user);
+      toast({
+        title: "Logged in successfully!",
+        description: "Welcome back.",
+      });
+      router.push(redirectUrl);
     } catch (error) {
       console.error("Error during Google login:", error);
       toast({
@@ -61,7 +94,7 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
+          <form onSubmit={handleEmailLogin} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -69,6 +102,9 @@ export default function LoginPage() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isPending}
               />
             </div>
             <div className="grid gap-2">
@@ -81,15 +117,22 @@ export default function LoginPage() {
                   Forgot your password?
                 </Link>
               </div>
-              <Input id="password" type="password" required />
+              <Input 
+                id="password" 
+                type="password" 
+                required 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isPending}
+              />
             </div>
-            <Button type="submit" className="w-full font-bold">
-              Login
+            <Button type="submit" className="w-full font-bold" disabled={isPending}>
+              {isPending ? 'Logging in...' : 'Login'}
             </Button>
+            </form>
             <Button variant="outline" className="w-full" onClick={handleGoogleLogin}>
               Login with Google
             </Button>
-          </div>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}
             <Link href="/signup" className="underline text-primary font-medium">

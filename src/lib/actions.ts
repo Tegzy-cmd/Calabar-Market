@@ -7,10 +7,11 @@ import {
   type AssignBestDeliveryDispatcherInput,
 } from '@/ai/flows/assign-best-delivery-rider';
 import { db } from './firebase';
-import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc } from 'firebase/firestore';
 import { users, vendors, products, dispatchers, orders } from './data';
 import type { User, Vendor, Dispatcher } from './types';
 import { revalidatePath } from 'next/cache';
+import { placeholderImages } from './placeholder-images';
 
 
 export async function handleAssignDispatcher(input: AssignBestDeliveryDispatcherInput) {
@@ -78,6 +79,8 @@ export async function seedDatabase() {
 
     await batch.commit();
 
+    revalidatePath('/', 'layout');
+
     return { success: true, message: 'Database seeded successfully!' };
   } catch (e: any) {
     console.error("Error seeding database:", e);
@@ -93,10 +96,40 @@ export async function createUser(data: Omit<User, 'id'>) {
         revalidatePath('/admin/users');
         revalidatePath('/checkout');
         return { success: true, message: 'User created successfully.' };
-    } catch (e: any) {
+    } catch (e: any) => {
         return { success: false, error: e.message };
     }
 }
+
+export async function getOrCreateUser(
+  id: string,
+  data: Omit<User, 'id' | 'role'>
+): Promise<{ success: boolean; data?: User; error?: string }> {
+  try {
+    const userRef = doc(db, 'users', id);
+    const userSnap = await getDoc(userRef);
+
+    if (userSnap.exists()) {
+      const user = { id: userSnap.id, ...userSnap.data() } as User;
+      return { success: true, data: user };
+    } else {
+      const newUser: User = {
+        id,
+        ...data,
+        role: 'user',
+        avatarUrl: data.avatarUrl || placeholderImages.find(p => p.id === 'user-avatar-1')?.imageUrl || '',
+        addresses: [],
+      };
+      await setDoc(userRef, newUser);
+      revalidatePath('/admin/users');
+      return { success: true, data: newUser };
+    }
+  } catch (e: any) {
+    console.error("Error in getOrCreateUser:", e);
+    return { success: false, error: e.message };
+  }
+}
+
 
 export async function updateUser(id: string, data: Partial<User>) {
     try {
@@ -115,7 +148,7 @@ export async function deleteUser(id: string) {
         revalidatePath('/admin/users');
         revalidatePath('/checkout');
         return { success: true, message: 'User deleted successfully.' };
-    } catch (e: any) {
+    } catch (e: any) => {
         return { success: false, error: e.message };
     }
 }
@@ -126,7 +159,7 @@ export async function createVendor(data: Omit<Vendor, 'id' | 'products'>) {
         await addDoc(collection(db, 'vendors'), data);
         revalidatePath('/admin/vendors');
         return { success: true, message: 'Vendor created successfully.' };
-    } catch (e: any) {
+    } catch (e: any) => {
         return { success: false, error: e.message };
     }
 }
@@ -160,7 +193,7 @@ export async function createDispatcher(data: Omit<Dispatcher, 'id'>) {
         await addDoc(collection(db, 'dispatchers'), data);
         revalidatePath('/admin/riders');
         return { success: true, message: 'Dispatcher created successfully.' };
-    } catch (e: any) {
+    } catch (e: any) => {
         return { success: false, error: e.message };
     }
 }
@@ -170,7 +203,7 @@ export async function updateDispatcher(id: string, data: Partial<Omit<Dispatcher
         await updateDoc(doc(db, 'dispatchers', id), data);
         revalidatePath('/admin/riders');
         return { success: true, message: 'Dispatcher updated successfully.' };
-    } catch (e: any) {
+    } catch (e: any) => {
         return { success: false, error: e.message };
     }
 }
@@ -180,7 +213,7 @@ export async function deleteDispatcher(id: string) {
         await deleteDoc(doc(db, 'dispatchers', id));
         revalidatePath('/admin/riders');
         return { success: true, message: 'Dispatcher deleted successfully.' };
-    } catch (e: any) {
+    } catch (e: any) => {
         return { success: false, error: e.message };
     }
 }
