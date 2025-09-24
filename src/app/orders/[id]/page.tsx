@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { notFound, useParams } from "next/navigation";
@@ -14,9 +15,9 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChatRoom } from "@/components/shared/chat-room";
 import { useUnreadMessages } from '@/hooks/use-unread-messages';
-import { db, onSnapshot, doc } from '@/lib/firebase';
+import { db, onSnapshot, doc, getDocs, collection, query, where, getDoc } from '@/lib/firebase';
 import type { Product, Dispatcher, User as UserType, Vendor } from '@/lib/types';
-import { getDoc } from 'firebase/firestore';
+import { DispatcherRating } from "@/components/shared/dispatcher-rating";
 
 
 const getStatusColor = (status: OrderStatus) => {
@@ -50,6 +51,7 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<OrderType | null>(null);
   const [isVendorChatOpen, setIsVendorChatOpen] = useState(false);
   const [isDispatcherChatOpen, setIsDispatcherChatOpen] = useState(false);
+  const [isRatingOpen, setIsRatingOpen] = useState(false);
   const { hasUnread: hasUnreadVendor, resetUnread: resetUnreadVendor } = useUnreadMessages(id, 'vendor');
   const { hasUnread: hasUnreadDispatcher, resetUnread: resetUnreadDispatcher } = useUnreadMessages(id, 'dispatcher');
   
@@ -60,7 +62,7 @@ export default function OrderDetailPage() {
   
     const unsubscribe = onSnapshot(orderRef, async (docSnap) => {
       if (docSnap.exists()) {
-        const orderData = { id: docSnap.id, ...docSnap.data() };
+        const orderData = { id: docSnap.id, ...docSnap.data() } as any;
   
         const [user, vendor, items] = await Promise.all([
           getDoc(doc(db, 'users', orderData.userId)).then(d => d.exists() ? { id: d.id, ...d.data() } as UserType : null),
@@ -135,14 +137,22 @@ export default function OrderDetailPage() {
         title={`Chat with ${order.vendor.name}`}
       />
       {order.dispatcher && (
-        <ChatRoom 
-            orderId={order.id}
-            currentUserRole="user"
-            otherUserRole="dispatcher"
-            isOpen={isDispatcherChatOpen}
-            onOpenChange={setIsDispatcherChatOpen}
-            title={`Chat with ${order.dispatcher.name}`}
-        />
+        <>
+            <ChatRoom 
+                orderId={order.id}
+                currentUserRole="user"
+                otherUserRole="dispatcher"
+                isOpen={isDispatcherChatOpen}
+                onOpenChange={setIsDispatcherChatOpen}
+                title={`Chat with ${order.dispatcher.name}`}
+            />
+             <DispatcherRating
+                orderId={order.id}
+                dispatcherId={order.dispatcher.id}
+                isOpen={isRatingOpen}
+                onOpenChange={setIsRatingOpen}
+            />
+        </>
       )}
       <main className="flex-1 container mx-auto px-4 md:px-6 py-8">
       <div className="space-y-8">
@@ -296,6 +306,28 @@ export default function OrderDetailPage() {
                                 <div className="flex items-center gap-3 pt-2 border-t mt-4">
                                     <Phone className="w-5 h-5 text-muted-foreground"/>
                                     <a href={`tel:${order.dispatcher.phoneNumber}`} className="text-sm text-primary hover:underline">{order.dispatcher.phoneNumber}</a>
+                                </div>
+                            )}
+                            {order.status === 'delivered' && (
+                                <div className="pt-4 border-t mt-4">
+                                    {order.dispatcherRating ? (
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm text-muted-foreground">You rated:</p>
+                                            <div className="flex items-center">
+                                                {[...Array(order.dispatcherRating)].map((_, i) => (
+                                                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                                                ))}
+                                                {[...Array(5 - order.dispatcherRating)].map((_, i) => (
+                                                     <Star key={i} className="w-5 h-5 text-gray-300" />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <Button className="w-full" onClick={() => setIsRatingOpen(true)}>
+                                            <Star className="mr-2 h-4 w-4" />
+                                            Rate Dispatcher
+                                        </Button>
+                                    )}
                                 </div>
                             )}
                         </CardContent>

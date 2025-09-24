@@ -1,9 +1,8 @@
 
-
 'use server';
 
 import { auth, db } from './firebase';
-import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp, collectionGroup, getDocs as getDocsFromFirestore, query, where, orderBy } from 'firebase/firestore';
+import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp, collectionGroup, getDocs as getDocsFromFirestore, query, where, orderBy, runTransaction } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { users, vendors, products, dispatchers as mockDispatchers, orders } from './data';
 import type { User, Vendor, Dispatcher, Product, OrderStatus, ChatMessage, DispatcherVehicle, Order } from './types';
@@ -487,6 +486,53 @@ export async function getMessages(orderId: string): Promise<ChatMessage[]> {
 }
 
 
+export async function rateDispatcher(orderId: string, dispatcherId: string, rating: number) {
+    try {
+        const orderRef = doc(db, 'orders', orderId);
+        const dispatcherRef = doc(db, 'dispatchers', dispatcherId);
 
+        await runTransaction(db, async (transaction) => {
+            const orderDoc = await transaction.get(orderRef);
+            const dispatcherDoc = await transaction.get(dispatcherRef);
 
+            if (!orderDoc.exists() || !dispatcherDoc.exists()) {
+                throw new Error("Order or Dispatcher not found.");
+            }
+
+            const orderData = orderDoc.data() as Order;
+            if (orderData.dispatcherRating) {
+                throw new Error("This order has already been rated.");
+            }
+
+            const dispatcherData = dispatcherDoc.data() as Dispatcher;
+
+            // Calculate new average rating
+            const currentRatingTotal = dispatcherData.rating * dispatcherData.completedDispatches;
+            const newCompletedDispatches = dispatcherData.completedDispatches + 1;
+            const newAverageRating = (currentRatingTotal + rating) / newCompletedDispatches;
+
+            // Update dispatcher
+            transaction.update(dispatcherRef, {
+                rating: newAverageRating,
+                // In a real app, you might want to increment completed dispatches when the order is 'delivered',
+                // not when rated, but this is fine for the demo.
+            });
+
+            // Update order to mark as rated
+            transaction.update(orderRef, {
+                dispatcherRating: rating,
+            });
+        });
+        
+        revalidatePath(`/orders/${orderId}`);
+        revalidatePath('/dispatcher');
+        revalidatePath('/admin/riders');
+
+        return { success: true, message: "Thank you for your feedback!" };
+
+    } catch (e: any) {
+        console.error("Error rating dispatcher:", e);
+        return { success: false, error: e.message || "An unexpected error occurred." };
+    }
+}
     

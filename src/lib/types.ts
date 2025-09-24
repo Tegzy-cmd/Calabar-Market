@@ -51,6 +51,7 @@ export type Order = {
   createdAt: string;
   dispatcher?: Dispatcher;
   dispatcherId?: string;
+  dispatcherRating?: number; // Rating given by the customer for this specific order
   subtotal: number;
   deliveryFee: number;
   total: number;

@@ -58,7 +58,7 @@ export default function DispatcherDashboardPage() {
         const q = query(
             ordersRef, 
             where('dispatcherId', '==', appUser.dispatcherId),
-            where('status', 'in', ['preparing', 'dispatched', 'delivered'])
+            where('status', 'in', ['preparing', 'dispatched', 'delivered', 'placed'])
         );
 
         const unsubscribe = onSnapshot(q, async (snapshot) => {
@@ -71,7 +71,7 @@ export default function DispatcherDashboardPage() {
             // Check for new assignments on subsequent snapshots
             if (!isInitialLoad) {
                 const newAssignments = sortedOrders.filter(newOrder => 
-                    !orders.some(oldOrder => oldOrder.id === newOrder.id) && newOrder.status === 'preparing'
+                    !orders.some(oldOrder => oldOrder.id === newOrder.id) && (newOrder.status === 'preparing' || newOrder.status === 'placed')
                 );
 
                 if (newAssignments.length > 0) {
@@ -99,7 +99,12 @@ export default function DispatcherDashboardPage() {
     const completedOrders = orders.filter(o => o.status === 'delivered');
     const completedToday = completedOrders.filter(o => isToday(parseISO(o.createdAt))).length;
     const earningsToday = completedToday * 300; // Assume ₦300 per delivery
-    const rating = orders.length > 0 ? (orders.reduce((acc, o) => acc + (o.dispatcher?.rating || 5), 0) / orders.length) : 5;
+    
+    // Recalculate average rating from completed orders that have a rating
+    const ratedOrders = completedOrders.filter(o => o.dispatcherRating && o.dispatcherRating > 0);
+    const averageRating = ratedOrders.length > 0
+        ? ratedOrders.reduce((acc, o) => acc + (o.dispatcherRating || 0), 0) / ratedOrders.length
+        : appUser.dispatcher?.rating || 5;
 
 
     return (
@@ -137,7 +142,7 @@ export default function DispatcherDashboardPage() {
                 />
                 <StatCard 
                     title="Your Rating"
-                    value={rating.toFixed(1)}
+                    value={averageRating.toFixed(1)}
                     icon={<Star className="h-4 w-4 text-muted-foreground" />}
                     description="Your current average customer rating."
                 />
