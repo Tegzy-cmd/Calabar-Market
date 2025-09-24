@@ -119,7 +119,7 @@ export default function VendorSettingsPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div className="space-y-8 max-w-4xl mx-auto">
         <h1 className="text-3xl font-headline font-bold">Store Settings</h1>
         
         <Card>
