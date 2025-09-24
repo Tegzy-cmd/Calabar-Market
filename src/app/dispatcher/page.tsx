@@ -45,11 +45,16 @@ export default function DispatcherDashboardPage() {
             return;
         }
 
-        // Ensure we have the dispatcher ID before setting up the listener
         if (!appUser.dispatcherId) return;
 
         const ordersRef = collection(db, 'orders');
-        const q = query(ordersRef, where('dispatcherId', '==', appUser.dispatcherId), where('status', '!=', 'cancelled'));
+        // Using 'in' is more scalable and often avoids needing custom indexes for simple cases.
+        // Instead of '!=', we specify the statuses we *do* want.
+        const q = query(
+            ordersRef, 
+            where('dispatcherId', '==', appUser.dispatcherId),
+            where('status', 'in', ['placed', 'preparing', 'dispatched', 'delivered'])
+        );
 
         const unsubscribe = onSnapshot(q, async (snapshot) => {
             const fetchedOrders: Order[] = await Promise.all(

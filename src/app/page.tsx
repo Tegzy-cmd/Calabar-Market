@@ -59,15 +59,15 @@ export default function LandingPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               <CategoryCard
-                title="Food Delivery"
-                description="Order from the best local restaurants."
+                title="Food Stores"
+                description="Order food from the best restaurants in Calabar."
                 icon={<Utensils className="h-12 w-12 text-primary" />}
                 href="/browse?category=food"
                 image={placeholderImages.find(p => p.id === "category-food")}
               />
               <CategoryCard
-                title="Grocery Delivery"
-                description="Get fresh groceries delivered in minutes."
+                title="Grocery Stores"
+                description="Get fresh groceries delivered to you in minutes."
                 icon={<ShoppingCart className="h-12 w-12 text-primary" />}
                 href="/browse?category=groceries"
                 image={placeholderImages.find(p => p.id === "category-groceries")}
