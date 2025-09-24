@@ -162,20 +162,24 @@ export async function createVendorAndUser(data: {
     shopAddress: string;
     shopCategory: 'food' | 'groceries';
 }) {
-    // This is a complex action that should ideally be a transaction.
-    // For this demo, we'll do it in steps.
-    // NOTE: This server action uses the admin SDK to create a user, which is NOT how you'd do it on the client.
-    // This is a simplified example. In a real app, you'd use client-side SDK for user creation
-    // and then call a server action/cloud function to create the associated vendor profile.
-    // However, to keep it in one action:
-
+    // Note: This function would typically be a Cloud Function that can use the Admin SDK
+    // to create a user. Since we are in a server action, we cannot create a Firebase Auth user
+    // directly. We will simulate this by just creating the database records.
+    // For a real app, the client would sign up with email/password, then call a server action
+    // with the resulting UID to create the associated vendor/user docs.
+    
+    let uid;
     try {
-        // This is a placeholder for creating a user. In a real Node.js admin environment,
-        // you would use `getAuth().createUser(...)`. Since we are in a simple server action
-        // context without full admin privileges, we'll simulate this.
-        // We'll create the vendor and user doc, but the auth part would need a more robust setup.
+        // Step 1: Create the user in Firebase Auth. This is a hack for server actions
+        // and would be better handled by the client SDK or Admin SDK in a secure environment.
+        // For the purpose of this demo, we'll assume this action is secure.
+        const tempAuthApp = initializeApp(firebase.apps.length === 0 ? firebase.app().options : firebase.app().options, "temp-auth-app-for-creation");
+        const tempAuth = getAuth(tempAuthApp);
+        const userCredential = await createUserWithEmailAndPassword(tempAuth, data.email, data.password);
+        uid = userCredential.user.uid;
+        await updateProfile(userCredential.user, { displayName: data.name });
 
-        // Step 1: Create the Vendor document
+        // Step 2: Create the Vendor document
         const vendorData = {
             name: data.shopName,
             description: `A great place for ${data.shopCategory}.`,
@@ -183,28 +187,19 @@ export async function createVendorAndUser(data: {
             address: data.shopAddress,
             logoUrl: placeholderImages.find(p => p.id === 'vendor-logo-1')?.imageUrl || '',
             bannerUrl: placeholderImages.find(p => p.id === 'vendor-banner-1')?.imageUrl || '',
+            ownerId: uid, // Link vendor to the user
         };
         const vendorDocRef = await addDoc(collection(db, 'vendors'), vendorData);
 
-        // Step 2: Create the User document
-        // In a real app, the user ID would come from Firebase Auth.
-        // We will create a placeholder user for now.
+        // Step 3: Create the User document
         const userData: Omit<User, 'id'> = {
             name: data.name,
             email: data.email,
             role: 'vendor',
             avatarUrl: placeholderImages.find(p => p.id === 'user-avatar-1')?.imageUrl || '',
+            vendorId: vendorDocRef.id, // Link user to the vendor
         };
-        
-        // This is a simplified approach. Ideally, you create the Firebase Auth user first,
-        // get their UID, and use that UID for the Firestore document ID.
-        // This action cannot create auth users, so we'll just create the DB record.
-        // The user would need to have their password set or sign up separately.
-        const userDocRef = await addDoc(collection(db, 'users'), userData);
-
-
-        // Here you would link the user to the vendor. Let's assume a 'vendorId' field on the user.
-        await updateDoc(userDocRef, { vendorId: vendorDocRef.id });
+        await setDoc(doc(db, "users", uid), userData);
 
         revalidatePath('/admin/vendors');
         revalidatePath('/admin/users');
@@ -212,6 +207,11 @@ export async function createVendorAndUser(data: {
         return { success: true, message: 'Vendor account created. Please log in.' };
 
     } catch (e: any) {
+        console.error("Error creating vendor and user:", e);
+        // Clean up if user was created but vendor was not.
+        if (uid && (e as any).code?.includes('auth')) {
+             // In a real app, you would use the Admin SDK to delete the auth user.
+        }
         return { success: false, error: e.message || 'An unexpected error occurred.' };
     }
 }

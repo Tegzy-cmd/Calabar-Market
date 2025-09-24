@@ -30,11 +30,11 @@ export async function getServerSession(): Promise<Session | null> {
         const userDocRef = doc(db, 'users', user.id);
         const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists()) {
-          const userData = userDocSnap.data() as User & { vendorId?: string };
+          const userData = userDocSnap.data() as User;
           if (userData.vendorId) {
             session.vendorId = userData.vendorId;
           } else {
-             // Fallback: If vendorId is not on user, query vendors collection
+             // Fallback: If vendorId is not on user, query vendors collection by ownerId
             const q = query(collection(db, 'vendors'), where('ownerId', '==', user.id));
             const vendorQuerySnap = await getDocs(q);
             if (!vendorQuerySnap.empty) {

@@ -1,3 +1,4 @@
+
 export type User = {
   id: string;
   name: string;
@@ -6,6 +7,7 @@ export type User = {
   avatarUrl: string;
   phoneNumber?: string;
   addresses?: string[];
+  vendorId?: string; // Link to vendor profile
 };
 
 export type Product = {
@@ -27,6 +29,7 @@ export type Vendor = {
   logoUrl: string;
   bannerUrl: string;
   products: Product[];
+  ownerId?: string; // Link to user profile
 };
 
 export type OrderItem = {
