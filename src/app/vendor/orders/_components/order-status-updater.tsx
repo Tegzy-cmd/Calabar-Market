@@ -96,7 +96,7 @@ export function OrderStatusUpdater({ order, role }: OrderStatusUpdaterProps) {
     );
   }
 
-  if (availableActions.length === 0 && role === 'dispatcher' && (order.status === 'delivered' || order.status === 'cancelled')) {
+  if (availableActions.length === 0 && role === 'dispatcher' && (order.status === 'delivered' || order.status === 'cancelled' || order.status === 'awaiting-confirmation')) {
     return null;
   }
 
