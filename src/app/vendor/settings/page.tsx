@@ -37,6 +37,7 @@ import type { Vendor } from '@/lib/types';
 import { updateVendor } from '@/lib/actions';
 import { useAuth } from '@/hooks/use-auth';
 import { getVendorById } from '@/lib/data';
+import { ImageUploader } from '@/components/shared/image-uploader';
 
 
 const vendorFormSchema = z.object({
@@ -44,8 +45,8 @@ const vendorFormSchema = z.object({
   description: z.string().min(10, 'Description must be at least 10 characters.'),
   address: z.string().min(10, 'Address must be at least 10 characters.'),
   category: z.enum(['food', 'groceries']),
-  logoUrl: z.string().url('Must be a valid URL.'),
-  bannerUrl: z.string().url('Must be a valid URL.'),
+  logoUrl: z.string().url('Must be a valid URL or Data URL.'),
+  bannerUrl: z.string().url('Must be a valid URL or Data URL.'),
 });
 
 type VendorFormValues = z.infer<typeof vendorFormSchema>;
@@ -194,11 +195,8 @@ export default function VendorSettingsPage() {
                     name="logoUrl"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Logo URL</FormLabel>
-                        <FormControl>
-                            <Input placeholder="https://example.com/logo.png" {...field} />
-                        </FormControl>
-                        <FormMessage />
+                            <ImageUploader label="Logo" value={field.value || ''} onValueChange={field.onChange} />
+                            <FormMessage />
                         </FormItem>
                     )}
                     />
@@ -207,11 +205,8 @@ export default function VendorSettingsPage() {
                     name="bannerUrl"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Banner URL</FormLabel>
-                        <FormControl>
-                            <Input placeholder="https://example.com/banner.png" {...field} />
-                        </FormControl>
-                        <FormMessage />
+                            <ImageUploader label="Banner" value={field.value || ''} onValueChange={field.onChange} />
+                            <FormMessage />
                         </FormItem>
                     )}
                     />

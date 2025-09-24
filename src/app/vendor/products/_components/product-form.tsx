@@ -28,13 +28,14 @@ import { useToast } from '@/hooks/use-toast';
 import type { Product } from '@/lib/types';
 import { createProduct, updateProduct } from '@/lib/actions';
 import { placeholderImages } from '@/lib/placeholder-images';
+import { ImageUploader } from '@/components/shared/image-uploader';
 
 const productFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   description: z.string().min(10, 'Description must be at least 10 characters.'),
   price: z.coerce.number().min(0, 'Price must be a positive number.'),
   stock: z.coerce.number().int().min(0, 'Stock must be a non-negative integer.'),
-  imageUrl: z.string().url('Must be a valid URL.'),
+  imageUrl: z.string().url('Must be a valid URL or Data URL.'),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -94,7 +95,7 @@ export function ProductForm({ product, vendorId, isOpen, onOpenChange }: Product
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[80vh] overflow-y-auto pr-4">
             <FormField
               control={form.control}
               name="name"
@@ -154,15 +155,12 @@ export function ProductForm({ product, vendorId, isOpen, onOpenChange }: Product
               name="imageUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Image URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://example.com/image.png" {...field} />
-                  </FormControl>
+                  <ImageUploader label="Image" value={field.value || ''} onValueChange={field.onChange} />
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <DialogFooter>
+            <DialogFooter className="sticky bottom-0 bg-background pt-4 pb-0 -mb-4">
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
