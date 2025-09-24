@@ -42,16 +42,18 @@ export default async function AdminDashboardPage() {
   let topProductStats = new Map<string, { name:string, sales: number }>();
 
   for(const order of orders) {
-    if (order.vendor.category === 'food') {
+    if (order.vendor && order.vendor.category === 'food') {
       salesByCategory.food += order.total;
-    } else if (order.vendor.category === 'groceries') {
+    } else if (order.vendor && order.vendor.category === 'groceries') {
       salesByCategory.groceries += order.total;
     }
 
     // Top Vendor Calculation
-    const vendorName = order.vendor.name;
-    const currentVendorSales = topVendorStats.get(order.vendor.id)?.sales || 0;
-    topVendorStats.set(order.vendor.id, { name: vendorName, sales: currentVendorSales + order.total });
+    if (order.vendor) {
+      const vendorName = order.vendor.name;
+      const currentVendorSales = topVendorStats.get(order.vendor.id)?.sales || 0;
+      topVendorStats.set(order.vendor.id, { name: vendorName, sales: currentVendorSales + order.total });
+    }
 
     // Top Product Calculation - Note: This is simplified. For accuracy, we should fetch product details for each item.
     // This is a simplified example. In a real-world scenario with many orders, this would be inefficient.
@@ -204,7 +206,7 @@ export default async function AdminDashboardPage() {
                         {order.user.email}
                       </div>
                     </TableCell>
-                    <TableCell>{order.vendor.name}</TableCell>
+                    <TableCell>{order.vendor?.name || 'N/A'}</TableCell>
                     <TableCell className="text-right">₦{order.total.toFixed(2)}</TableCell>
                     <TableCell>
                        <Badge 
