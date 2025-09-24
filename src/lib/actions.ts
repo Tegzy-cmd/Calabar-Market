@@ -468,7 +468,16 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus, di
                  // Only update if dispatcher is not busy with another order.
                  // This is a simplification; a real app would need more robust logic
                  // to track multiple concurrent deliveries.
-                 await updateDoc(dispatcherRef, { status: 'available', completedDispatches: (await getDoc(dispatcherRef)).data()?.completedDispatches + 1 });
+                 await updateDoc(dispatcherRef, { status: 'available' });
+                 
+                 // Increment completed dispatches only on 'delivered'
+                 if (status === 'delivered') {
+                    const dispatcherSnap = await getDoc(dispatcherRef);
+                    if (dispatcherSnap.exists()) {
+                        const dispatcherData = dispatcherSnap.data() as Dispatcher;
+                        await updateDoc(dispatcherRef, { completedDispatches: (dispatcherData.completedDispatches || 0) + 1 });
+                    }
+                 }
                  revalidatePath('/admin/riders');
             }
         }
@@ -568,5 +577,4 @@ export async function getMessages(orderId: string): Promise<ChatMessage[]> {
         return [];
     }
 }
-
     

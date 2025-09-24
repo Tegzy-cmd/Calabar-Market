@@ -5,7 +5,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { redirect } from "next/navigation";
-import { db, onSnapshot, query, where, collection, processOrderDoc } from "@/lib/firebase";
+import { db, onSnapshot, query, where, collection } from "@/lib/firebase";
+import { processOrderDoc } from "@/lib/data";
 import type { Order, OrderStatus } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -27,6 +28,7 @@ const getStatusColor = (status: OrderStatus) => {
         case 'dispatched':
             return 'bg-blue-500 hover:bg-blue-600';
         case 'preparing':
+        case 'awaiting-confirmation':
             return 'bg-orange-500 hover:bg-orange-600 text-white';
         case 'placed':
             return 'bg-gray-500 hover:bg-gray-600';
@@ -58,7 +60,7 @@ export default function DispatcherDashboardPage() {
         const q = query(
             ordersRef, 
             where('dispatcherId', '==', appUser.dispatcherId),
-            where('status', 'in', ['preparing', 'dispatched', 'delivered', 'placed'])
+            where('status', 'in', ['preparing', 'dispatched', 'placed', 'awaiting-confirmation'])
         );
 
         const unsubscribe = onSnapshot(q, async (snapshot) => {
@@ -95,7 +97,7 @@ export default function DispatcherDashboardPage() {
         return <p>Loading dashboard...</p>
     }
 
-    const activeOrders = orders.filter(o => o.status === 'dispatched' || o.status === 'preparing');
+    const activeOrders = orders.filter(o => o.status === 'dispatched' || o.status === 'preparing' || o.status === 'awaiting-confirmation');
     const completedOrders = orders.filter(o => o.status === 'delivered');
     const completedToday = completedOrders.filter(o => isToday(parseISO(o.createdAt))).length;
     const earningsToday = completedToday * 300; // Assume ₦300 per delivery
@@ -241,11 +243,11 @@ function OrderTableRow({ order, onChatOpen }: { order: Order, onChatOpen: (order
             </TableCell>
             <TableCell>
                 <Badge className={cn("capitalize text-white", getStatusColor(order.status))}>
-                    {order.status}
+                    {order.status.replace('-', ' ')}
                 </Badge>
             </TableCell>
                 <TableCell className="text-right flex items-center justify-end space-x-2">
-                {order.status === 'dispatched' && (
+                {(order.status === 'dispatched' || order.status === 'awaiting-confirmation') && (
                     <Button variant="outline" size="sm" onClick={handleOpenChat} className="relative">
                         {hasUnread && (
                             <span className="absolute -top-1 -right-1 flex h-3 w-3">
@@ -277,3 +279,5 @@ function StatCard({ title, value, icon, description }: { title: string, value: s
         </Card>
     )
 }
+
+    
