@@ -43,7 +43,7 @@ export default function VendorOrderDetailPage() {
   const id = params.id as string;
   const [order, setOrder] = useState<OrderType | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const { hasUnread, resetUnread } = useUnreadMessages(id, 'vendor');
+  const { hasUnread, resetUnread } = useUnreadMessages(id, 'user');
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   
   useEffect(() => {
@@ -114,7 +114,8 @@ export default function VendorOrderDetailPage() {
     <div className="space-y-8">
        <ChatRoom 
         orderId={order.id}
-        userRole="vendor"
+        currentUserRole="vendor"
+        otherUserRole="user"
         isOpen={isChatOpen}
         onOpenChange={setIsChatOpen}
         title={`Chat with ${order.user.name}`}

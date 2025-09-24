@@ -7,7 +7,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import type { ChatMessage } from '@/lib/types';
 
-export function useUnreadMessages(orderId: string, currentUserRole: 'user' | 'vendor' | 'dispatcher') {
+export function useUnreadMessages(orderId: string, otherUserRole: 'user' | 'vendor' | 'dispatcher') {
   const [hasUnread, setHasUnread] = useState(false);
   const { appUser } = useAuth();
   
@@ -25,10 +25,10 @@ export function useUnreadMessages(orderId: string, currentUserRole: 'user' | 've
       
       const latestMessage = snapshot.docs[0]?.data() as ChatMessage;
 
-      if (latestMessage && latestMessage.senderId !== appUser.id) {
+      if (latestMessage && latestMessage.senderId !== appUser.id && latestMessage.senderRole === otherUserRole) {
           // In a real app, you'd store read receipts in Firestore.
           // For this demo, we use localStorage to track the last seen message timestamp.
-          const lastSeenTimestamp = localStorage.getItem(`lastSeen_${orderId}`);
+          const lastSeenTimestamp = localStorage.getItem(`lastSeen_${orderId}_${otherUserRole}`);
           const latestMessageTimestamp = (snapshot.docs[0].data().timestamp.toDate()).toISOString();
 
           if (!lastSeenTimestamp || latestMessageTimestamp > lastSeenTimestamp) {
@@ -38,11 +38,11 @@ export function useUnreadMessages(orderId: string, currentUserRole: 'user' | 've
     });
 
     return () => unsubscribe();
-  }, [orderId, appUser]);
+  }, [orderId, appUser, otherUserRole]);
 
   const resetUnread = () => {
     setHasUnread(false);
-    localStorage.setItem(`lastSeen_${orderId}`, new Date().toISOString());
+    localStorage.setItem(`lastSeen_${orderId}_${otherUserRole}`, new Date().toISOString());
   };
 
   return { hasUnread, resetUnread };

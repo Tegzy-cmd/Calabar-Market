@@ -24,13 +24,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 interface ChatRoomProps {
   orderId: string;
-  userRole: 'user' | 'vendor' | 'dispatcher';
+  currentUserRole: 'user' | 'vendor' | 'dispatcher';
+  otherUserRole: 'user' | 'vendor' | 'dispatcher';
   title: string;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
 }
 
-export function ChatRoom({ orderId, userRole, title, isOpen, onOpenChange }: ChatRoomProps) {
+export function ChatRoom({ orderId, currentUserRole, otherUserRole, title, isOpen, onOpenChange }: ChatRoomProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const { appUser } = useAuth();
@@ -101,7 +102,7 @@ export function ChatRoom({ orderId, userRole, title, isOpen, onOpenChange }: Cha
         text: newMessage,
         senderId: appUser.id,
         senderName: appUser.name,
-        senderRole: userRole,
+        senderRole: currentUserRole,
       });
 
       if (result.success) {

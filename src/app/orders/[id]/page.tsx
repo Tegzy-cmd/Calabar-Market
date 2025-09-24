@@ -47,8 +47,8 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<OrderType | null>(null);
   const [isVendorChatOpen, setIsVendorChatOpen] = useState(false);
   const [isDispatcherChatOpen, setIsDispatcherChatOpen] = useState(false);
-  const { hasUnread: hasUnreadVendor, resetUnread: resetUnreadVendor } = useUnreadMessages(id, 'user');
-  const { hasUnread: hasUnreadDispatcher, resetUnread: resetUnreadDispatcher } = useUnreadMessages(id, 'user');
+  const { hasUnread: hasUnreadVendor, resetUnread: resetUnreadVendor } = useUnreadMessages(id, 'vendor');
+  const { hasUnread: hasUnreadDispatcher, resetUnread: resetUnreadDispatcher } = useUnreadMessages(id, 'dispatcher');
   
   useEffect(() => {
     if (id) {
@@ -78,7 +78,8 @@ export default function OrderDetailPage() {
       <AppHeader />
        <ChatRoom 
         orderId={order.id}
-        userRole="user"
+        currentUserRole="user"
+        otherUserRole="vendor"
         isOpen={isVendorChatOpen}
         onOpenChange={setIsVendorChatOpen}
         title={`Chat with ${order.vendor.name}`}
@@ -86,7 +87,8 @@ export default function OrderDetailPage() {
       {order.dispatcher && (
         <ChatRoom 
             orderId={order.id}
-            userRole="dispatcher"
+            currentUserRole="user"
+            otherUserRole="dispatcher"
             isOpen={isDispatcherChatOpen}
             onOpenChange={setIsDispatcherChatOpen}
             title={`Chat with ${order.dispatcher.name}`}
