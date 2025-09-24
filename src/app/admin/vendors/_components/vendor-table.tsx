@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import React from "react";
 
 export function VendorTable({ vendors }: { vendors: Vendor[] }) {
   const [openVendorId, setOpenVendorId] = useState<string | null>(null);
@@ -41,7 +42,7 @@ export function VendorTable({ vendors }: { vendors: Vendor[] }) {
       <TableBody>
         {vendors.map((vendor) => (
           <Collapsible asChild key={vendor.id} open={openVendorId === vendor.id} onOpenChange={() => setOpenVendorId(prevId => prevId === vendor.id ? null : vendor.id)}>
-            <>
+              <React.Fragment>
               <TableRow className="cursor-pointer">
                 <TableCell>
                   <CollapsibleTrigger asChild>
@@ -84,7 +85,7 @@ export function VendorTable({ vendors }: { vendors: Vendor[] }) {
                     </TableCell>
                 </TableRow>
               </CollapsibleContent>
-            </>
+              </React.Fragment>
           </Collapsible>
         ))}
       </TableBody>
