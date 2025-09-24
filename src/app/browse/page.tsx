@@ -1,3 +1,4 @@
+
 import { Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -56,8 +57,8 @@ async function VendorGrid({ category }: { category?: 'food' | 'groceries' }) {
 
 function VendorCard({ vendor }: { vendor: Vendor }) {
   return (
-    <Link href={`/browse/vendors/${vendor.id}`} className="group">
-      <Card className="h-full overflow-hidden transition-all duration-300 ease-in-out group-hover:shadow-2xl group-hover:scale-105 group-hover:shadow-primary/10">
+    <Link href={`/browse/vendors/${vendor.id}`} className="group block">
+      <Card className="h-full overflow-hidden transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:-translate-y-1">
         <CardHeader className="p-0">
           <div className="relative h-40">
             <Image

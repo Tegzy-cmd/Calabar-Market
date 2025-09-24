@@ -46,7 +46,7 @@ export default async function VendorProductsPage({ params }: { params: { id: str
 
 function ProductCard({ product }: { product: Product }) {
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="h-full flex flex-col transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
       <CardHeader className="p-0">
         <div className="relative h-48">
           <Image
