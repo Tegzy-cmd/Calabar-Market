@@ -6,6 +6,9 @@ import { UserNav } from "@/components/shared/user-nav";
 import { Logo } from "@/components/shared/logo";
 import { usePathname } from 'next/navigation';
 import { cn } from "@/lib/utils";
+import { LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 
 const menuItems = [
   { href: '/admin', label: 'Dashboard' },
@@ -17,6 +20,8 @@ const menuItems = [
 
 export function AdminHeader() {
   const pathname = usePathname();
+  const { user: isAuthenticated } = useAuth();
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
