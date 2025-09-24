@@ -58,4 +58,6 @@ export type Rider = {
   vehicle: string;
   location: string;
   status: RiderStatus;
+  completedRides: number;
+  rating: number;
 };

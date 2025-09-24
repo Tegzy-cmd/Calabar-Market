@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { RiderActions } from "./_components/rider-actions";
 import { cn } from "@/lib/utils";
+import { Star } from "lucide-react";
 
 const getStatusColor = (status: Rider['status']) => {
     switch (status) {
@@ -59,6 +60,8 @@ export default async function AdminRidersPage() {
                         <TableHead>Rider</TableHead>
                         <TableHead>Vehicle</TableHead>
                         <TableHead>Current Location</TableHead>
+                        <TableHead>Completed Rides</TableHead>
+                        <TableHead>Rating</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>
                             <span className="sr-only">Actions</span>
@@ -84,6 +87,15 @@ export default async function AdminRidersPage() {
                         </TableCell>
                         <TableCell>
                            {rider.location}
+                        </TableCell>
+                         <TableCell>
+                           {rider.completedRides}
+                        </TableCell>
+                         <TableCell>
+                            <div className="flex items-center gap-1">
+                                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                                {rider.rating.toFixed(1)}
+                            </div>
                         </TableCell>
                         <TableCell>
                             <Badge className={cn("capitalize text-white", getStatusColor(rider.status))}>

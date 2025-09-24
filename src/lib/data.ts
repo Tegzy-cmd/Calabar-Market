@@ -15,10 +15,10 @@ export const users: User[] = [
 ];
 
 export const riders: Rider[] = [
-    { id: 'rider-1', name: 'Mike Ross', avatarUrl: findImage('rider-avatar-1'), vehicle: 'Motorcycle', location: 'Downtown', status: 'available' },
-    { id: 'rider-2', name: 'Sarah Lance', avatarUrl: findImage('rider-avatar-2'), vehicle: 'Bicycle', location: 'Uptown', status: 'available' },
-    { id: 'rider-3', name: 'Peter Pan', avatarUrl: findImage('user-avatar-1'), vehicle: 'Motorcycle', location: 'Midtown', status: 'unavailable' },
-    { id: 'rider-4', name: 'Wendy Darling', avatarUrl: findImage('user-avatar-2'), vehicle: 'Motorcycle', location: 'Downtown', status: 'on-delivery' },
+    { id: 'rider-1', name: 'Mike Ross', avatarUrl: findImage('rider-avatar-1'), vehicle: 'Motorcycle', location: 'Downtown', status: 'available', rating: 4.8, completedRides: 102 },
+    { id: 'rider-2', name: 'Sarah Lance', avatarUrl: findImage('rider-avatar-2'), vehicle: 'Bicycle', location: 'Uptown', status: 'available', rating: 4.9, completedRides: 250 },
+    { id: 'rider-3', name: 'Peter Pan', avatarUrl: findImage('user-avatar-1'), vehicle: 'Motorcycle', location: 'Midtown', status: 'unavailable', rating: 4.5, completedRides: 55 },
+    { id: 'rider-4', name: 'Wendy Darling', avatarUrl: findImage('user-avatar-2'), vehicle: 'Motorcycle', location: 'Downtown', status: 'on-delivery', rating: 4.7, completedRides: 89 },
 ];
 
 export const products: Product[] = [

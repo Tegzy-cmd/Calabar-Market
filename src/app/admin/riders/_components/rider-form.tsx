@@ -40,6 +40,8 @@ const riderFormSchema = z.object({
   vehicle: z.string().min(2, 'Vehicle type must be specified.'),
   location: z.string().min(2, 'Location is required.'),
   status: z.enum(['available', 'unavailable', 'on-delivery']),
+  completedRides: z.coerce.number().min(0, 'Completed rides must be a positive number.'),
+  rating: z.coerce.number().min(0).max(5, 'Rating must be between 0 and 5.'),
 });
 
 type RiderFormValues = z.infer<typeof riderFormSchema>;
@@ -61,11 +63,15 @@ export function RiderForm({ rider, isOpen, onOpenChange }: RiderFormProps) {
         vehicle: rider.vehicle,
         location: rider.location,
         status: rider.status,
+        completedRides: rider.completedRides,
+        rating: rider.rating,
     } : {
         name: '',
         vehicle: 'Motorcycle',
         location: '',
         status: 'available',
+        completedRides: 0,
+        rating: 5,
     },
   });
 
@@ -140,6 +146,34 @@ export function RiderForm({ rider, isOpen, onOpenChange }: RiderFormProps) {
                 </FormItem>
               )}
             />
+             <div className="grid grid-cols-2 gap-4">
+                <FormField
+                control={form.control}
+                name="rating"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Rating</FormLabel>
+                    <FormControl>
+                        <Input type="number" step="0.1" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={form.control}
+                name="completedRides"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Completed Rides</FormLabel>
+                    <FormControl>
+                        <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            </div>
             <FormField
               control={form.control}
               name="status"
