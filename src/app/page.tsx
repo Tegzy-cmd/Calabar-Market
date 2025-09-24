@@ -34,7 +34,7 @@ export default function LandingPage() {
               </h1>
               <p className="text-lg md:text-xl text-white/90 drop-shadow-md">
                 From local restaurants to your favorite grocery stores, Calabar
-                Eats brings the best of the city to your doorstep.
+                Market brings the best of the city to your doorstep.
               </p>
               <div className="flex gap-4">
                 <Button asChild size="lg" className="font-bold text-lg">
@@ -78,7 +78,7 @@ export default function LandingPage() {
       </main>
       <footer className="py-6 bg-primary">
         <div className="container mx-auto px-4 md:px-6 text-center text-primary-foreground">
-          &copy; {new Date().getFullYear()} Calabar Eats. All rights reserved.
+          &copy; {new Date().getFullYear()} Calabar Market. All rights reserved.
         </div>
       </footer>
     </div>
@@ -96,7 +96,7 @@ function CategoryCard({ title, description, icon, href, image }: { title: string
                 src={image.imageUrl}
                 alt={image.description}
                 fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover transition-transform duration-300 group-hover:scale-110"
                 data-ai-hint={image.imageHint}
                 />

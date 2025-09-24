@@ -136,7 +136,7 @@ export default function SignupPage() {
           <Logo className="justify-center"/>
           <CardTitle className="text-2xl font-headline">Create an account</CardTitle>
           <CardDescription>
-            Enter your information to get started with Calabar Eats.
+            Enter your information to get started with Calabar Market.
           </CardDescription>
         </CardHeader>
         <CardContent>

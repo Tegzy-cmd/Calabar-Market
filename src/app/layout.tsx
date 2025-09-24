@@ -14,7 +14,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: 'Calabar Eats',
+  title: 'Calabar Market',
   description: 'Food and grocery delivery service',
 };
 

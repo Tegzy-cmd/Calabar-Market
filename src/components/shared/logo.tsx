@@ -8,7 +8,7 @@ export function Logo({ className, href = "/" }: { className?: string, href?: str
       <div className="bg-primary text-primary-foreground p-2 rounded-lg transform -rotate-6 shadow-md">
         <UtensilsCrossed className="h-6 w-6" />
       </div>
-      <span>Calabar Eats</span>
+      <span>Calabar Market</span>
     </Link>
   );
 }
