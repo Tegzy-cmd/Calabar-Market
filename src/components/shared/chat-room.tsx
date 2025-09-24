@@ -39,6 +39,8 @@ export function ChatRoom({ orderId, currentUserRole, otherUserRole, title, isOpe
   const [newMessage, setNewMessage] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const isInitialLoad = useRef(true);
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   useEffect(() => {
     if (!isOpen || !orderId) {
@@ -60,7 +62,8 @@ export function ChatRoom({ orderId, currentUserRole, otherUserRole, title, isOpe
             } as ChatMessage);
         });
 
-        if (!isInitialLoad.current && newMessages.length > messages.length) {
+        const oldMessages = messagesRef.current;
+        if (!isInitialLoad.current && newMessages.length > oldMessages.length) {
             const latestMessage = newMessages[newMessages.length - 1];
             if (latestMessage.senderId !== appUser?.id) {
                 toast({
@@ -81,7 +84,7 @@ export function ChatRoom({ orderId, currentUserRole, otherUserRole, title, isOpe
         unsubscribe();
         isInitialLoad.current = true;
     }
-  }, [isOpen, orderId, appUser?.id, toast, messages.length]);
+  }, [isOpen, orderId, appUser?.id, toast]);
 
   useEffect(() => {
     // Auto-scroll to bottom

@@ -15,6 +15,9 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChatRoom } from "@/components/shared/chat-room";
 import { useUnreadMessages } from '@/hooks/use-unread-messages';
+import { db, onSnapshot, doc, getDoc, getDocs, collection, query, where } from '@/lib/firebase';
+import type { Product, Dispatcher } from '@/lib/types';
+
 
 const getStatusColor = (status: OrderStatus) => {
     switch (status) {
@@ -51,9 +54,55 @@ export default function OrderDetailPage() {
   const { hasUnread: hasUnreadDispatcher, resetUnread: resetUnreadDispatcher } = useUnreadMessages(id, 'dispatcher');
   
   useEffect(() => {
-    if (id) {
-        getOrderById(id).then(setOrder);
-    }
+    if (!id) return;
+  
+    const orderRef = doc(db, 'orders', id);
+  
+    const unsubscribe = onSnapshot(orderRef, async (docSnap) => {
+      if (docSnap.exists()) {
+        const orderData = { id: docSnap.id, ...docSnap.data() };
+  
+        const [user, vendor, items] = await Promise.all([
+          getDoc(doc(db, 'users', orderData.userId)).then(d => d.exists() ? { id: d.id, ...d.data() } as User : null),
+          getDoc(doc(db, 'vendors', orderData.vendorId)).then(d => d.exists() ? { id: d.id, ...d.data() } as Vendor : null),
+          Promise.all(
+            (orderData.items || []).map(async (item: { productId: string; quantity: number; price: number }) => {
+              const product = await getDoc(doc(db, 'products', item.productId)).then(d => d.exists() ? { id: d.id, ...d.data() } as Product : null);
+              return { 
+                  product: { ...product!, price: item.price || product!.price },
+                  quantity: item.quantity 
+              };
+            })
+          )
+        ]);
+  
+        if (!user || !vendor) {
+            setOrder(null);
+            return;
+        }
+  
+        const dispatcher = orderData.dispatcherId 
+            ? await getDoc(doc(db, 'dispatchers', orderData.dispatcherId)).then(d => d.exists() ? { id: d.id, ...d.data() } as Dispatcher : undefined)
+            : undefined;
+        
+        const fullOrder: OrderType = {
+            ...orderData,
+            createdAt: orderData.createdAt.toDate().toISOString(),
+            user,
+            vendor,
+            dispatcher,
+            items,
+            status: orderData.status as OrderStatus,
+        };
+  
+        setOrder(fullOrder);
+  
+      } else {
+        setOrder(null);
+      }
+    });
+  
+    return () => unsubscribe();
   }, [id]);
 
   const handleOpenVendorChat = () => {
