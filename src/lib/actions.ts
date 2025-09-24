@@ -301,33 +301,11 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
 
         // Automatic dispatcher assignment logic
         if (status === 'preparing' && session.user.role === 'vendor' && !orderData.dispatcherId) {
-            // Get all dispatchers
-            const dispatchersSnapshot = await getDocsFromFirestore(collection(db, 'dispatchers'));
-            const allDispatchers = dispatchersSnapshot.docs.map(d => ({id: d.id, ...d.data()} as Dispatcher));
-
-            // Get all active orders to find out which dispatchers are busy
-            const activeOrdersQuery = query(collection(db, 'orders'), where('status', 'in', ['preparing', 'dispatched']));
-            const activeOrdersSnap = await getDocsFromFirestore(activeOrdersQuery);
-            const busyDispatcherIds = new Set(
-                activeOrdersSnap.docs.map(d => d.data().dispatcherId).filter(Boolean)
-            );
-
-            // Find dispatchers who are not busy
-            const availableDispatchers = allDispatchers.filter(
-                dispatcher => !busyDispatcherIds.has(dispatcher.id)
-            );
+            // Hardcode assignment to Bill James for now
+            const assignedDispatcherId = 'bill-james-user';
             
-            if (availableDispatchers.length > 0) {
-                // Randomly select an available dispatcher
-                const randomIndex = Math.floor(Math.random() * availableDispatchers.length);
-                const assignedDispatcher = availableDispatchers[randomIndex];
-                
-                await updateDoc(orderRef, { status: 'dispatched', dispatcherId: assignedDispatcher.id });
-                 // No need to update dispatcher status here, it's inferred from active orders
-            } else {
-                 // If no dispatcher is available, just update status to preparing
-                 await updateDoc(orderRef, { status: 'preparing' });
-            }
+            await updateDoc(orderRef, { status: 'dispatched', dispatcherId: assignedDispatcherId });
+
         } else {
             // For all other status updates
             await updateDoc(orderRef, { status });
@@ -498,3 +476,4 @@ export async function getMessages(orderId: string): Promise<ChatMessage[]> {
         return [];
     }
 }
+
