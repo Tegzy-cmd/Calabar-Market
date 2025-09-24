@@ -2,7 +2,7 @@
 
 'use client';
 
-import { getOrderById, getVendorById, getUserById, getDispatcherById, getProductById } from "@/lib/data";
+import { getVendorById, getUserById, getDispatcherById, getProductById } from "@/lib/data";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -54,24 +54,25 @@ export default function VendorOrderDetailPage() {
         const orderData = { id: docSnap.id, ...docSnap.data() };
 
         // Fetch related documents just like getOrderById does
-        const user = await getUserById(orderData.userId);
-        const vendor = await getVendorById(orderData.vendorId);
-        const dispatcher = orderData.dispatcherId ? await getDispatcherById(orderData.dispatcherId) : undefined;
-        
+        const [user, vendor, dispatcher, items] = await Promise.all([
+          getUserById(orderData.userId),
+          getVendorById(orderData.vendorId),
+          orderData.dispatcherId ? getDispatcherById(orderData.dispatcherId) : Promise.resolve(undefined),
+          Promise.all(
+            (orderData.items || []).map(async (item: { productId: string; quantity: number; price: number }) => {
+              const product = await getProductById(item.productId);
+              return { 
+                  product: { ...product!, price: item.price || product!.price },
+                  quantity: item.quantity 
+              };
+            })
+          )
+        ]);
+
         if (!user || !vendor) {
             setOrder(null); // or handle error
             return;
         }
-
-        const items: OrderItem[] = await Promise.all(
-            orderData.items.map(async (item: { productId: string; quantity: number; price: number }) => {
-                const product = await getProductById(item.productId);
-                return { 
-                    product: { ...product!, price: item.price || product!.price }, // Use price from order if available
-                    quantity: item.quantity 
-                };
-            })
-        );
         
         const fullOrder = {
             ...orderData,
