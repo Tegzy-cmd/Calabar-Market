@@ -30,6 +30,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { syncUser } = useAuth();
+  const { toast } = useToast();
   const redirectUrl = searchParams.get('redirect') || '';
 
   const handleRedirect = (user: AppUser | null) => {
