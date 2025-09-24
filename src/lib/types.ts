@@ -49,11 +49,13 @@ export type Order = {
   total: number;
 };
 
+export type RiderStatus = 'available' | 'unavailable' | 'on-delivery';
+
 export type Rider = {
   id: string;
   name: string;
   avatarUrl: string;
   vehicle: string;
   location: string;
-  status: 'available' | 'unavailable' | 'on-delivery';
+  status: RiderStatus;
 };

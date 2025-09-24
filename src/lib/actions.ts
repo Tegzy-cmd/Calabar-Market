@@ -9,7 +9,7 @@ import {
 import { db } from './firebase';
 import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { users, vendors, products, riders, orders } from './data';
-import type { User, Vendor } from './types';
+import type { User, Vendor, Rider } from './types';
 import { revalidatePath } from 'next/cache';
 
 
@@ -149,6 +149,37 @@ export async function deleteVendor(id: string) {
         revalidatePath('/admin/vendors');
         revalidatePath('/browse');
         return { success: true, message: 'Vendor deleted successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+// Rider Actions
+export async function createRider(data: Omit<Rider, 'id'>) {
+    try {
+        await addDoc(collection(db, 'riders'), data);
+        revalidatePath('/admin/riders');
+        return { success: true, message: 'Rider created successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function updateRider(id: string, data: Partial<Rider>) {
+    try {
+        await updateDoc(doc(db, 'riders', id), data);
+        revalidatePath('/admin/riders');
+        return { success: true, message: 'Rider updated successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function deleteRider(id: string) {
+    try {
+        await deleteDoc(doc(db, 'riders', id));
+        revalidatePath('/admin/riders');
+        return { success: true, message: 'Rider deleted successfully.' };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
