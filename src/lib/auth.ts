@@ -1,6 +1,7 @@
 
-import 'server-only';
-import { cookies } from 'next/headers';
+
+'use server';
+import { cookies }from 'next/headers';
 import type { User } from '@/lib/types';
 import { db } from './firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';

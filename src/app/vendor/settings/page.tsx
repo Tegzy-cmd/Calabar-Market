@@ -37,7 +37,6 @@ import type { Vendor } from '@/lib/types';
 import { updateVendor } from '@/lib/actions';
 import { useAuth } from '@/hooks/use-auth';
 import { getVendorById } from '@/lib/data';
-import { getServerSession } from '@/lib/auth';
 
 
 const vendorFormSchema = z.object({
@@ -62,17 +61,12 @@ export default function VendorSettingsPage() {
    useEffect(() => {
     if (authLoading) return;
     if (!appUser || appUser.role !== 'vendor') {
-      router.push('/login');
+      router.push('/login?redirect=/vendor/settings');
       return;
     }
     
     const fetchVendor = async () => {
-        // Here we can't use `getServerSession` directly in a client component.
-        // The vendorId should be part of the appUser context if fetched correctly.
-        // Let's assume a simplified way to get it for now, but a proper solution
-        // would be to include vendorId in the AuthContext's appUser object.
-        const session = await getServerSession();
-        const vendorId = session?.vendorId;
+        const vendorId = appUser.vendorId;
 
         if (!vendorId) {
             toast({ title: 'Error', description: 'Could not find your vendor profile.', variant: 'destructive'});
