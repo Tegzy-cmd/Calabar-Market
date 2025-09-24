@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
-import { LogOut, Settings, User, LayoutDashboard, ShoppingCart, Package, Truck } from "lucide-react"
+import { LogOut, Settings, User, LayoutDashboard, ShoppingCart } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";

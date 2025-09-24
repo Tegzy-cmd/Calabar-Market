@@ -9,6 +9,7 @@ export type User = {
   phoneNumber?: string;
   addresses?: string[];
   vendorId?: string; // Link to vendor profile
+  dispatcherId?: string;
 };
 
 export type Product = {

@@ -12,7 +12,7 @@ export const users: User[] = [
   { id: 'user-1', name: 'John Doe', email: 'john.doe@example.com', role: 'user', avatarUrl: findImage('user-avatar-1'), phoneNumber: '+2348012345678', addresses: ['123 Main St, Calabar, Nigeria'] },
   { id: 'user-2', name: 'Jane Smith', email: 'jane.smith@example.com', role: 'user', avatarUrl: findImage('user-avatar-2'), phoneNumber: '+2348012345679', addresses: ['456 Oak Ave, Calabar, Nigeria', '789 Pine Ln, Calabar, Nigeria'] },
   { id: 'vendor-admin-1', name: 'Burger Queen Admin', email: 'admin@burgerqueen.com', role: 'vendor', avatarUrl: findImage('vendor-logo-1') },
-  { id: 'admin-1', name: 'App Admin', email: 'admin@calabareats.com', role: 'admin', avatarUrl: findImage('user-avatar-1') },
+  { id: 'admin-1', name: 'App Admin', email: 'admin@calabarmarket.com', role: 'admin', avatarUrl: findImage('user-avatar-1') },
 ];
 
 export const dispatchers: Dispatcher[] = [

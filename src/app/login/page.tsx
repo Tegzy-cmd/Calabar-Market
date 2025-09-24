@@ -48,6 +48,7 @@ export default function LoginPage() {
         email: user.email,
         role: user.role,
         avatarUrl: user.avatarUrl,
+        dispatcherId: user.dispatcherId,
       });
        Cookies.set('session_user', userString, { expires: 1 });
     } catch (e) {

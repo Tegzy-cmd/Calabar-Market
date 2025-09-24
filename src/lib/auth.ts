@@ -1,5 +1,4 @@
 
-
 'use server';
 import { cookies }from 'next/headers';
 import type { User } from '@/lib/types';
@@ -48,7 +47,8 @@ export async function getServerSession(): Promise<Session | null> {
       if (user.role === 'dispatcher') {
          const userDoc = await getDoc(doc(db, 'users', user.id));
           if (userDoc.exists()) {
-             session.dispatcherId = user.id; 
+             const userData = userDoc.data() as User;
+             session.dispatcherId = userData.id; // Dispatcher ID is the user ID
           }
       }
 
