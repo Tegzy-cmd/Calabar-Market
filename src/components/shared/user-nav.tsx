@@ -72,7 +72,7 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-           <DropdownMenuItem asChild>
+          <DropdownMenuItem asChild>
             <Link href={getDashboardLink()}>
               <LayoutDashboard className="mr-2 h-4 w-4" />
               <span>Dashboard</span>
@@ -92,36 +92,15 @@ export function UserNav() {
                </Link>
             </DropdownMenuItem>
            )}
-            {isVendor && (
-              <>
-                 <DropdownMenuItem asChild>
-                  <Link href="/vendor/orders">
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      <span>Orders</span>
-                  </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                  <Link href="/vendor/products">
-                      <Package className="mr-2 h-4 w-4" />
-                      <span>Products</span>
-                  </Link>
-                  </DropdownMenuItem>
-              </>
-            )}
-             {isDispatcher && (
-              <DropdownMenuItem asChild>
-                <Link href="/dispatcher">
-                  <Truck className="mr-2 h-4 w-4" />
-                  <span>My Tasks</span>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+         <DropdownMenuGroup>
+             <DropdownMenuItem asChild>
+                <Link href={ isVendor ? "/vendor/settings" : "/profile"}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
                 </Link>
-              </DropdownMenuItem>
-            )}
-          <DropdownMenuItem asChild>
-             <Link href="/vendor/settings">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-             </Link>
-          </DropdownMenuItem>
+            </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>

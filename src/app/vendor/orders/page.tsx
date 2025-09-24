@@ -52,57 +52,53 @@ export default async function VendorOrdersPage() {
     const orders = await getOrdersByVendorId(session.vendorId);
     
     return (
-        <div className="space-y-8">
-            <h1 className="text-3xl font-headline font-bold">Your Orders</h1>
-            
-            <Card>
-                <CardHeader>
-                    <CardTitle>All Orders ({orders.length})</CardTitle>
-                    <CardDescription>A list of all orders from your customers.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                   {orders.length > 0 ? (
-                     <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Order ID</TableHead>
-                                <TableHead>Customer</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Amount</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead><span className="sr-only">Actions</span></TableHead>
+        <Card>
+            <CardHeader>
+                <CardTitle>All Orders ({orders.length})</CardTitle>
+                <CardDescription>A list of all orders from your customers.</CardDescription>
+            </CardHeader>
+            <CardContent>
+               {orders.length > 0 ? (
+                 <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Order ID</TableHead>
+                            <TableHead>Customer</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead><span className="sr-only">Actions</span></TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {orders.map((order: Order) => (
+                            <TableRow key={order.id}>
+                                <TableCell className="font-medium">
+                                    <Link href={`/vendor/orders/${order.id}`} className="text-primary hover:underline">
+                                       #{order.id.substring(0, 7)}
+                                    </Link>
+                                </TableCell>
+                                <TableCell>{order.user.name}</TableCell>
+                                <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                                <TableCell>₦{order.total.toFixed(2)}</TableCell>
+                                <TableCell>
+                                    <Badge className={cn("capitalize text-white", getStatusColor(order.status))}>
+                                        {order.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <OrderStatusUpdater order={order} role="vendor" />
+                                </TableCell>
                             </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {orders.map((order: Order) => (
-                                <TableRow key={order.id}>
-                                    <TableCell className="font-medium">
-                                        <Link href={`/vendor/orders/${order.id}`} className="text-primary hover:underline">
-                                           #{order.id.substring(0, 7)}
-                                        </Link>
-                                    </TableCell>
-                                    <TableCell>{order.user.name}</TableCell>
-                                    <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
-                                    <TableCell>₦{order.total.toFixed(2)}</TableCell>
-                                    <TableCell>
-                                        <Badge className={cn("capitalize text-white", getStatusColor(order.status))}>
-                                            {order.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <OrderStatusUpdater order={order} role="vendor" />
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                   ) : (
-                    <div className="text-center py-12 text-muted-foreground">
-                        <p>You have no orders yet.</p>
-                    </div>
-                   )}
-                </CardContent>
-            </Card>
-        </div>
+                        ))}
+                    </TableBody>
+                </Table>
+               ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                    <p>You have no orders yet.</p>
+                </div>
+               )}
+            </CardContent>
+        </Card>
     );
 }

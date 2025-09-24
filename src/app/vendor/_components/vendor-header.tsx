@@ -1,44 +1,21 @@
 
 'use client';
 
-import Link from "next/link";
 import { UserNav } from "@/components/shared/user-nav";
-import { Logo } from "@/components/shared/logo";
-import { usePathname } from 'next/navigation';
-import { cn } from "@/lib/utils";
-
-const menuItems = [
-  { href: '/vendor', label: 'Dashboard' },
-  { href: '/vendor/orders', label: 'Orders' },
-  { href: '/vendor/products', label: 'Products' },
-  { href: '/vendor/settings', label: 'Settings' },
-];
+import { Breadcrumb } from '@/components/shared/breadcrumb';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export function VendorHeader() {
-  const pathname = usePathname();
-
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
-        <Logo href="/vendor" />
-        <nav className="hidden md:flex flex-1 items-center justify-center space-x-5 text-sm font-medium">
-          {menuItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "transition-colors hover:text-primary",
-                (pathname === item.href || (item.href !== '/vendor' && pathname.startsWith(item.href))) ? "text-primary" : "text-muted-foreground"
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="flex items-center justify-end space-x-4">
-            <UserNav />
-        </div>
+    <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+       <div className="flex items-center gap-2 md:hidden">
+          <SidebarTrigger />
+       </div>
+       <Breadcrumb />
+      <div className="relative ml-auto flex-1 md:grow-0">
+        {/* Search can go here if needed */}
       </div>
+      <UserNav />
     </header>
   );
 }

@@ -18,57 +18,50 @@ export default async function VendorProductsPage() {
     const products = await getProductsByVendorId(session.vendorId);
     
     return (
-        <div className="space-y-8">
-             <div className="flex items-center justify-between">
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-headline font-bold">Your Products</h1>
-                    <p className="text-muted-foreground">Manage all products for your store.</p>
-                </div>
-                <ProductActions vendorId={session.vendorId} />
-            </div>
-            
-            <Card>
-                <CardHeader>
                     <CardTitle>All Products ({products.length})</CardTitle>
                     <CardDescription>A list of all products in your store.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Image</TableHead>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Price</TableHead>
-                                <TableHead>Stock</TableHead>
-                                <TableHead>
-                                    <span className="sr-only">Actions</span>
-                                </TableHead>
+                </div>
+                <ProductActions vendorId={session.vendorId} />
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Image</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Price</TableHead>
+                            <TableHead>Stock</TableHead>
+                            <TableHead>
+                                <span className="sr-only">Actions</span>
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {products.map((product: Product) => (
+                            <TableRow key={product.id}>
+                                <TableCell>
+                                    <Image src={product.imageUrl} alt={product.name} width={40} height={40} className="rounded-md object-cover" />
+                                </TableCell>
+                                <TableCell className="font-medium">{product.name}</TableCell>
+                                <TableCell>₦{product.price.toFixed(2)}</TableCell>
+                                <TableCell>
+                                    <Badge variant={product.stock > 0 ? "secondary" : "destructive"}>
+                                        {product.stock > 0 ? `${product.stock} in stock` : "Out of Stock"}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex justify-end">
+                                        <ProductActions product={product} vendorId={session.vendorId!} />
+                                    </div>
+                                </TableCell>
                             </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {products.map((product: Product) => (
-                                <TableRow key={product.id}>
-                                    <TableCell>
-                                        <Image src={product.imageUrl} alt={product.name} width={40} height={40} className="rounded-md object-cover" />
-                                    </TableCell>
-                                    <TableCell className="font-medium">{product.name}</TableCell>
-                                    <TableCell>₦{product.price.toFixed(2)}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={product.stock > 0 ? "secondary" : "destructive"}>
-                                            {product.stock > 0 ? `${product.stock} in stock` : "Out of Stock"}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex justify-end">
-                                            <ProductActions product={product} vendorId={session.vendorId!} />
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
-        </div>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
     );
 }
