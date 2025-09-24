@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -225,9 +226,16 @@ export default function SignupPage() {
                 Sign up here
                 </Link>
             </p>
+             <p>
+                Are you a dispatcher?{" "}
+                <Link href="/dispatcher-signup" className="underline text-primary font-medium">
+                Sign up here
+                </Link>
+            </p>
           </div>
         </CardContent>
       </Card>
     </div>
   );
 }
+

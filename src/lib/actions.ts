@@ -1,11 +1,12 @@
 
+
 'use server';
 
 import { auth, db } from './firebase';
 import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp, collectionGroup, getDocs as getDocsFromFirestore, query, orderBy } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { users, vendors, products, dispatchers, orders, getDispatchers } from './data';
-import type { User, Vendor, Dispatcher, Product, OrderStatus, ChatMessage } from './types';
+import type { User, Vendor, Dispatcher, Product, OrderStatus, ChatMessage, DispatcherVehicle } from './types';
 import { revalidatePath } from 'next/cache';
 import { placeholderImages } from './placeholder-images';
 import { getServerSession } from './auth';
@@ -222,6 +223,58 @@ export async function createVendorAndUser(data: {
     }
 }
 
+
+export async function createDispatcherAndUser(data: {
+    name: string;
+    email: string;
+    password: string;
+    vehicle: DispatcherVehicle;
+}) {
+    let uid;
+    try {
+        // 1. Create Firebase Auth user
+        const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+        uid = userCredential.user.uid;
+        await updateProfile(userCredential.user, { displayName: data.name });
+
+        // 2. Create Dispatcher document (using UID as doc ID)
+        const dispatcherData: Omit<Dispatcher, 'id'> = {
+            name: data.name,
+            vehicle: data.vehicle,
+            status: 'unavailable',
+            location: 'Not Available',
+            rating: 5,
+            completedDispatches: 0,
+            avatarUrl: placeholderImages.find(p => p.id === 'rider-avatar-1')?.imageUrl || '',
+        };
+        await setDoc(doc(db, 'dispatchers', uid), dispatcherData);
+
+        // 3. Create User document with 'dispatcher' role
+        const userData: Omit<User, 'id'> = {
+            name: data.name,
+            email: data.email,
+            role: 'dispatcher',
+            avatarUrl: dispatcherData.avatarUrl,
+            dispatcherId: uid,
+        };
+        await setDoc(doc(db, 'users', uid), userData);
+
+        revalidatePath('/admin/riders');
+        revalidatePath('/admin/users');
+
+        return { success: true, message: 'Dispatcher account created. Please log in.' };
+
+    } catch (e: any) {
+        console.error("Error creating dispatcher and user:", e);
+        // Basic cleanup attempt
+        if (uid) {
+            // In a real app, you'd use Admin SDK to delete the user.
+        }
+        return { success: false, error: e.message || 'An unexpected error occurred.' };
+    }
+}
+
+
 // Order Status Action
 export async function updateOrderStatus(orderId: string, status: OrderStatus) {
     try {
@@ -411,3 +464,4 @@ export async function getMessages(orderId: string): Promise<ChatMessage[]> {
         return [];
     }
 }
+
