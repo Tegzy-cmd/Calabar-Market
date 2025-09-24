@@ -19,7 +19,7 @@ import { DollarSign, ShoppingCart, PackageCheck } from "lucide-react";
 import { getServerSession } from "@/lib/auth";
 import { getOrdersByVendorId } from "@/lib/data";
 import type { Order, OrderStatus, Product } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, getOrderStatusVariant } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import { VendorSalesOverview } from "./_components/sales-overview";
 
@@ -36,23 +36,6 @@ function StatCard({ title, value, icon, description }: { title: string, value: s
           </CardContent>
         </Card>
     )
-}
-
-const getStatusColor = (status: OrderStatus) => {
-    switch (status) {
-        case 'delivered':
-            return 'bg-green-500 hover:bg-green-600';
-        case 'dispatched':
-            return 'bg-blue-500 hover:bg-blue-600';
-        case 'preparing':
-            return 'bg-orange-500 hover:bg-orange-600 text-white';
-        case 'placed':
-            return 'bg-gray-500 hover:bg-gray-600';
-        case 'cancelled':
-            return 'bg-red-500 hover:bg-red-600';
-        default:
-            return '';
-    }
 }
 
 export default async function VendorDashboardPage() {
@@ -178,9 +161,10 @@ export default async function VendorDashboardPage() {
                     <TableCell className="text-right">₦{order.total.toFixed(2)}</TableCell>
                     <TableCell>
                        <Badge 
-                        className={cn("capitalize text-white", getStatusColor(order.status))}
+                        variant={getOrderStatusVariant(order.status)}
+                        className={cn("capitalize")}
                       >
-                        {order.status}
+                        {order.status.replace('-', ' ')}
                       </Badge>
                     </TableCell>
                   </TableRow>
@@ -192,3 +176,5 @@ export default async function VendorDashboardPage() {
     </div>
   );
 }
+
+    

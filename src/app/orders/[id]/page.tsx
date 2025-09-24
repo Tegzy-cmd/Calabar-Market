@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { User, MapPin, Phone, Clock, Truck, Store, CheckCircle, Package, CircleDot, MessageSquare, Star, Hand, ShieldCheck } from "lucide-react";
 import { AppHeader } from "@/components/shared/header";
-import { cn } from "@/lib/utils";
+import { cn, getOrderStatusVariant } from "@/lib/utils";
 import type { OrderStatus, Order as OrderType } from "@/lib/types";
 import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -20,25 +20,6 @@ import { DispatcherRating } from "@/components/shared/dispatcher-rating";
 import { updateOrderStatus } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 
-
-const getStatusColor = (status: OrderStatus) => {
-    switch (status) {
-        case 'delivered':
-            return 'bg-green-500 hover:bg-green-600';
-        case 'dispatched':
-            return 'bg-blue-500 hover:bg-blue-600';
-        case 'awaiting-confirmation':
-            return 'bg-yellow-500 hover:bg-yellow-600';
-        case 'preparing':
-            return 'bg-orange-500 hover:bg-orange-600 text-white';
-        case 'placed':
-            return 'bg-gray-500 hover:bg-gray-600';
-        case 'cancelled':
-            return 'bg-red-500 hover:bg-red-600';
-        default:
-            return '';
-    }
-}
 
 const statusTimeline = [
     { status: 'placed', icon: CircleDot, text: 'Order Placed' },
@@ -149,8 +130,7 @@ export default function OrderDetailPage() {
   }
   
   let currentStatusIndex = statusTimeline.findIndex(item => item.status === order.status);
-  const isDelivered = order.status === 'delivered';
-  if (isDelivered) {
+  if (order.status === 'delivered') {
       currentStatusIndex = statusTimeline.length;
   }
 
@@ -216,7 +196,7 @@ export default function OrderDetailPage() {
                         Chat with Dispatcher
                     </Button>
                 )}
-                <Badge className={cn("capitalize text-lg py-1 px-4 text-white", getStatusColor(order.status))}>{order.status.replace('-', ' ')}</Badge>
+                <Badge variant={getOrderStatusVariant(order.status)} className={cn("capitalize text-lg py-1 px-4")}>{order.status.replace('-', ' ')}</Badge>
             </div>
         </div>
         
@@ -231,6 +211,7 @@ export default function OrderDetailPage() {
                         {statusTimeline.map((item, index) => {
                             const isActive = index <= currentStatusIndex;
                             const isCompleted = index < currentStatusIndex;
+                            const isDelivered = order.status === 'delivered';
                             return (
                                 <div key={item.status} className="flex-1 text-center">
                                     <div className="flex items-center justify-center">
@@ -387,3 +368,5 @@ export default function OrderDetailPage() {
     </div>
   );
 }
+
+    

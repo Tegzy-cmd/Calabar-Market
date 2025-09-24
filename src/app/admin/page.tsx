@@ -19,7 +19,7 @@ import { Users, Store, ShoppingCart, DollarSign, Crown, PackageCheck, Utensils, 
 import { getAllOrders, getUsers, getVendors } from "@/lib/data";
 import type { Order, OrderStatus } from "@/lib/types";
 import { CategoryChart } from "./_components/category-chart";
-import { cn } from "@/lib/utils";
+import { cn, getOrderStatusVariant } from "@/lib/utils";
 import { SalesOverview } from "./_components/sales-overview";
 
 export default async function AdminDashboardPage() {
@@ -73,39 +73,6 @@ export default async function AdminDashboardPage() {
 
   const topVendor = [...topVendorStats.entries()].sort((a, b) => b[1].sales - a[1].sales)[0]?.[1] || { name: 'N/A', sales: 0 };
   const topProduct = [...topProductStats.entries()].sort((a, b) => b[1].sales - a[1].sales)[0]?.[1] || { name: 'N/A', sales: 0 };
-
-  const getStatusVariant = (status: OrderStatus): "default" | "secondary" | "destructive" | "outline" => {
-    switch (status) {
-      case 'delivered':
-        return 'default';
-      case 'cancelled':
-        return 'destructive';
-      case 'dispatched':
-          return 'secondary';
-      case 'preparing':
-          return 'outline';
-      default:
-        return 'secondary';
-    }
-  };
-
-  const getStatusColor = (status: OrderStatus) => {
-    switch (status) {
-        case 'delivered':
-            return 'bg-green-500 hover:bg-green-600';
-        case 'dispatched':
-            return 'bg-blue-500 hover:bg-blue-600';
-        case 'preparing':
-            return 'bg-orange-500 hover:bg-orange-600 text-white';
-        case 'placed':
-            return 'bg-gray-500 hover:bg-gray-600';
-        case 'cancelled':
-            return 'bg-red-500 hover:bg-red-600';
-        default:
-            return '';
-    }
-  }
-
 
   return (
     <div className="space-y-8">
@@ -210,10 +177,10 @@ export default async function AdminDashboardPage() {
                     <TableCell className="text-right">₦{order.total.toFixed(2)}</TableCell>
                     <TableCell>
                        <Badge 
-                        variant={getStatusVariant(order.status)}
-                        className={cn("capitalize", getStatusColor(order.status))}
+                        variant={getOrderStatusVariant(order.status)}
+                        className={cn("capitalize")}
                       >
-                        {order.status}
+                        {order.status.replace('-', ' ')}
                       </Badge>
                     </TableCell>
                   </TableRow>
@@ -240,3 +207,5 @@ function StatCard({ title, value, icon, description }: { title: string, value: s
         </Card>
     )
 }
+
+    
