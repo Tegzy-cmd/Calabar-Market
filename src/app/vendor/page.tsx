@@ -21,7 +21,7 @@ import { getOrdersByVendorId } from "@/lib/data";
 import type { Order, OrderStatus, Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { redirect } from "next/navigation";
-import { SalesOverview } from "@/app/admin/_components/sales-overview";
+import { VendorSalesOverview } from "./_components/sales-overview";
 
 function StatCard({ title, value, icon, description }: { title: string, value: string, icon: React.ReactNode, description?: string }) {
     return (
@@ -125,7 +125,7 @@ export default async function VendorDashboardPage() {
       </div>
 
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-7">
-        <SalesOverview orders={orders} />
+        <VendorSalesOverview orders={orders} />
         
         <Card className="lg:col-span-3">
           <CardHeader>
