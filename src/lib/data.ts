@@ -266,6 +266,7 @@ export async function getOrderById(id: string): Promise<Order | null> {
 
 export const getProductById = async (id: string) => await fetchDocumentById<Product>('products', id);
 export const getUserById = async (id: string) => await fetchDocumentById<User>('users', id);
+export const getDispatcherById = async (id: string) => await fetchDocumentById<Dispatcher>('dispatchers', id);
 export const getDispatchers = async () => await fetchCollection<Dispatcher>('dispatchers');
 export const getUsers = async () => await fetchCollection<User>('users');
 
@@ -327,4 +328,5 @@ export const getOrdersByDispatcherId = async (dispatcherId: string): Promise<Ord
     
 
     
+
 

@@ -2,13 +2,13 @@
 
 'use client';
 
-import { getOrderById } from "@/lib/data";
+import { getOrderById, getVendorById, getUserById, getDispatcherById, getProductById } from "@/lib/data";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { User, MapPin, Phone, Clock, CheckCircle2, MessageSquare } from "lucide-react";
-import type { OrderStatus, Order as OrderType } from "@/lib/types";
+import type { OrderStatus, Order as OrderType, Product, OrderItem } from "@/lib/types";
 import { OrderStatusUpdater } from "../_components/order-status-updater";
 import { cn } from "@/lib/utils";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChatRoom } from "@/components/shared/chat-room";
 import { useUnreadMessages } from "@/hooks/use-unread-messages";
+import { db, onSnapshot, doc } from '@/lib/firebase';
 
 
 const getStatusColor = (status: OrderStatus) => {
@@ -44,9 +45,53 @@ export default function VendorOrderDetailPage() {
   const { hasUnread, resetUnread } = useUnreadMessages(id, 'vendor');
   
   useEffect(() => {
-    if (id) {
-        getOrderById(id).then(setOrder);
-    }
+    if (!id) return;
+
+    const orderRef = doc(db, 'orders', id);
+    
+    const unsubscribe = onSnapshot(orderRef, async (docSnap) => {
+      if (docSnap.exists()) {
+        const orderData = { id: docSnap.id, ...docSnap.data() };
+
+        // Fetch related documents just like getOrderById does
+        const user = await getUserById(orderData.userId);
+        const vendor = await getVendorById(orderData.vendorId);
+        const dispatcher = orderData.dispatcherId ? await getDispatcherById(orderData.dispatcherId) : undefined;
+        
+        if (!user || !vendor) {
+            setOrder(null); // or handle error
+            return;
+        }
+
+        const items: OrderItem[] = await Promise.all(
+            orderData.items.map(async (item: { productId: string; quantity: number; price: number }) => {
+                const product = await getProductById(item.productId);
+                return { 
+                    product: { ...product!, price: item.price || product!.price }, // Use price from order if available
+                    quantity: item.quantity 
+                };
+            })
+        );
+        
+        const fullOrder = {
+            ...orderData,
+            createdAt: orderData.createdAt.toDate().toISOString(),
+            user,
+            vendor,
+            dispatcher,
+            items,
+            status: orderData.status as OrderStatus,
+        } as OrderType;
+
+        setOrder(fullOrder);
+
+      } else {
+        setOrder(null);
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, [id]);
 
   const handleOpenChat = () => {
