@@ -12,7 +12,7 @@ export interface AuthContextType {
     user: FirebaseUser | null;
     appUser: AppUser | null;
     loading: boolean;
-    syncUser: (user: FirebaseUser) => Promise<AppUser | null>;
+    syncUser: (user: FirebaseUser | null) => Promise<AppUser | null>;
 }
 
 export const AuthContext = createContext<AuthContextType>({ user: null, appUser: null, loading: true, syncUser: async () => null });
@@ -60,3 +60,5 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     </AuthContext.Provider>
   );
 };
+
+    

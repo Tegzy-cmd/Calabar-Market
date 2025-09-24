@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/hooks/use-cart';
-import Image from 'next/image';
-import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
@@ -20,20 +18,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getUserById } from '@/lib/data';
-import type { User } from '@/lib/types';
 import { updateUser } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-
+import Link from 'next/link';
 
 export default function CheckoutPage() {
-  const { items, total, setDeliveryAddress } = useCart();
-  const { user: authUser, loading, appUser: initialAppUser } = useAuth();
-  const [appUser, setAppUser] = useState<User | null>(initialAppUser);
-  const [selectedAddress, setSelectedAddress] = useState<string>('');
+  const { items, total, setDeliveryAddress, deliveryAddress } = useCart();
+  const { user: authUser, loading, appUser, syncUser } = useAuth();
+  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [selectedAddress, setSelectedAddress] = useState(deliveryAddress || '');
+
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -42,54 +39,48 @@ export default function CheckoutPage() {
     if (!loading && !authUser) {
       router.push('/login?redirect=/checkout');
     }
-    
-    const fetchUser = async () => {
-        if (authUser) {
-            const user = await getUserById(authUser.uid);
-            setAppUser(user);
-        }
-    };
-    if (!appUser) {
-        fetchUser();
-    }
-  }, [authUser, loading, router, appUser]);
+  }, [authUser, loading, router]);
 
   useEffect(() => {
     if (appUser) {
         setName(appUser.name || '');
         setEmail(appUser.email || '');
         setPhone(appUser.phoneNumber || '');
-        if (appUser.addresses && appUser.addresses.length > 0) {
-            setSelectedAddress(appUser.addresses[0]);
+        if (!deliveryAddress && appUser.addresses && appUser.addresses.length > 0) {
+            const primaryAddress = appUser.addresses[0];
+            setSelectedAddress(primaryAddress);
+            setDeliveryAddress(primaryAddress);
+        } else if (deliveryAddress) {
+            setSelectedAddress(deliveryAddress);
         }
     }
-  }, [appUser]);
+  }, [appUser, deliveryAddress, setDeliveryAddress]);
   
   const handleProceedToPayment = () => {
+      if (!selectedAddress.trim()) {
+          toast({ title: "Error", description: "Please enter a delivery address.", variant: "destructive"});
+          return;
+      }
+
       startTransition(async () => {
-        if (!appUser) {
-            toast({ title: "Error", description: "You must be logged in.", variant: "destructive"});
-            return;
-        }
-
-        const userData = {
-            name,
-            email,
-            phoneNumber: phone,
-            addresses: [selectedAddress]
-        };
-
-        const result = await updateUser(appUser.id, userData);
-
-        if (result.success) {
-            setDeliveryAddress(selectedAddress);
-            router.push('/payment');
-        } else {
-            toast({ title: 'Error', description: result.error, variant: 'destructive'});
-        }
+          if (appUser && authUser) {
+              const userData = {
+                  name,
+                  email,
+                  phoneNumber: phone,
+                  addresses: [selectedAddress],
+              };
+              const result = await updateUser(appUser.id, userData);
+              if (result.success) {
+                  await syncUser(authUser); // Refresh appUser state
+                  setDeliveryAddress(selectedAddress);
+                  router.push('/payment');
+              } else {
+                  toast({ title: 'Error', description: "Could not save your delivery details. " + result.error, variant: 'destructive'});
+              }
+          }
       });
   };
-
 
   if (loading || !authUser || !appUser) {
     return (
@@ -141,7 +132,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="address">Delivery Address</Label>
-                    {(appUser.addresses && appUser.addresses.length > 0 && appUser.addresses[0]) ? (
+                    {(appUser.addresses && appUser.addresses.length > 1) ? (
                         <Select value={selectedAddress} onValueChange={setSelectedAddress}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select an address" />
