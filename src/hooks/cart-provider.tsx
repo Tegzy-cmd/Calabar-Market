@@ -10,8 +10,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         setIsMounted(true);
     }, []);
 
+    // By rendering children on the server, we avoid a hydration mismatch.
+    // The actual cart logic in useCart is still client-side safe.
     if (!isMounted) {
-        return null;
+        return <>{children}</>;
     }
 
     return <>{children}</>;
