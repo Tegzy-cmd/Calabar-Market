@@ -61,7 +61,21 @@ export function OrderStatusUpdater({ order, role }: OrderStatusUpdaterProps) {
   const availableActions = actions.filter(action => action.condition);
 
   if (availableActions.length === 0 && role === 'vendor' && order.status !== 'placed') {
-      return null;
+      return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button size="icon" variant="ghost" disabled>
+                    <MoreHorizontal className="h-4 w-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem disabled>
+                    <Send className="mr-2 h-4 w-4" />
+                    <span>Dispatcher Assigned</span>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
   }
   
   if (role === 'vendor' && order.status !== 'placed') {
@@ -82,7 +96,11 @@ export function OrderStatusUpdater({ order, role }: OrderStatusUpdaterProps) {
     );
   }
 
-  if (availableActions.length === 0 && role === 'dispatcher' && order.status !== 'delivered') {
+  if (availableActions.length === 0 && role === 'dispatcher' && (order.status === 'delivered' || order.status === 'cancelled')) {
+    return null;
+  }
+
+  if (availableActions.length === 0 && role === 'dispatcher') {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -116,3 +134,5 @@ export function OrderStatusUpdater({ order, role }: OrderStatusUpdaterProps) {
     </>
   );
 }
+
+    

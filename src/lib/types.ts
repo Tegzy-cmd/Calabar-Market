@@ -79,3 +79,5 @@ export type ChatMessage = {
     senderRole: 'user' | 'vendor' | 'dispatcher';
     timestamp: string;
 }
+
+    

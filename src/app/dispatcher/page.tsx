@@ -27,8 +27,9 @@ const getStatusColor = (status: OrderStatus) => {
             return 'bg-green-500 hover:bg-green-600';
         case 'dispatched':
             return 'bg-blue-500 hover:bg-blue-600';
-        case 'preparing':
         case 'awaiting-confirmation':
+            return 'bg-yellow-500 hover:bg-yellow-600';
+        case 'preparing':
             return 'bg-orange-500 hover:bg-orange-600 text-white';
         case 'placed':
             return 'bg-gray-500 hover:bg-gray-600';
@@ -97,7 +98,7 @@ export default function DispatcherDashboardPage() {
         return <p>Loading dashboard...</p>
     }
 
-    const activeOrders = orders.filter(o => o.status === 'dispatched' || o.status === 'preparing' || o.status === 'awaiting-confirmation');
+    const activeOrders = orders.filter(o => o.status === 'dispatched' || o.status === 'preparing' || o.status === 'awaiting-confirmation' || o.status === 'placed');
     const completedOrders = orders.filter(o => o.status === 'delivered');
     const completedToday = completedOrders.filter(o => isToday(parseISO(o.createdAt))).length;
     const earningsToday = completedToday * 300; // Assume ₦300 per delivery
