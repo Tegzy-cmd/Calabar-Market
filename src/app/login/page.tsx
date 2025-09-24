@@ -20,6 +20,7 @@ import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/use-auth';
+import type { User as AppUser } from '@/lib/types';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -31,17 +32,41 @@ export default function LoginPage() {
   const { syncUser } = useAuth();
   const redirectUrl = searchParams.get('redirect') || '/browse';
 
+  const handleRedirect = (user: AppUser | null) => {
+    if (!user) {
+      router.push('/browse');
+      return;
+    }
+
+    if (redirectUrl && redirectUrl !== '/browse') {
+        router.push(redirectUrl);
+        return;
+    }
+
+    switch (user.role) {
+      case 'admin':
+        router.push('/admin');
+        break;
+      case 'vendor':
+        router.push('/vendor');
+        break;
+      default:
+        router.push('/browse');
+        break;
+    }
+  };
+
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsPending(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      await syncUser(userCredential.user);
+      const appUser = await syncUser(userCredential.user);
       toast({
         title: "Logged in successfully!",
         description: "Welcome back.",
       });
-      router.push(redirectUrl);
+      handleRedirect(appUser);
     } catch (error: any) {
       console.error("Error during email login:", error);
       toast({
@@ -57,14 +82,15 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
+    setIsPending(true);
     try {
       const result = await signInWithPopup(auth, provider);
-      await syncUser(result.user);
+      const appUser = await syncUser(result.user);
       toast({
         title: "Logged in successfully!",
         description: "Welcome back.",
       });
-      router.push(redirectUrl);
+      handleRedirect(appUser);
     } catch (error: any) {
       console.error("Error during Google login:", error);
       if (error.code === 'auth/popup-closed-by-user') {
@@ -80,6 +106,8 @@ export default function LoginPage() {
           variant: "destructive",
         });
       }
+    } finally {
+        setIsPending(false);
     }
   };
 
@@ -138,8 +166,8 @@ export default function LoginPage() {
               {isPending ? 'Logging in...' : 'Login'}
             </Button>
             </form>
-            <Button variant="outline" className="w-full" onClick={handleGoogleLogin}>
-              Login with Google
+            <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isPending}>
+              {isPending ? 'Logging in...' : 'Login with Google'}
             </Button>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}

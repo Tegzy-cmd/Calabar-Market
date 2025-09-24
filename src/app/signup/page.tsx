@@ -20,6 +20,7 @@ import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithPopup, up
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/use-auth';
+import type { User as AppUser } from '@/lib/types';
 
 export default function SignupPage() {
   const [firstName, setFirstName] = useState('');
@@ -33,6 +34,30 @@ export default function SignupPage() {
   const { syncUser } = useAuth();
   const redirectUrl = searchParams.get('redirect') || '/browse';
 
+  const handleRedirect = (user: AppUser | null) => {
+    if (!user) {
+      router.push('/browse');
+      return;
+    }
+
+    if (redirectUrl && redirectUrl !== '/browse') {
+        router.push(redirectUrl);
+        return;
+    }
+
+    switch (user.role) {
+      case 'admin':
+        router.push('/admin');
+        break;
+      case 'vendor':
+        router.push('/vendor');
+        break;
+      default:
+        router.push('/browse');
+        break;
+    }
+  };
+
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsPending(true);
@@ -42,13 +67,13 @@ export default function SignupPage() {
       await updateProfile(userCredential.user, { displayName: name });
       
       // We need to pass the updated user object to syncUser
-      await syncUser({ ...userCredential.user, displayName: name });
+      const appUser = await syncUser({ ...userCredential.user, displayName: name });
 
       toast({
         title: "Account created!",
         description: "You have successfully signed up.",
       });
-      router.push(redirectUrl);
+      handleRedirect(appUser);
     } catch (error: any) {
       console.error("Error during email sign-up:", error);
       toast({
@@ -63,14 +88,15 @@ export default function SignupPage() {
 
   const handleGoogleSignUp = async () => {
     const provider = new GoogleAuthProvider();
+    setIsPending(true);
     try {
       const result = await signInWithPopup(auth, provider);
-      await syncUser(result.user);
+      const appUser = await syncUser(result.user);
       toast({
         title: "Account created!",
         description: "You have successfully signed up.",
       });
-      router.push(redirectUrl);
+      handleRedirect(appUser);
     } catch (error: any) {
       console.error("Error during Google sign-up:", error);
       if (error.code === 'auth/popup-closed-by-user') {
@@ -86,6 +112,8 @@ export default function SignupPage() {
           variant: "destructive",
         });
       }
+    } finally {
+        setIsPending(false);
     }
   };
 
@@ -160,8 +188,8 @@ export default function SignupPage() {
               {isPending ? 'Creating account...' : 'Create an account'}
             </Button>
             </form>
-             <Button variant="outline" className="w-full" onClick={handleGoogleSignUp}>
-              Sign up with Google
+             <Button variant="outline" className="w-full" onClick={handleGoogleSignUp} disabled={isPending}>
+              {isPending ? 'Creating account...' : 'Sign up with Google'}
             </Button>
           <div className="mt-4 text-center text-sm">
             Already have an account?{" "}

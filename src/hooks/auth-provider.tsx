@@ -12,20 +12,20 @@ export interface AuthContextType {
     user: FirebaseUser | null;
     appUser: AppUser | null;
     loading: boolean;
-    syncUser: (user: FirebaseUser) => Promise<void>;
+    syncUser: (user: FirebaseUser) => Promise<AppUser | null>;
 }
 
-export const AuthContext = createContext<AuthContextType>({ user: null, appUser: null, loading: true, syncUser: async () => {} });
+export const AuthContext = createContext<AuthContextType>({ user: null, appUser: null, loading: true, syncUser: async () => null });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const syncUser = useCallback(async (firebaseUser: FirebaseUser) => {
+  const syncUser = useCallback(async (firebaseUser: FirebaseUser | null): Promise<AppUser | null> => {
     if (!firebaseUser) {
         setAppUser(null);
-        return;
+        return null;
     }
     const { success, data, error } = await getOrCreateUser(firebaseUser.uid, {
         name: firebaseUser.displayName || 'New User',
@@ -35,8 +35,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if(success && data) {
         setAppUser(data);
+        return data;
     } else {
         console.error("Failed to sync user:", error);
+        setAppUser(null);
+        return null;
     }
   }, []);
 
@@ -44,11 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
-      if (user) {
-        await syncUser(user);
-      } else {
-        setAppUser(null);
-      }
+      await syncUser(user);
       setLoading(false);
     });
 

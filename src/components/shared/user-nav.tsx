@@ -17,12 +17,10 @@ import { CreditCard, LogOut, Settings, User, LayoutDashboard, ShoppingCart, Pack
 import { useAuth } from "@/hooks/use-auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { usePathname } from "next/navigation";
 
 export function UserNav() {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, appUser } = useAuth();
   const { toast } = useToast();
-  const pathname = usePathname();
 
   const handleLogout = async () => {
     await auth.signOut();
@@ -36,14 +34,15 @@ export function UserNav() {
 
   const userInitials = currentUser.displayName?.split(' ').map(n => n[0]).join('') || 'U';
 
-  const isAdmin = pathname.startsWith('/admin');
-  const isVendor = pathname.startsWith('/vendor');
-
   const getDashboardLink = () => {
-    if (isAdmin) return "/admin";
-    if (isVendor) return "/vendor";
-    return "/browse";
+    if (appUser?.role === 'admin') return "/admin";
+    if (appUser?.role === 'vendor') return "/vendor";
+    return "/browse"; // Fallback for regular users
   }
+  
+  const isVendor = appUser?.role === 'vendor';
+  const isAdmin = appUser?.role === 'admin';
+
 
   return (
     <DropdownMenu>
