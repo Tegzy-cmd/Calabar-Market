@@ -41,7 +41,12 @@ export function VendorTable({ vendors }: { vendors: Vendor[] }) {
       </TableHeader>
       <TableBody>
         {vendors.map((vendor) => (
-          <Collapsible asChild key={vendor.id} open={openVendorId === vendor.id} onOpenChange={() => setOpenVendorId(prevId => prevId === vendor.id ? null : vendor.id)}>
+          <Collapsible
+            key={vendor.id}
+            asChild
+            open={openVendorId === vendor.id}
+            onOpenChange={() => setOpenVendorId(prevId => prevId === vendor.id ? null : vendor.id)}
+          >
             <>
               <TableRow>
                 <TableCell>
