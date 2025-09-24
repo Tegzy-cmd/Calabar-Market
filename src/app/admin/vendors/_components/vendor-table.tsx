@@ -43,12 +43,12 @@ export function VendorTable({ vendors }: { vendors: Vendor[] }) {
         {vendors.map((vendor) => (
           <Collapsible asChild key={vendor.id} open={openVendorId === vendor.id} onOpenChange={() => setOpenVendorId(prevId => prevId === vendor.id ? null : vendor.id)}>
             <>
-              <TableRow className="cursor-pointer">
+              <TableRow>
                 <TableCell>
                   <CollapsibleTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" className="w-9">
                           {openVendorId === vendor.id ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                          <span className="sr-only">Toggle products</span>
+                          <span className="sr-only">Toggle products for {vendor.name}</span>
                       </Button>
                   </CollapsibleTrigger>
                 </TableCell>
@@ -96,27 +96,29 @@ export function VendorTable({ vendors }: { vendors: Vendor[] }) {
 
 function ProductTable({ products }: { products: Product[] }) {
     return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Image</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Stock</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {products.map(product => (
-                    <TableRow key={product.id}>
-                        <TableCell>
-                            <Image src={product.imageUrl} alt={product.name} width={40} height={40} className="rounded-md object-cover" />
-                        </TableCell>
-                        <TableCell className="font-medium">{product.name}</TableCell>
-                        <TableCell>₦{product.price.toFixed(2)}</TableCell>
-                        <TableCell>{product.stock}</TableCell>
+        <div className="border rounded-md">
+            <Table>
+                <TableHeader>
+                    <TableRow className="bg-background hover:bg-background">
+                        <TableHead>Image</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Stock</TableHead>
                     </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+                </TableHeader>
+                <TableBody>
+                    {products.map(product => (
+                        <TableRow key={product.id} className="bg-background hover:bg-muted/50">
+                            <TableCell>
+                                <Image src={product.imageUrl} alt={product.name} width={40} height={40} className="rounded-md object-cover" />
+                            </TableCell>
+                            <TableCell className="font-medium">{product.name}</TableCell>
+                            <TableCell>₦{product.price.toFixed(2)}</TableCell>
+                            <TableCell>{product.stock}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
     )
 }
