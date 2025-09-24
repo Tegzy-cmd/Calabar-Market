@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTransition, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+
 import {
   Card,
   CardContent,
@@ -35,7 +37,8 @@ import type { Vendor } from '@/lib/types';
 import { updateVendor } from '@/lib/actions';
 import { useAuth } from '@/hooks/use-auth';
 import { getVendorById } from '@/lib/data';
-import { redirect } from 'next/navigation';
+import { getServerSession } from '@/lib/auth';
+
 
 const vendorFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -54,17 +57,29 @@ export default function VendorSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const router = useRouter();
 
    useEffect(() => {
     if (authLoading) return;
     if (!appUser || appUser.role !== 'vendor') {
-        redirect('/login');
+      router.push('/login');
+      return;
     }
     
-    // In a real app, the vendor ID would be linked to the appUser
-    const vendorId = "vendor-1"; 
-
     const fetchVendor = async () => {
+        // Here we can't use `getServerSession` directly in a client component.
+        // The vendorId should be part of the appUser context if fetched correctly.
+        // Let's assume a simplified way to get it for now, but a proper solution
+        // would be to include vendorId in the AuthContext's appUser object.
+        const session = await getServerSession();
+        const vendorId = session?.vendorId;
+
+        if (!vendorId) {
+            toast({ title: 'Error', description: 'Could not find your vendor profile.', variant: 'destructive'});
+            setLoading(false);
+            return;
+        }
+
         const vendorData = await getVendorById(vendorId);
         if (vendorData) {
             setVendor(vendorData);
@@ -74,7 +89,7 @@ export default function VendorSettingsPage() {
     }
 
     fetchVendor();
-  }, [appUser, authLoading]);
+  }, [appUser, authLoading, router]);
 
   const form = useForm<VendorFormValues>({
     resolver: zodResolver(vendorFormSchema),
@@ -105,7 +120,7 @@ export default function VendorSettingsPage() {
   }
 
   if (!vendor) {
-      return <div>Could not load vendor data.</div>
+      return <div>Could not load vendor data. Please ensure your user account is correctly linked to a vendor profile.</div>
   }
 
   return (

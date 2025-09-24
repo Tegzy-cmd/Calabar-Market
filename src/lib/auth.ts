@@ -3,7 +3,7 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import type { User } from '@/lib/types';
 import { db } from './firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 
 // This is a placeholder for a real session management system.
 // In a production app, you would use a library like next-auth or a custom solution with JWTs.
@@ -27,11 +27,19 @@ export async function getServerSession(): Promise<Session | null> {
 
       if (user.role === 'vendor') {
         // Fetch the user document from Firestore to get the vendorId
-        const userDoc = await getDoc(doc(db, 'users', user.id));
-        if (userDoc.exists()) {
-          const userData = userDoc.data() as User & { vendorId?: string };
+        const userDocRef = doc(db, 'users', user.id);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          const userData = userDocSnap.data() as User & { vendorId?: string };
           if (userData.vendorId) {
             session.vendorId = userData.vendorId;
+          } else {
+             // Fallback: If vendorId is not on user, query vendors collection
+            const q = query(collection(db, 'vendors'), where('ownerId', '==', user.id));
+            const vendorQuerySnap = await getDocs(q);
+            if (!vendorQuerySnap.empty) {
+                session.vendorId = vendorQuerySnap.docs[0].id;
+            }
           }
         }
       }
