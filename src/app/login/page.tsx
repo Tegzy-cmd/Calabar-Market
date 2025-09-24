@@ -28,9 +28,8 @@ export default function LoginPage() {
   const [isPending, setIsPending] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toast } = useToast();
   const { syncUser } = useAuth();
-  const redirectUrl = searchParams.get('redirect') || '/browse';
+  const redirectUrl = searchParams.get('redirect') || '';
 
   const handleRedirect = (user: AppUser | null) => {
     if (!user) {
@@ -38,7 +37,7 @@ export default function LoginPage() {
       return;
     }
 
-    if (redirectUrl && redirectUrl !== '/browse') {
+    if (redirectUrl) {
         router.push(redirectUrl);
         return;
     }
