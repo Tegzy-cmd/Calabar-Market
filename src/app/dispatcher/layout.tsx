@@ -1,6 +1,5 @@
 import React from 'react';
-import { SidebarProvider, Sidebar, SidebarInset } from '@/components/ui/sidebar';
-import { DispatcherSidebar } from './_components/dispatcher-sidebar';
+import { DispatcherHeader } from './_components/dispatcher-header';
 
 export default function DispatcherLayout({
   children,
@@ -8,17 +7,11 @@ export default function DispatcherLayout({
   children: React.ReactNode
 }) {
   return (
-    <SidebarProvider>
-      <div className="min-h-screen">
-        <Sidebar>
-          <DispatcherSidebar />
-        </Sidebar>
-        <SidebarInset>
-          <div className="p-4 sm:p-6 lg:p-8">
-            {children}
-          </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+    <div className="flex flex-col min-h-screen">
+      <DispatcherHeader />
+      <main className="flex-1 p-4 sm:p-6 lg:p-8">
+        {children}
+      </main>
+    </div>
   )
 }
