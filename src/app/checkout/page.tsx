@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import {
   Select,
   SelectContent,
@@ -22,44 +22,73 @@ import {
 } from "@/components/ui/select";
 import { getUserById } from '@/lib/data';
 import type { User } from '@/lib/types';
+import { updateUser } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
 
 
 export default function CheckoutPage() {
   const { items, total, setDeliveryAddress } = useCart();
-  const { user: authUser, loading } = useAuth();
-  const [appUser, setAppUser] = useState<User | null>(null);
+  const { user: authUser, loading, appUser: initialAppUser } = useAuth();
+  const [appUser, setAppUser] = useState<User | null>(initialAppUser);
   const [selectedAddress, setSelectedAddress] = useState<string>('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
   
   useEffect(() => {
     if (!loading && !authUser) {
       router.push('/login?redirect=/checkout');
     }
     
-    if (authUser) {
-        const fetchUser = async () => {
+    const fetchUser = async () => {
+        if (authUser) {
             const user = await getUserById(authUser.uid);
             setAppUser(user);
-            if (user) {
-                setName(user.name || '');
-                setEmail(user.email || '');
-                setPhone(user.phoneNumber || '');
-                if (user.addresses && user.addresses.length > 0) {
-                    setSelectedAddress(user.addresses[0]);
-                }
-            }
         }
+    }
+    if (!appUser) {
         fetchUser();
     }
 
-  }, [authUser, loading, router]);
+  }, [authUser, loading, router, appUser]);
+
+  useEffect(() => {
+    if (appUser) {
+        setName(appUser.name || '');
+        setEmail(appUser.email || '');
+        setPhone(appUser.phoneNumber || '');
+        if (appUser.addresses && appUser.addresses.length > 0) {
+            setSelectedAddress(appUser.addresses[0]);
+        }
+    }
+  }, [appUser]);
   
   const handleProceedToPayment = () => {
-      setDeliveryAddress(selectedAddress);
-      router.push('/payment');
+      startTransition(async () => {
+        if (!appUser) {
+            toast({ title: "Error", description: "You must be logged in.", variant: "destructive"});
+            return;
+        }
+
+        const userData = {
+            name,
+            email,
+            phoneNumber: phone,
+            addresses: [selectedAddress]
+        };
+
+        const result = await updateUser(appUser.id, userData);
+
+        if (result.success) {
+            setDeliveryAddress(selectedAddress);
+            router.push('/payment');
+        } else {
+            toast({ title: 'Error', description: result.error, variant: 'destructive'});
+        }
+      });
   }
 
 
@@ -165,8 +194,8 @@ export default function CheckoutPage() {
                   </div>
               </CardContent>
             </Card>
-            <Button className="w-full" size="lg" onClick={handleProceedToPayment}>
-              Proceed to Payment
+            <Button className="w-full" size="lg" onClick={handleProceedToPayment} disabled={isPending}>
+              {isPending ? 'Saving...' : 'Proceed to Payment'}
             </Button>
           </div>
         </div>
