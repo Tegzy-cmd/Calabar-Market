@@ -48,11 +48,10 @@ export default function CheckoutPage() {
             const user = await getUserById(authUser.uid);
             setAppUser(user);
         }
-    }
+    };
     if (!appUser) {
         fetchUser();
     }
-
   }, [authUser, loading, router, appUser]);
 
   useEffect(() => {
@@ -89,7 +88,7 @@ export default function CheckoutPage() {
             toast({ title: 'Error', description: result.error, variant: 'destructive'});
         }
       });
-  }
+  };
 
 
   if (loading || !authUser || !appUser) {
@@ -100,7 +99,7 @@ export default function CheckoutPage() {
                 <p>Loading...</p>
             </main>
         </div>
-    )
+    );
   }
 
   if (items.length === 0) {
@@ -115,7 +114,7 @@ export default function CheckoutPage() {
             </Button>
         </main>
         </div>
-    )
+    );
   }
 
   return (
