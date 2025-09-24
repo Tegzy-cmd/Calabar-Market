@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { MoreHorizontal, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Trash2, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -84,7 +84,10 @@ export function UserActions({ user }: { user?: User }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onSelect={() => setIsFormOpen(true)}>Edit</DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => setIsFormOpen(true)}>
+            <Edit className="mr-2 h-4 w-4" />
+            Edit
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => setIsConfirmOpen(true)} className="text-destructive">
             <Trash2 className="mr-2 h-4 w-4" />

@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
-import { CreditCard, LogOut, Settings, User, LayoutDashboard, ShoppingCart, Package } from "lucide-react"
+import { LogOut, Settings, User, LayoutDashboard, ShoppingCart, Package } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -80,7 +80,7 @@ export function UserNav() {
            {!isAdmin && !isVendor && (
              <DropdownMenuItem asChild>
                <Link href="/orders">
-                  <CreditCard className="mr-2 h-4 w-4" />
+                  <ShoppingCart className="mr-2 h-4 w-4" />
                   <span>My Orders</span>
                </Link>
             </DropdownMenuItem>
