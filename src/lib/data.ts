@@ -296,7 +296,8 @@ const processOrderDoc = async (orderDoc: any): Promise<Order> => {
 }
 
 export const getAllOrders = async (): Promise<Order[]> => {
-    const querySnapshot = await getDocs(collection(db, 'orders'));
+    const q = query(collection(db, 'orders'));
+    const querySnapshot = await getDocs(q);
     return Promise.all(querySnapshot.docs.map(processOrderDoc));
 }
 
@@ -326,3 +327,4 @@ export const getOrdersByDispatcherId = async (dispatcherId: string): Promise<Ord
     
 
     
+
