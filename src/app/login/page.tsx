@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/use-auth';
 import type { User as AppUser } from '@/lib/types';
 import { GoogleIcon } from '@/components/shared/icons';
+import Cookies from 'js-cookie';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -39,6 +40,9 @@ export default function LoginPage() {
       return;
     }
 
+    // Set a cookie for server-side session retrieval
+    Cookies.set('session_user', JSON.stringify(user), { expires: 1 });
+
     if (redirectUrl) {
         router.push(redirectUrl);
         return;
@@ -50,6 +54,9 @@ export default function LoginPage() {
         break;
       case 'vendor':
         router.push('/vendor');
+        break;
+      case 'dispatcher':
+        router.push('/dispatcher');
         break;
       default:
         router.push('/browse');

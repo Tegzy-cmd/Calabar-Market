@@ -13,10 +13,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
-import { LogOut, Settings, User, LayoutDashboard, ShoppingCart, Package } from "lucide-react"
+import { LogOut, Settings, User, LayoutDashboard, ShoppingCart, Package, Truck } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
+import Cookies from "js-cookie";
+
 
 export function UserNav() {
   const { user: currentUser, appUser } = useAuth();
@@ -24,10 +26,13 @@ export function UserNav() {
 
   const handleLogout = async () => {
     await auth.signOut();
+    Cookies.remove('session_user');
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",
     });
+    // Redirect to home page after logout
+    window.location.href = '/';
   }
 
   if (!currentUser) return null;
@@ -37,11 +42,13 @@ export function UserNav() {
   const getDashboardLink = () => {
     if (appUser?.role === 'admin') return "/admin";
     if (appUser?.role === 'vendor') return "/vendor";
+    if (appUser?.role === 'dispatcher') return "/dispatcher";
     return "/browse"; // Fallback for regular users
   }
   
   const isVendor = appUser?.role === 'vendor';
   const isAdmin = appUser?.role === 'admin';
+  const isDispatcher = appUser?.role === 'dispatcher';
 
 
   return (
@@ -77,7 +84,7 @@ export function UserNav() {
               <span>Profile</span>
             </Link>
           </DropdownMenuItem>
-           {!isAdmin && !isVendor && (
+           {!isAdmin && !isVendor && !isDispatcher && (
              <DropdownMenuItem asChild>
                <Link href="/orders">
                   <ShoppingCart className="mr-2 h-4 w-4" />
@@ -100,6 +107,14 @@ export function UserNav() {
                   </Link>
                   </DropdownMenuItem>
               </>
+            )}
+             {isDispatcher && (
+              <DropdownMenuItem asChild>
+                <Link href="/dispatcher/tasks">
+                  <Truck className="mr-2 h-4 w-4" />
+                  <span>My Tasks</span>
+                </Link>
+              </DropdownMenuItem>
             )}
           <DropdownMenuItem asChild>
              <Link href="/settings">

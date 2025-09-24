@@ -283,10 +283,13 @@ const processOrderDoc = async (orderDoc: any): Promise<Order> => {
         })
     );
     
+    const dispatcher = orderData.dispatcherId ? await fetchDocumentById<Dispatcher>('dispatchers', orderData.dispatcherId) : undefined;
+    
     return {
         ...orderData,
         user: user!,
         vendor: vendor!,
+        dispatcher,
         items: items,
     } as Order;
 }
@@ -298,6 +301,18 @@ export const getAllOrders = async (): Promise<Order[]> => {
 
 export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
     const q = query(collection(db, 'orders'), where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+    return Promise.all(querySnapshot.docs.map(processOrderDoc));
+}
+
+export const getOrdersByVendorId = async (vendorId: string): Promise<Order[]> => {
+    const q = query(collection(db, 'orders'), where('vendorId', '==', vendorId));
+    const querySnapshot = await getDocs(q);
+    return Promise.all(querySnapshot.docs.map(processOrderDoc));
+}
+
+export const getOrdersByDispatcherId = async (dispatcherId: string): Promise<Order[]> => {
+    const q = query(collection(db, 'orders'), where('dispatcherId', '==', dispatcherId));
     const querySnapshot = await getDocs(q);
     return Promise.all(querySnapshot.docs.map(processOrderDoc));
 }
