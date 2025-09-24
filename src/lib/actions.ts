@@ -26,11 +26,6 @@ type CreateOrderData = {
 
 export async function createOrder(orderData: CreateOrderData) {
     try {
-        const session = await getServerSession();
-        if (!session || session.user.id !== orderData.userId) {
-            return { success: false, error: 'Unauthorized' };
-        }
-
         const newOrder = {
             ...orderData,
             status: 'placed' as OrderStatus,
@@ -193,6 +188,7 @@ export async function updateUser(id: string, data: Partial<User>) {
         await updateDoc(doc(db, 'users', id), data);
         revalidatePath('/admin/users');
         revalidatePath('/checkout');
+        revalidatePath('/profile');
         return { success: true, message: 'User updated successfully.' };
     } catch (e: any) {
         return { success: false, error: e.message };

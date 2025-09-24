@@ -110,7 +110,7 @@ export function UserNav() {
             )}
              {isDispatcher && (
               <DropdownMenuItem asChild>
-                <Link href="/dispatcher/tasks">
+                <Link href="/dispatcher">
                   <Truck className="mr-2 h-4 w-4" />
                   <span>My Tasks</span>
                 </Link>

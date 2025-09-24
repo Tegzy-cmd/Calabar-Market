@@ -50,7 +50,7 @@ export default function PaymentPage() {
 
     if (result.success && result.orderId) {
         clearCart();
-        router.push(`/orders/${result.orderId}`);
+        router.push(`/payment/success?orderId=${result.orderId}`);
     } else {
         setError(result.error || 'Failed to create order.');
         setIsProcessing(false);
