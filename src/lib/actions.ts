@@ -170,12 +170,9 @@ export async function createVendorAndUser(data: {
     
     let uid;
     try {
-        // Step 1: Create the user in Firebase Auth. This is a hack for server actions
-        // and would be better handled by the client SDK or Admin SDK in a secure environment.
-        // For the purpose of this demo, we'll assume this action is secure.
-        const tempAuthApp = initializeApp(firebase.apps.length === 0 ? firebase.app().options : firebase.app().options, "temp-auth-app-for-creation");
-        const tempAuth = getAuth(tempAuthApp);
-        const userCredential = await createUserWithEmailAndPassword(tempAuth, data.email, data.password);
+        // Step 1: Create the user in Firebase Auth.
+        // We are using the main `auth` instance here.
+        const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
         uid = userCredential.user.uid;
         await updateProfile(userCredential.user, { displayName: data.name });
 
