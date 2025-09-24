@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useParams } from "next/navigation";
@@ -13,7 +14,7 @@ import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { ChatRoom } from "@/components/shared/chat-room";
 import { useUnreadMessages } from '@/hooks/use-unread-messages';
-import { db, onSnapshot, doc, getDoc } from '@/lib/firebase';
+import { db, onSnapshot, doc, getDoc, collection, query, where, getDocs } from '@/lib/firebase';
 import type { Product, Dispatcher, User as UserType, Vendor } from '@/lib/types';
 import { DispatcherRating } from "@/components/shared/dispatcher-rating";
 import { updateOrderStatus } from "@/lib/actions";
@@ -148,10 +149,11 @@ export default function OrderDetailPage() {
   }
   
   let currentStatusIndex = statusTimeline.findIndex(item => item.status === order.status);
-  // If order is delivered, we want to show the full timeline as active
-  if (order.status === 'delivered') {
-      currentStatusIndex = statusTimeline.length - 1;
+  const isDelivered = order.status === 'delivered';
+  if (isDelivered) {
+      currentStatusIndex = statusTimeline.length;
   }
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -232,11 +234,11 @@ export default function OrderDetailPage() {
                             return (
                                 <div key={item.status} className="flex-1 text-center">
                                     <div className="flex items-center justify-center">
-                                        <div className={cn("flex-1 h-1", index === 0 ? 'bg-transparent' : 'bg-border', {'bg-primary': isCompleted })}></div>
-                                        <div className={cn("h-10 w-10 rounded-full flex items-center justify-center bg-muted border-2", { "bg-primary text-primary-foreground border-primary": isActive })}>
+                                        <div className={cn("flex-1 h-1", index === 0 ? 'bg-transparent' : 'bg-border', {'bg-primary': isCompleted || isDelivered })}></div>
+                                        <div className={cn("h-10 w-10 rounded-full flex items-center justify-center bg-muted border-2", { "bg-primary text-primary-foreground border-primary": isActive }, { "bg-green-500 border-green-500 text-white": isDelivered && item.status === 'delivered' })}>
                                             <item.icon className="w-5 h-5"/>
                                         </div>
-                                        <div className={cn("flex-1 h-1", index === statusTimeline.length - 1 ? 'bg-transparent' : 'bg-border', {'bg-primary': isCompleted || (isActive && index < statusTimeline.length -1) })}></div>
+                                        <div className={cn("flex-1 h-1", index === statusTimeline.length - 1 ? 'bg-transparent' : 'bg-border', {'bg-primary': isCompleted || isDelivered })}></div>
                                     </div>
                                     <p className={cn("text-sm mt-2 text-muted-foreground", { "text-foreground font-medium": isActive })}>{item.text}</p>
                                 </div>
