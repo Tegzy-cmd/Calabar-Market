@@ -5,7 +5,7 @@
 import { auth, db } from './firebase';
 import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp, collectionGroup, getDocs as getDocsFromFirestore, query, where, orderBy } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { users, vendors, products, dispatchers, orders, getDispatchers, getAllOrders } from './data';
+import { users, vendors, products, dispatchers, orders, getDispatchers as getAllDispatchersFromData, getAllOrders as getAllOrdersFromData } from './data';
 import type { User, Vendor, Dispatcher, Product, OrderStatus, ChatMessage, DispatcherVehicle, Order } from './types';
 import { revalidatePath } from 'next/cache';
 import { placeholderImages } from './placeholder-images';
@@ -119,6 +119,15 @@ export async function createUser(data: Omit<User, 'id'>) {
     }
 }
 
+async function fetchDocumentById<T>(collectionName: string, id: string): Promise<T | null> {
+    const docRef = doc(db, collectionName, id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() } as T;
+    }
+    return null;
+  }
+
 export async function getOrCreateUser(
   id: string,
   data: Omit<User, 'id' | 'role'>
@@ -128,7 +137,14 @@ export async function getOrCreateUser(
     const userSnap = await getDoc(userRef);
 
     if (userSnap.exists()) {
-      const user = { id: userSnap.id, ...userSnap.data() } as User;
+      let user = { id: userSnap.id, ...userSnap.data() } as User;
+      // If user is a dispatcher, embed dispatcher data
+      if (user.role === 'dispatcher' && user.dispatcherId) {
+        const dispatcherData = await fetchDocumentById<Dispatcher>('dispatchers', user.dispatcherId);
+        if (dispatcherData) {
+            user.dispatcher = dispatcherData;
+        }
+      }
       return { success: true, data: user };
     } else {
       const newUser: Omit<User, 'id'> = {
@@ -292,8 +308,10 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
 
         // Automatic dispatcher assignment logic
         if (status === 'preparing' && session.user.role === 'vendor' && !orderData.dispatcherId) {
-            const allDispatchers = await getDispatchers();
-            
+            // Get all dispatchers
+            const dispatchersSnapshot = await getDocsFromFirestore(collection(db, 'dispatchers'));
+            const allDispatchers = dispatchersSnapshot.docs.map(d => ({id: d.id, ...d.data()} as Dispatcher));
+
             // Get all active orders to find out which dispatchers are busy
             const activeOrdersQuery = query(collection(db, 'orders'), where('status', 'in', ['preparing', 'dispatched']));
             const activeOrdersSnap = await getDocsFromFirestore(activeOrdersQuery);
@@ -305,15 +323,14 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
             const availableDispatchers = allDispatchers.filter(
                 dispatcher => !busyDispatcherIds.has(dispatcher.id)
             );
-
+            
             if (availableDispatchers.length > 0) {
                 // Randomly select an available dispatcher
                 const randomIndex = Math.floor(Math.random() * availableDispatchers.length);
                 const assignedDispatcher = availableDispatchers[randomIndex];
                 
                 await updateDoc(orderRef, { status: 'dispatched', dispatcherId: assignedDispatcher.id });
-                await updateDoc(doc(db, 'dispatchers', assignedDispatcher.id), { status: 'on-delivery' });
-
+                 // No need to update dispatcher status here, it's inferred from active orders
             } else {
                  // If no dispatcher is available, just update status to preparing
                  await updateDoc(orderRef, { status: 'preparing' });
@@ -325,8 +342,8 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
         
         // If dispatcher marks as delivered, update their status to available
         if (status === 'delivered' && session.user.role === 'dispatcher' && orderData.dispatcherId) {
-            const dispatcherRef = doc(db, 'dispatchers', orderData.dispatcherId);
-            await updateDoc(dispatcherRef, { status: 'available' });
+            // Logic to set dispatcher status can be removed if status is derived
+            // from active orders instead of being stored on the dispatcher document.
         }
 
 
@@ -486,6 +503,3 @@ export async function getMessages(orderId: string): Promise<ChatMessage[]> {
         return [];
     }
 }
-
-
-

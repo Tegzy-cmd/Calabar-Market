@@ -10,6 +10,8 @@ export type User = {
   addresses?: string[];
   vendorId?: string; // Link to vendor profile
   dispatcherId?: string;
+  // Embed dispatcher data for easier access on dispatcher dashboard
+  dispatcher?: Partial<Dispatcher>; 
 };
 
 export type Product = {
