@@ -2,10 +2,10 @@
 'use server';
 
 import { auth, db } from './firebase';
-import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp, collectionGroup, getDocs as getDocsFromFirestore } from 'firebase/firestore';
+import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp, collectionGroup, getDocs as getDocsFromFirestore, query, orderBy } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { users, vendors, products, dispatchers, orders, getDispatchers } from './data';
-import type { User, Vendor, Dispatcher, Product, OrderStatus } from './types';
+import type { User, Vendor, Dispatcher, Product, OrderStatus, ChatMessage } from './types';
 import { revalidatePath } from 'next/cache';
 import { placeholderImages } from './placeholder-images';
 import { getServerSession } from './auth';
@@ -362,5 +362,52 @@ export async function deleteProduct(id: string) {
         return { success: true, message: 'Product deleted successfully.' };
     } catch (e: any) {
         return { success: false, error: e.message };
+    }
+}
+
+
+// Chat Actions
+type SendMessageData = {
+    orderId: string;
+    text: string;
+    senderId: string;
+    senderName: string;
+    senderRole: 'user' | 'vendor';
+}
+
+export async function sendMessage(data: SendMessageData) {
+    try {
+        const { orderId, ...messageData } = data;
+        const message = {
+            ...messageData,
+            timestamp: Timestamp.now(),
+        };
+        await addDoc(collection(db, `orders/${orderId}/messages`), message);
+        
+        // No revalidation needed as we are using real-time listeners on the client
+        return { success: true };
+    } catch (e: any) {
+        console.error("Error sending message:", e);
+        return { success: false, error: e.message };
+    }
+}
+
+export async function getMessages(orderId: string): Promise<ChatMessage[]> {
+    try {
+        const messagesCol = collection(db, `orders/${orderId}/messages`);
+        const q = query(messagesCol, orderBy('timestamp', 'asc'));
+        const querySnapshot = await getDocsFromFirestore(q);
+
+        return querySnapshot.docs.map(doc => {
+             const data = doc.data();
+             return {
+                id: doc.id,
+                ...data,
+                timestamp: data.timestamp.toDate().toISOString(),
+             } as ChatMessage
+        });
+    } catch (e: any) {
+        console.error("Error fetching messages:", e);
+        return [];
     }
 }

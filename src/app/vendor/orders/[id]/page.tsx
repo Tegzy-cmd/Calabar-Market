@@ -1,15 +1,20 @@
 
-import { getOrderById, getDispatchers } from "@/lib/data";
-import { notFound } from "next/navigation";
+'use client';
+
+import { getOrderById } from "@/lib/data";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Phone, Clock, CheckCircle2 } from "lucide-react";
-import type { OrderStatus } from "@/lib/types";
+import { User, MapPin, Phone, Clock, CheckCircle2, MessageSquare } from "lucide-react";
+import type { OrderStatus, Order as OrderType } from "@/lib/types";
 import { OrderStatusUpdater } from "../_components/order-status-updater";
 import { cn } from "@/lib/utils";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ChatRoom } from "@/components/shared/chat-room";
 
 const getStatusColor = (status: OrderStatus) => {
     switch (status) {
@@ -28,23 +33,43 @@ const getStatusColor = (status: OrderStatus) => {
     }
 }
 
-export default async function VendorOrderDetailPage({ params }: { params: { id: string } }) {
-  const order = await getOrderById(params.id);
+export default function VendorOrderDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
+  const [order, setOrder] = useState<OrderType | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  
+  useEffect(() => {
+    if (id) {
+        getOrderById(id).then(setOrder);
+    }
+  }, [id]);
 
   if (!order) {
-    notFound();
+    return <div>Loading...</div>;
   }
   
   return (
     <div className="space-y-8">
+       <ChatRoom 
+        orderId={order.id}
+        userRole="vendor"
+        isOpen={isChatOpen}
+        onOpenChange={setIsChatOpen}
+        title={`Chat with ${order.user.name}`}
+      />
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-headline font-bold">Order #{params.id.substring(0,7)}</h1>
+          <h1 className="text-3xl font-headline font-bold">Order #{id.substring(0,7)}</h1>
           <p className="text-muted-foreground flex items-center gap-2 mt-1">
             <Clock className="w-4 h-4" /> Placed on {new Date(order.createdAt).toLocaleString()}
           </p>
         </div>
         <div className="flex items-center gap-4">
+             <Button variant="outline" onClick={() => setIsChatOpen(true)}>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Chat with Customer
+            </Button>
             <Badge className={cn("capitalize text-lg py-1 px-4 text-white", getStatusColor(order.status))}>{order.status}</Badge>
             <OrderStatusUpdater order={order} role="vendor" />
         </div>

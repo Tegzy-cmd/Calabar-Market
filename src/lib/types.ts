@@ -1,4 +1,5 @@
 
+
 export type User = {
   id: string;
   name: string;
@@ -67,3 +68,12 @@ export type Dispatcher = {
   completedDispatches: number;
   rating: number;
 };
+
+export type ChatMessage = {
+    id: string;
+    text: string;
+    senderId: string;
+    senderName: string;
+    senderRole: 'user' | 'vendor';
+    timestamp: string;
+}

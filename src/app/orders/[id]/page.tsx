@@ -1,14 +1,19 @@
 
+'use client';
+
 import { getOrderById } from "@/lib/data";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Phone, Clock, Truck, Store, CheckCircle, Package, CircleDot } from "lucide-react";
+import { User, MapPin, Phone, Clock, Truck, Store, CheckCircle, Package, CircleDot, MessageSquare } from "lucide-react";
 import { AppHeader } from "@/components/shared/header";
 import { cn } from "@/lib/utils";
-import type { OrderStatus } from "@/lib/types";
+import type { OrderStatus, Order as OrderType } from "@/lib/types";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ChatRoom } from "@/components/shared/chat-room";
 
 const getStatusColor = (status: OrderStatus) => {
     switch (status) {
@@ -35,28 +40,51 @@ const statusTimeline = [
 ];
 
 
-export default async function OrderDetailPage({ params }: { params: { id: string } }) {
-  const order = await getOrderById(params.id);
+export default function OrderDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
+  const [order, setOrder] = useState<OrderType | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  
+  useEffect(() => {
+    if (id) {
+        getOrderById(id).then(setOrder);
+    }
+  }, [id]);
 
   if (!order) {
-    notFound();
+    // You might want a better loading state here
+    return <div>Loading...</div>;
   }
-
+  
   const currentStatusIndex = statusTimeline.findIndex(item => item.status === order.status);
 
   return (
     <div className="flex flex-col min-h-screen">
       <AppHeader />
+       <ChatRoom 
+        orderId={order.id}
+        userRole="user"
+        isOpen={isChatOpen}
+        onOpenChange={setIsChatOpen}
+        title={`Chat with ${order.vendor.name}`}
+      />
       <main className="flex-1 container mx-auto px-4 md:px-6 py-8">
       <div className="space-y-8">
         <div className="flex justify-between items-start">
             <div>
-            <h1 className="text-3xl font-headline font-bold">Order #{params.id.substring(0,7)}</h1>
+            <h1 className="text-3xl font-headline font-bold">Order #{id.substring(0,7)}</h1>
             <p className="text-muted-foreground flex items-center gap-2 mt-1">
                 <Clock className="w-4 h-4" /> Placed on {new Date(order.createdAt).toLocaleString()}
             </p>
             </div>
-            <Badge className={cn("capitalize text-lg py-1 px-4 text-white", getStatusColor(order.status))}>{order.status}</Badge>
+            <div className="flex items-center gap-4">
+                 <Button variant="outline" onClick={() => setIsChatOpen(true)}>
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Chat with Vendor
+                </Button>
+                <Badge className={cn("capitalize text-lg py-1 px-4 text-white", getStatusColor(order.status))}>{order.status}</Badge>
+            </div>
         </div>
         
         <div className="grid md:grid-cols-3 gap-8 items-start">
