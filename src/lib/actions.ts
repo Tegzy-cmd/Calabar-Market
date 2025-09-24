@@ -5,11 +5,12 @@
 import { auth, db } from './firebase';
 import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp, collectionGroup, getDocs as getDocsFromFirestore, query, where, orderBy } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { users, vendors, products, dispatchers, orders, getDispatchers as getAllDispatchersFromData, getAllOrders as getAllOrdersFromData } from './data';
+import { users, vendors, products, dispatchers as mockDispatchers, orders, getDispatchers as getAllDispatchersFromData, getAllOrders as getAllOrdersFromData } from './data';
 import type { User, Vendor, Dispatcher, Product, OrderStatus, ChatMessage, DispatcherVehicle, Order } from './types';
 import { revalidatePath } from 'next/cache';
 import { placeholderImages } from './placeholder-images';
 import { getServerSession } from './auth';
+import { getDispatchers } from './data';
 
 type CreateOrderData = {
     userId: string;
@@ -70,7 +71,7 @@ export async function seedDatabase() {
 
     // Seed dispatchers
     const dispatchersCollection = collection(db, 'dispatchers');
-    dispatchers.forEach(dispatcher => {
+    mockDispatchers.forEach(dispatcher => {
       const docRef = doc(dispatchersCollection, dispatcher.id);
       batch.set(docRef, dispatcher);
     });
@@ -301,10 +302,20 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
 
         // Automatic dispatcher assignment logic
         if (status === 'preparing' && session.user.role === 'vendor' && !orderData.dispatcherId) {
-            // Hardcode assignment to Bill James for now
-            const assignedDispatcherId = 'bill-james-user';
             
-            await updateDoc(orderRef, { status: 'preparing', dispatcherId: assignedDispatcherId });
+            const allDispatchers = await getDispatchers();
+            const availableDispatchers = allDispatchers.filter(d => d.status === 'available');
+
+            if (availableDispatchers.length > 0) {
+                const randomIndex = Math.floor(Math.random() * availableDispatchers.length);
+                const assignedDispatcher = availableDispatchers[randomIndex];
+                
+                await updateDoc(orderRef, { status: 'preparing', dispatcherId: assignedDispatcher.id });
+            } else {
+                // No available dispatchers, just update status
+                await updateDoc(orderRef, { status: 'preparing' });
+                console.warn("Order marked as preparing, but no dispatchers are available.");
+            }
 
         } else {
             // For all other status updates
@@ -478,3 +489,6 @@ export async function getMessages(orderId: string): Promise<ChatMessage[]> {
 }
 
 
+
+
+    
