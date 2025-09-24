@@ -7,9 +7,8 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Phone, Clock, CheckCircle2, MessageSquare, AlertCircle } from "lucide-react";
-import type { OrderStatus, Order as OrderType, Product, OrderItem } from "@/lib/types";
-import { OrderActions } from "../_components/order-actions";
+import { User, MapPin, Phone, Clock, MessageSquare, AlertCircle } from "lucide-react";
+import type { OrderStatus, Order as OrderType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { useParams } from "next/navigation";
@@ -19,6 +18,7 @@ import { ChatRoom } from "@/components/shared/chat-room";
 import { useUnreadMessages } from "@/hooks/use-unread-messages";
 import { db, onSnapshot, doc } from '@/lib/firebase';
 import { OrderStatusUpdater } from "../_components/order-status-updater";
+import { OrderActions } from "../_components/order-actions";
 
 
 const getStatusColor = (status: OrderStatus) => {

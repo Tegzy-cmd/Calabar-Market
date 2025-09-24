@@ -1,7 +1,6 @@
 
 'use client';
 
-import { getOrderById } from "@/lib/data";
 import { notFound, useParams } from "next/navigation";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -15,8 +14,9 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChatRoom } from "@/components/shared/chat-room";
 import { useUnreadMessages } from '@/hooks/use-unread-messages';
-import { db, onSnapshot, doc, getDoc, getDocs, collection, query, where } from '@/lib/firebase';
-import type { Product, Dispatcher } from '@/lib/types';
+import { db, onSnapshot, doc } from '@/lib/firebase';
+import type { Product, Dispatcher, User as UserType, Vendor } from '@/lib/types';
+import { getDoc } from 'firebase/firestore';
 
 
 const getStatusColor = (status: OrderStatus) => {
@@ -63,11 +63,12 @@ export default function OrderDetailPage() {
         const orderData = { id: docSnap.id, ...docSnap.data() };
   
         const [user, vendor, items] = await Promise.all([
-          getDoc(doc(db, 'users', orderData.userId)).then(d => d.exists() ? { id: d.id, ...d.data() } as User : null),
+          getDoc(doc(db, 'users', orderData.userId)).then(d => d.exists() ? { id: d.id, ...d.data() } as UserType : null),
           getDoc(doc(db, 'vendors', orderData.vendorId)).then(d => d.exists() ? { id: d.id, ...d.data() } as Vendor : null),
           Promise.all(
             (orderData.items || []).map(async (item: { productId: string; quantity: number; price: number }) => {
-              const product = await getDoc(doc(db, 'products', item.productId)).then(d => d.exists() ? { id: d.id, ...d.data() } as Product : null);
+              const productDoc = await getDoc(doc(db, 'products', item.productId));
+              const product = productDoc.exists() ? { id: productDoc.id, ...productDoc.data() } as Product : null;
               return { 
                   product: { ...product!, price: item.price || product!.price },
                   quantity: item.quantity 
