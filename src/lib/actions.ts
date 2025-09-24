@@ -139,6 +139,13 @@ export async function getOrCreateUser(
 
     if (userSnap.exists()) {
       let user = { id: userSnap.id, ...userSnap.data() } as User;
+       if (user.role === 'dispatcher' && user.dispatcherId) {
+        const dispatcherProfile = await fetchDocumentById<Dispatcher>('dispatchers', user.dispatcherId);
+        if (dispatcherProfile) {
+          // This part is for client-side context, not how it's stored in DB
+          (user as any).dispatcher = dispatcherProfile;
+        }
+      }
       return { success: true, data: user };
     } else {
       const newUser: Omit<User, 'id'> = {
@@ -317,6 +324,8 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
                 console.warn("Order marked as preparing, but no dispatchers are available.");
             }
 
+        } else if (status === 'preparing') {
+             await updateDoc(orderRef, { status: 'preparing' });
         } else {
             // For all other status updates
             await updateDoc(orderRef, { status });
