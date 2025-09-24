@@ -71,13 +71,21 @@ export default function SignupPage() {
         description: "You have successfully signed up.",
       });
       router.push(redirectUrl);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error during Google sign-up:", error);
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "There was a problem with your sign-up.",
-        variant: "destructive",
-      });
+      if (error.code === 'auth/popup-closed-by-user') {
+        toast({
+          title: "Sign-up Canceled",
+          description: "You closed the sign-up window before completing.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "There was a problem with your sign-up.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

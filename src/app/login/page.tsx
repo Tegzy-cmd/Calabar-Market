@@ -65,13 +65,21 @@ export default function LoginPage() {
         description: "Welcome back.",
       });
       router.push(redirectUrl);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error during Google login:", error);
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "There was a problem with your login.",
-        variant: "destructive",
-      });
+      if (error.code === 'auth/popup-closed-by-user') {
+        toast({
+          title: "Login Canceled",
+          description: "You closed the sign-in window before completing the login.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "There was a problem with your login.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
