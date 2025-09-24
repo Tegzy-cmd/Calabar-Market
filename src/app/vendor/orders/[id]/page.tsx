@@ -7,7 +7,26 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { User, MapPin, Phone, Clock } from "lucide-react";
 import { AssignDispatcherTool } from "./_components/assign-rider-tool";
-import type { Dispatcher } from "@/lib/types";
+import type { Dispatcher, OrderStatus } from "@/lib/types";
+import { OrderStatusUpdater } from "../_components/order-status-updater";
+import { cn } from "@/lib/utils";
+
+const getStatusColor = (status: OrderStatus) => {
+    switch (status) {
+        case 'delivered':
+            return 'bg-green-500 hover:bg-green-600';
+        case 'dispatched':
+            return 'bg-blue-500 hover:bg-blue-600';
+        case 'preparing':
+            return 'bg-orange-500 hover:bg-orange-600 text-white';
+        case 'placed':
+            return 'bg-gray-500 hover:bg-gray-600';
+        case 'cancelled':
+            return 'bg-red-500 hover:bg-red-600';
+        default:
+            return '';
+    }
+}
 
 export default async function VendorOrderDetailPage({ params }: { params: { id: string } }) {
   const order = await getOrderById(params.id);
@@ -28,7 +47,10 @@ export default async function VendorOrderDetailPage({ params }: { params: { id: 
             <Clock className="w-4 h-4" /> Placed on {new Date(order.createdAt).toLocaleString()}
           </p>
         </div>
-        <Badge className="capitalize text-lg py-1 px-4" variant={order.status === 'delivered' ? 'default' : 'secondary'}>{order.status}</Badge>
+        <div className="flex items-center gap-4">
+            <Badge className={cn("capitalize text-lg py-1 px-4 text-white", getStatusColor(order.status))}>{order.status}</Badge>
+            <OrderStatusUpdater order={order} role="vendor" />
+        </div>
       </div>
       
       <div className="grid md:grid-cols-3 gap-8">
