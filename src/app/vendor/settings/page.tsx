@@ -120,98 +120,58 @@ export default function VendorSettingsPage() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="mx-auto grid max-w-6xl flex-1 auto-rows-max gap-4">
-          <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
-            <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Store Details</CardTitle>
-                  <CardDescription>
-                    Update your shop's public information here.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Vendor Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Burger Queen" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="The best burgers in town." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Address</FormLabel>
-                        <FormControl>
-                          <Input placeholder="123 Food Street, Calabar" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-               <Card>
-                    <CardHeader>
-                        <CardTitle>Store Images</CardTitle>
-                        <CardDescription>
-                            Update your store's logo and banner.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <FormField
-                            control={form.control}
-                            name="logoUrl"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <ImageUploader label="Logo" value={field.value || ''} onValueChange={field.onChange} />
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="bannerUrl"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <ImageUploader label="Banner" value={field.value || ''} onValueChange={field.onChange} />
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </CardContent>
-                </Card>
-            </div>
-            <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Store Category</CardTitle>
-                </CardHeader>
-                <CardContent>
-                   <FormField
+     <div className="space-y-8">
+      <h1 className="text-3xl font-headline font-bold">Store Settings</h1>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Store Details</CardTitle>
+                <CardDescription>
+                  Update your shop's public information here.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Vendor Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Burger Queen" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="The best burgers in town." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address</FormLabel>
+                      <FormControl>
+                        <Input placeholder="123 Food Street, Calabar" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
                     control={form.control}
                     name="category"
                     render={({ field }) => (
@@ -232,18 +192,48 @@ export default function VendorSettingsPage() {
                         </FormItem>
                     )}
                     />
-                </CardContent>
+              </CardContent>
+            </Card>
+
+            <Card>
+                  <CardHeader>
+                      <CardTitle>Store Images</CardTitle>
+                      <CardDescription>
+                          Update your store's logo and banner.
+                      </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                      <FormField
+                          control={form.control}
+                          name="logoUrl"
+                          render={({ field }) => (
+                              <FormItem>
+                                  <ImageUploader label="Logo" value={field.value || ''} onValueChange={field.onChange} />
+                                  <FormMessage />
+                              </FormItem>
+                          )}
+                      />
+                      <FormField
+                          control={form.control}
+                          name="bannerUrl"
+                          render={({ field }) => (
+                              <FormItem>
+                                  <ImageUploader label="Banner" value={field.value || ''} onValueChange={field.onChange} />
+                                  <FormMessage />
+                              </FormItem>
+                          )}
+                      />
+                  </CardContent>
               </Card>
-              <div className="flex items-center justify-end gap-2">
-                <Button variant="outline">Discard</Button>
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </div>
+
+            <div className="flex items-center justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => form.reset(vendor)}>Discard</Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? 'Saving...' : 'Save Changes'}
+              </Button>
             </div>
-          </div>
-        </div>
-      </form>
-    </Form>
+        </form>
+      </Form>
+    </div>
   );
 }

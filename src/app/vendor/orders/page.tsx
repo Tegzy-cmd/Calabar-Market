@@ -52,6 +52,8 @@ export default async function VendorOrdersPage() {
     const orders = await getOrdersByVendorId(session.vendorId);
     
     return (
+      <div className="space-y-8">
+        <h1 className="text-3xl font-headline font-bold">Orders</h1>
         <Card>
             <CardHeader>
                 <CardTitle>All Orders ({orders.length})</CardTitle>
@@ -100,5 +102,6 @@ export default async function VendorOrdersPage() {
                )}
             </CardContent>
         </Card>
+      </div>
     );
 }
