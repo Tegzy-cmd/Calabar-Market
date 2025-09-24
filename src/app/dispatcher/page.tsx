@@ -1,13 +1,14 @@
 
 import { getServerSession } from "@/lib/auth";
 import { getOrdersByDispatcherId } from "@/lib/data";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Order, OrderStatus } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { MapPin, Store } from "lucide-react";
+import { OrderStatusUpdater } from "../vendor/orders/_components/order-status-updater";
 
 const getStatusColor = (status: OrderStatus) => {
     switch (status) {
@@ -34,7 +35,7 @@ export default async function DispatcherDashboardPage() {
     }
 
     const orders = await getOrdersByDispatcherId(session.dispatcherId);
-    const activeOrders = orders.filter(o => o.status === 'dispatched' || o.status === 'preparing');
+    const activeOrders = orders.filter(o => o.status === 'dispatched' || o.status === 'preparing' || o.status === 'placed');
 
     return (
         <div className="space-y-8">
@@ -55,6 +56,7 @@ export default async function DispatcherDashboardPage() {
                                 <TableHead>Vendor</TableHead>
                                 <TableHead>Delivery Address</TableHead>
                                 <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -77,6 +79,9 @@ export default async function DispatcherDashboardPage() {
                                         <Badge className={cn("capitalize text-white", getStatusColor(order.status))}>
                                             {order.status}
                                         </Badge>
+                                    </TableCell>
+                                     <TableCell className="text-right">
+                                        <OrderStatusUpdater order={order} role="dispatcher" />
                                     </TableCell>
                                 </TableRow>
                             ))}

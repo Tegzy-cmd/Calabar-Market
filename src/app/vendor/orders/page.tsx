@@ -22,13 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Check, MoreHorizontal, Truck } from "lucide-react";
+import { OrderStatusUpdater } from "./_components/order-status-updater";
 
 
 const getStatusColor = (status: OrderStatus) => {
@@ -96,26 +90,7 @@ export default async function VendorOrdersPage() {
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                         <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button size="icon" variant="ghost">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem asChild>
-                                                    <Link href={`/vendor/orders/${order.id}`}>View Details</Link>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem>
-                                                    <Truck className="mr-2 h-4 w-4" />
-                                                    Mark as Dispatched
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem>
-                                                    <Check className="mr-2 h-4 w-4" />
-                                                    Mark as Delivered
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <OrderStatusUpdater order={order} role="vendor" />
                                     </TableCell>
                                 </TableRow>
                             ))}

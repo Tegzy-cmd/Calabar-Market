@@ -9,22 +9,42 @@ import { auth, db } from './firebase';
 import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp, collectionGroup, getDocs as getDocsFromFirestore } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { users, vendors, products, dispatchers, orders } from './data';
-import type { User, Vendor, Dispatcher, Product } from './types';
+import type { User, Vendor, Dispatcher, Product, OrderStatus } from './types';
 import { revalidatePath } from 'next/cache';
 import { placeholderImages } from './placeholder-images';
+import { getServerSession } from './auth';
 
 
 export async function handleAssignDispatcher(input: AssignBestDeliveryDispatcherInput) {
   try {
     const result = await assignBestDeliveryDispatcher(input);
-    // In a real app, you would update your database with the assignment here.
-    // For example: await db.updateOrder(input.orderId, { dispatcherId: result.dispatcherId });
     return { data: result };
   } catch (e: any) {
     console.error(e);
     return { error: e.message || "An unexpected error occurred." };
   }
 }
+
+export async function confirmDispatcherAssignment(orderId: string, dispatcherId: string) {
+    try {
+        const session = await getServerSession();
+        if (!session || session.user.role !== 'vendor') {
+            return { success: false, error: 'Unauthorized' };
+        }
+
+        await updateDoc(doc(db, 'orders', orderId), {
+            dispatcherId,
+            status: 'preparing'
+        });
+
+        revalidatePath(`/vendor/orders/${orderId}`);
+        revalidatePath(`/admin`); // Revalidate admin dashboard
+        return { success: true, message: 'Dispatcher assigned successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
 
 export async function seedDatabase() {
   try {
@@ -162,21 +182,12 @@ export async function createVendorAndUser(data: {
     shopAddress: string;
     shopCategory: 'food' | 'groceries';
 }) {
-    // Note: This function would typically be a Cloud Function that can use the Admin SDK
-    // to create a user. Since we are in a server action, we cannot create a Firebase Auth user
-    // directly. We will simulate this by just creating the database records.
-    // For a real app, the client would sign up with email/password, then call a server action
-    // with the resulting UID to create the associated vendor/user docs.
-    
     let uid;
     try {
-        // Step 1: Create the user in Firebase Auth.
-        // We are using the main `auth` instance here.
         const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
         uid = userCredential.user.uid;
         await updateProfile(userCredential.user, { displayName: data.name });
 
-        // Step 2: Create the Vendor document
         const vendorData = {
             name: data.shopName,
             description: `A great place for ${data.shopCategory}.`,
@@ -184,17 +195,16 @@ export async function createVendorAndUser(data: {
             address: data.shopAddress,
             logoUrl: placeholderImages.find(p => p.id === 'vendor-logo-1')?.imageUrl || '',
             bannerUrl: placeholderImages.find(p => p.id === 'vendor-banner-1')?.imageUrl || '',
-            ownerId: uid, // Link vendor to the user
+            ownerId: uid,
         };
         const vendorDocRef = await addDoc(collection(db, 'vendors'), vendorData);
 
-        // Step 3: Create the User document
         const userData: Omit<User, 'id'> = {
             name: data.name,
             email: data.email,
             role: 'vendor',
             avatarUrl: placeholderImages.find(p => p.id === 'user-avatar-1')?.imageUrl || '',
-            vendorId: vendorDocRef.id, // Link user to the vendor
+            vendorId: vendorDocRef.id,
         };
         await setDoc(doc(db, "users", uid), userData);
 
@@ -205,11 +215,45 @@ export async function createVendorAndUser(data: {
 
     } catch (e: any) {
         console.error("Error creating vendor and user:", e);
-        // Clean up if user was created but vendor was not.
-        if (uid && (e as any).code?.includes('auth')) {
-             // In a real app, you would use the Admin SDK to delete the auth user.
+        if (uid) {
+            // In a real app, you would use the Admin SDK to delete the auth user if the DB operations fail.
+            // For this project, we'll leave it, but be aware of this in production.
         }
         return { success: false, error: e.message || 'An unexpected error occurred.' };
+    }
+}
+
+// Order Status Action
+export async function updateOrderStatus(orderId: string, status: OrderStatus) {
+    try {
+        const session = await getServerSession();
+        if (!session) {
+            return { success: false, error: 'Unauthorized' };
+        }
+
+        const { role } = session.user;
+        const validTransitions: Record<string, OrderStatus[]> = {
+            vendor: ['preparing', 'cancelled'],
+            dispatcher: ['dispatched', 'delivered', 'cancelled'],
+            admin: ['placed', 'preparing', 'dispatched', 'delivered', 'cancelled'],
+        };
+        
+        const allowedStatuses = validTransitions[role];
+        if (!allowedStatuses || !allowedStatuses.includes(status)) {
+            return { success: false, error: 'You do not have permission to set this status.' };
+        }
+
+        await updateDoc(doc(db, 'orders', orderId), { status });
+        
+        revalidatePath(`/vendor/orders`);
+        revalidatePath(`/vendor/orders/${orderId}`);
+        revalidatePath(`/dispatcher`);
+        revalidatePath(`/orders/${orderId}`);
+        revalidatePath('/admin');
+
+        return { success: true, message: `Order status updated to ${status}.` };
+    } catch (e: any) {
+        return { success: false, error: e.message };
     }
 }
 

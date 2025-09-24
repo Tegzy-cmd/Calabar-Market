@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition } from 'react';
@@ -9,12 +10,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { handleAssignDispatcher } from '@/lib/actions';
+import { handleAssignDispatcher, confirmDispatcherAssignment } from '@/lib/actions';
 import type { Order, Dispatcher } from "@/lib/types";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Sparkles, Bot, CheckCircle2 } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 const FormSchema = z.object({
   dispatcherIds: z.array(z.string()).refine((value) => value.some((item) => item), {
@@ -28,9 +30,11 @@ type AssignmentResult = {
 } | null;
 
 export function AssignDispatcherTool({ order, allDispatchers }: { order: Order, allDispatchers: Dispatcher[] }) {
-  const [isPending, startTransition] = useTransition();
+  const [isAIPending, startAITransition] = useTransition();
+  const [isConfirmPending, startConfirmTransition] = useTransition();
   const [result, setResult] = useState<AssignmentResult>(null);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -40,7 +44,7 @@ export function AssignDispatcherTool({ order, allDispatchers }: { order: Order, 
   });
 
   const onSubmit = (data: z.infer<typeof FormSchema>) => {
-    startTransition(async () => {
+    startAITransition(async () => {
       setResult(null);
       setError(null);
       const res = await handleAssignDispatcher({
@@ -57,10 +61,23 @@ export function AssignDispatcherTool({ order, allDispatchers }: { order: Order, 
       }
     });
   };
+
+  const handleConfirmAssignment = () => {
+      if (!result?.dispatcherId) return;
+      startConfirmTransition(async () => {
+        const res = await confirmDispatcherAssignment(order.id, result.dispatcherId);
+        if (res.success) {
+            toast({ title: 'Success!', description: 'Dispatcher has been assigned to the order.' });
+            setResult(null); // Hide the AI tool result
+        } else {
+            toast({ title: 'Error', description: res.error, variant: 'destructive' });
+        }
+      });
+  }
   
   const assignedDispatcher = result ? allDispatchers.find(r => r.id === result.dispatcherId) : order.dispatcher;
 
-  if (assignedDispatcher && !result) {
+  if (order.dispatcher || order.status !== 'placed') {
     return (
       <Card>
         <CardHeader>
@@ -70,11 +87,17 @@ export function AssignDispatcherTool({ order, allDispatchers }: { order: Order, 
           </CardTitle>
         </CardHeader>
         <CardContent className="flex items-center gap-4">
-            <Image src={assignedDispatcher.avatarUrl} alt={assignedDispatcher.name} width={50} height={50} className="rounded-full" />
-            <div>
-                <p className="font-bold">{assignedDispatcher.name}</p>
-                <p className="text-sm text-muted-foreground">{assignedDispatcher.vehicle}</p>
-            </div>
+            {order.dispatcher ? (
+                 <>
+                    <Image src={order.dispatcher.avatarUrl} alt={order.dispatcher.name} width={50} height={50} className="rounded-full" />
+                    <div>
+                        <p className="font-bold">{order.dispatcher.name}</p>
+                        <p className="text-sm text-muted-foreground">{order.dispatcher.vehicle}</p>
+                    </div>
+                </>
+            ) : (
+                <p className="text-muted-foreground">Order is being prepared.</p>
+            )}
         </CardContent>
       </Card>
     )
@@ -147,12 +170,12 @@ export function AssignDispatcherTool({ order, allDispatchers }: { order: Order, 
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? "Analyzing..." : "Find Best Dispatcher"}
+            <Button type="submit" className="w-full" disabled={isAIPending}>
+              {isAIPending ? "Analyzing..." : "Find Best Dispatcher"}
             </Button>
           </form>
         </Form>
-        {isPending && <p className="text-center mt-4 text-sm text-muted-foreground animate-pulse">AI is thinking...</p>}
+        {isAIPending && <p className="text-center mt-4 text-sm text-muted-foreground animate-pulse">AI is thinking...</p>}
         {error && <Alert variant="destructive" className="mt-4"><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
         {result && assignedDispatcher && (
             <Alert className="mt-6 border-primary">
@@ -171,8 +194,8 @@ export function AssignDispatcherTool({ order, allDispatchers }: { order: Order, 
                         <p>{result.reason}</p>
                     </div>
 
-                    <Button className="w-full" onClick={() => alert(`Assigned ${assignedDispatcher.name}!`)}>
-                        Confirm Assignment
+                    <Button className="w-full" onClick={handleConfirmAssignment} disabled={isConfirmPending}>
+                        {isConfirmPending ? 'Assigning...' : `Confirm Assignment`}
                     </Button>
                 </AlertDescription>
             </Alert>

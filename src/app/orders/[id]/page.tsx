@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Phone, Clock, Truck, Store } from "lucide-react";
+import { User, MapPin, Phone, Clock, Truck, Store, CheckCircle, Package, CircleDot } from "lucide-react";
 import { AppHeader } from "@/components/shared/header";
 import { cn } from "@/lib/utils";
 import type { OrderStatus } from "@/lib/types";
@@ -27,6 +27,13 @@ const getStatusColor = (status: OrderStatus) => {
     }
 }
 
+const statusTimeline = [
+    { status: 'placed', icon: CircleDot, text: 'Order Placed' },
+    { status: 'preparing', icon: Package, text: 'Order Preparing' },
+    { status: 'dispatched', icon: Truck, text: 'Order Dispatched' },
+    { status: 'delivered', icon: CheckCircle, text: 'Order Delivered' },
+];
+
 
 export default async function OrderDetailPage({ params }: { params: { id: string } }) {
   const order = await getOrderById(params.id);
@@ -34,6 +41,8 @@ export default async function OrderDetailPage({ params }: { params: { id: string
   if (!order) {
     notFound();
   }
+
+  const currentStatusIndex = statusTimeline.findIndex(item => item.status === order.status);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -52,6 +61,32 @@ export default async function OrderDetailPage({ params }: { params: { id: string
         
         <div className="grid md:grid-cols-3 gap-8 items-start">
             <div className="md:col-span-2 space-y-8">
+             <Card>
+                <CardHeader>
+                    <CardTitle>Order Progress</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex justify-between">
+                        {statusTimeline.map((item, index) => {
+                            const isActive = index <= currentStatusIndex;
+                            const isCompleted = index < currentStatusIndex;
+                            return (
+                                <div key={item.status} className="flex-1 text-center">
+                                    <div className="flex items-center justify-center">
+                                        <div className={cn("flex-1 h-1", index === 0 ? 'bg-transparent' : 'bg-border', {'bg-primary': isCompleted })}></div>
+                                        <div className={cn("h-10 w-10 rounded-full flex items-center justify-center bg-muted border-2", { "bg-primary text-primary-foreground border-primary": isActive })}>
+                                            <item.icon className="w-5 h-5"/>
+                                        </div>
+                                        <div className={cn("flex-1 h-1", index === statusTimeline.length - 1 ? 'bg-transparent' : 'bg-border', {'bg-primary': isCompleted || (isActive && index === statusTimeline.length -2) })}></div>
+                                    </div>
+                                    <p className={cn("text-sm mt-2 text-muted-foreground", { "text-foreground font-medium": isActive })}>{item.text}</p>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </CardContent>
+            </Card>
+
             <Card>
                 <CardHeader>
                 <CardTitle>Order Summary</CardTitle>
@@ -140,4 +175,3 @@ export default async function OrderDetailPage({ params }: { params: { id: string
     </div>
   );
 }
-
