@@ -209,11 +209,19 @@ export default function SignupPage() {
                 )}
             </Button>
           </div>
-          <div className="mt-4 text-center text-sm">
-            Already have an account?{" "}
-            <Link href="/login" className="underline text-primary font-medium">
-              Login
-            </Link>
+          <div className="mt-4 text-center text-sm space-y-2">
+            <p>
+                Already have an account?{" "}
+                <Link href="/login" className="underline text-primary font-medium">
+                Login
+                </Link>
+            </p>
+             <p>
+                Are you a vendor?{" "}
+                <Link href="/vendor-signup" className="underline text-primary font-medium">
+                Sign up here
+                </Link>
+            </p>
           </div>
         </CardContent>
       </Card>

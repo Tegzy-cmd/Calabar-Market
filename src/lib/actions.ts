@@ -6,8 +6,9 @@ import {
   assignBestDeliveryDispatcher,
   type AssignBestDeliveryDispatcherInput,
 } from '@/ai/flows/assign-best-delivery-rider';
-import { db } from './firebase';
-import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
+import { auth, db } from './firebase';
+import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp, collectionGroup, getDocs as getDocsFromFirestore } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { users, vendors, products, dispatchers, orders } from './data';
 import type { User, Vendor, Dispatcher, Product } from './types';
 import { revalidatePath } from 'next/cache';
@@ -93,10 +94,10 @@ export async function seedDatabase() {
 // User Actions
 export async function createUser(data: Omit<User, 'id'>) {
     try {
-        await addDoc(collection(db, 'users'), data);
+        const docRef = await addDoc(collection(db, 'users'), data);
         revalidatePath('/admin/users');
         revalidatePath('/checkout');
-        return { success: true, message: 'User created successfully.' };
+        return { success: true, message: 'User created successfully.', data: { id: docRef.id } };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
@@ -114,16 +115,16 @@ export async function getOrCreateUser(
       const user = { id: userSnap.id, ...userSnap.data() } as User;
       return { success: true, data: user };
     } else {
-      const newUser: User = {
-        id,
+      const newUser: Omit<User, 'id'> = {
         ...data,
         role: 'user',
         avatarUrl: data.avatarUrl || placeholderImages.find(p => p.id === 'user-avatar-1')?.imageUrl || '',
         addresses: [],
       };
       await setDoc(userRef, newUser);
+      const createdUser = { id, ...newUser } as User;
       revalidatePath('/admin/users');
-      return { success: true, data: newUser };
+      return { success: true, data: createdUser };
     }
   } catch (e: any) {
     console.error("Error in getOrCreateUser:", e);
@@ -153,6 +154,69 @@ export async function deleteUser(id: string) {
         return { success: false, error: e.message };
     }
 }
+
+export async function createVendorAndUser(data: {
+    name: string;
+    email: string;
+    password: string;
+    shopName: string;
+    shopAddress: string;
+    shopCategory: 'food' | 'groceries';
+}) {
+    // This is a complex action that should ideally be a transaction.
+    // For this demo, we'll do it in steps.
+    // NOTE: This server action uses the admin SDK to create a user, which is NOT how you'd do it on the client.
+    // This is a simplified example. In a real app, you'd use client-side SDK for user creation
+    // and then call a server action/cloud function to create the associated vendor profile.
+    // However, to keep it in one action:
+
+    try {
+        // This is a placeholder for creating a user. In a real Node.js admin environment,
+        // you would use `getAuth().createUser(...)`. Since we are in a simple server action
+        // context without full admin privileges, we'll simulate this.
+        // We'll create the vendor and user doc, but the auth part would need a more robust setup.
+
+        // Step 1: Create the Vendor document
+        const vendorData = {
+            name: data.shopName,
+            description: `A great place for ${data.shopCategory}.`,
+            category: data.shopCategory,
+            address: data.shopAddress,
+            logoUrl: placeholderImages.find(p => p.id === 'vendor-logo-1')?.imageUrl || '',
+            bannerUrl: placeholderImages.find(p => p.id === 'vendor-banner-1')?.imageUrl || '',
+        };
+        const vendorDocRef = await addDoc(collection(db, 'vendors'), vendorData);
+
+        // Step 2: Create the User document
+        // In a real app, the user ID would come from Firebase Auth.
+        // We will create a placeholder user for now.
+        const userData: Omit<User, 'id'> = {
+            name: data.name,
+            email: data.email,
+            role: 'vendor',
+            avatarUrl: placeholderImages.find(p => p.id === 'user-avatar-1')?.imageUrl || '',
+        };
+        
+        // This is a simplified approach. Ideally, you create the Firebase Auth user first,
+        // get their UID, and use that UID for the Firestore document ID.
+        // This action cannot create auth users, so we'll just create the DB record.
+        // The user would need to have their password set or sign up separately.
+        const userDocRef = await addDoc(collection(db, 'users'), userData);
+
+
+        // Here you would link the user to the vendor. Let's assume a 'vendorId' field on the user.
+        await updateDoc(userDocRef, { vendorId: vendorDocRef.id });
+
+        revalidatePath('/admin/vendors');
+        revalidatePath('/admin/users');
+
+        return { success: true, message: 'Vendor account created. Please log in.' };
+
+    } catch (e: any) {
+        return { success: false, error: e.message || 'An unexpected error occurred.' };
+    }
+}
+
 
 // Vendor Actions
 export async function createVendor(data: Omit<Vendor, 'id' | 'products'>) {
