@@ -3,21 +3,21 @@
 'use server';
 
 import {
-  assignBestDeliveryRider,
-  type AssignBestDeliveryRiderInput,
+  assignBestDeliveryDispatcher,
+  type AssignBestDeliveryDispatcherInput,
 } from '@/ai/flows/assign-best-delivery-rider';
 import { db } from './firebase';
 import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { users, vendors, products, riders, orders } from './data';
-import type { User, Vendor, Rider } from './types';
+import { users, vendors, products, dispatchers, orders } from './data';
+import type { User, Vendor, Dispatcher } from './types';
 import { revalidatePath } from 'next/cache';
 
 
-export async function handleAssignRider(input: AssignBestDeliveryRiderInput) {
+export async function handleAssignDispatcher(input: AssignBestDeliveryDispatcherInput) {
   try {
-    const result = await assignBestDeliveryRider(input);
+    const result = await assignBestDeliveryDispatcher(input);
     // In a real app, you would update your database with the assignment here.
-    // For example: await db.updateOrder(input.orderId, { riderId: result.riderId });
+    // For example: await db.updateOrder(input.orderId, { dispatcherId: result.dispatcherId });
     return { data: result };
   } catch (e: any) {
     console.error(e);
@@ -50,22 +50,22 @@ export async function seedDatabase() {
       batch.set(docRef, user);
     });
 
-    // Seed riders
-    const ridersCollection = collection(db, 'riders');
-    riders.forEach(rider => {
-      const docRef = doc(ridersCollection, rider.id);
-      batch.set(docRef, rider);
+    // Seed dispatchers
+    const dispatchersCollection = collection(db, 'dispatchers');
+    dispatchers.forEach(dispatcher => {
+      const docRef = doc(dispatchersCollection, dispatcher.id);
+      batch.set(docRef, dispatcher);
     });
 
     // Seed orders
     const ordersCollection = collection(db, 'orders');
     orders.forEach(orderData => {
-        const { user, vendor, items, rider, ...restOfOrder } = orderData;
+        const { user, vendor, items, dispatcher, ...restOfOrder } = orderData;
         const orderDoc = {
             ...restOfOrder,
             userId: user.id,
             vendorId: vendor.id,
-            ...(rider && { riderId: rider.id }),
+            ...(dispatcher && { dispatcherId: dispatcher.id }),
             items: items.map(item => ({
                 productId: item.product.id,
                 quantity: item.quantity,
@@ -154,32 +154,32 @@ export async function deleteVendor(id: string) {
     }
 }
 
-// Rider Actions
-export async function createRider(data: Omit<Rider, 'id'>) {
+// Dispatcher Actions
+export async function createDispatcher(data: Omit<Dispatcher, 'id'>) {
     try {
-        await addDoc(collection(db, 'riders'), data);
+        await addDoc(collection(db, 'dispatchers'), data);
         revalidatePath('/admin/riders');
-        return { success: true, message: 'Rider created successfully.' };
+        return { success: true, message: 'Dispatcher created successfully.' };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
 }
 
-export async function updateRider(id: string, data: Partial<Rider>) {
+export async function updateDispatcher(id: string, data: Partial<Dispatcher>) {
     try {
-        await updateDoc(doc(db, 'riders', id), data);
+        await updateDoc(doc(db, 'dispatchers', id), data);
         revalidatePath('/admin/riders');
-        return { success: true, message: 'Rider updated successfully.' };
+        return { success: true, message: 'Dispatcher updated successfully.' };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
 }
 
-export async function deleteRider(id: string) {
+export async function deleteDispatcher(id: string) {
     try {
-        await deleteDoc(doc(db, 'riders', id));
+        await deleteDoc(doc(db, 'dispatchers', id));
         revalidatePath('/admin/riders');
-        return { success: true, message: 'Rider deleted successfully.' };
+        return { success: true, message: 'Dispatcher deleted successfully.' };
     } catch (e: any) {
         return { success: false, error: e.message };
     }

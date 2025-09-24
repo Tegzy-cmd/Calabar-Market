@@ -1,22 +1,22 @@
-import { getOrderById, getRiders } from "@/lib/data";
+import { getOrderById, getDispatchers } from "@/lib/data";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { User, MapPin, Phone, Clock } from "lucide-react";
-import { AssignRiderTool } from "./_components/assign-rider-tool";
-import type { Rider } from "@/lib/types";
+import { AssignDispatcherTool } from "./_components/assign-rider-tool";
+import type { Dispatcher } from "@/lib/types";
 
 export default async function VendorOrderDetailPage({ params }: { params: { id: string } }) {
   const order = await getOrderById(params.id);
-  const allRiders = await getRiders();
+  const allDispatchers = await getDispatchers();
 
   if (!order) {
     notFound();
   }
   
-  const availableRiders = allRiders.filter((r: Rider) => r.status === 'available');
+  const availableDispatchers = allDispatchers.filter((r: Dispatcher) => r.status === 'available');
 
   return (
     <div className="space-y-8">
@@ -86,7 +86,7 @@ export default async function VendorOrderDetailPage({ params }: { params: { id: 
                 </CardContent>
             </Card>
 
-            <AssignRiderTool order={order} allRiders={allRiders} />
+            <AssignDispatcherTool order={order} allDispatchers={allDispatchers} />
 
         </div>
       </div>

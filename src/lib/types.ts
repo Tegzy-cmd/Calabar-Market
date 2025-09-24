@@ -2,7 +2,7 @@ export type User = {
   id: string;
   name: string;
   email: string;
-  role: 'user' | 'vendor' | 'admin' | 'rider';
+  role: 'user' | 'vendor' | 'admin' | 'dispatcher';
   avatarUrl: string;
   phoneNumber?: string;
   addresses?: string[];
@@ -43,21 +43,21 @@ export type Order = {
   status: OrderStatus;
   deliveryAddress: string;
   createdAt: string;
-  rider?: Rider;
+  dispatcher?: Dispatcher;
   subtotal: number;
   deliveryFee: number;
   total: number;
 };
 
-export type RiderStatus = 'available' | 'unavailable' | 'on-delivery';
+export type DispatcherStatus = 'available' | 'unavailable' | 'on-delivery';
 
-export type Rider = {
+export type Dispatcher = {
   id: string;
   name: string;
   avatarUrl: string;
   vehicle: string;
   location: string;
-  status: RiderStatus;
-  completedRides: number;
+  status: DispatcherStatus;
+  completedDispatches: number;
   rating: number;
 };

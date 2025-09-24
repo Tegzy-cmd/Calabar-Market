@@ -1,5 +1,5 @@
 
-import type { User, Vendor, Product, Order, Rider, OrderItem, OrderStatus } from './types';
+import type { User, Vendor, Product, Order, Dispatcher, OrderItem, OrderStatus } from './types';
 import { placeholderImages } from './placeholder-images';
 import { db } from './firebase';
 import { collection, getDocs, getDoc, doc, query, where } from 'firebase/firestore';
@@ -14,11 +14,11 @@ export const users: User[] = [
   { id: 'admin-1', name: 'App Admin', email: 'admin@calabareats.com', role: 'admin', avatarUrl: findImage('user-avatar-1') },
 ];
 
-export const riders: Rider[] = [
-    { id: 'rider-1', name: 'Mike Ross', avatarUrl: findImage('rider-avatar-1'), vehicle: 'Motorcycle', location: 'Downtown', status: 'available', rating: 4.8, completedRides: 102 },
-    { id: 'rider-2', name: 'Sarah Lance', avatarUrl: findImage('rider-avatar-2'), vehicle: 'Bicycle', location: 'Uptown', status: 'available', rating: 4.9, completedRides: 250 },
-    { id: 'rider-3', name: 'Peter Pan', avatarUrl: findImage('user-avatar-1'), vehicle: 'Motorcycle', location: 'Midtown', status: 'unavailable', rating: 4.5, completedRides: 55 },
-    { id: 'rider-4', name: 'Wendy Darling', avatarUrl: findImage('user-avatar-2'), vehicle: 'Motorcycle', location: 'Downtown', status: 'on-delivery', rating: 4.7, completedRides: 89 },
+export const dispatchers: Dispatcher[] = [
+    { id: 'dispatcher-1', name: 'Mike Ross', avatarUrl: findImage('rider-avatar-1'), vehicle: 'Motorcycle', location: 'Downtown', status: 'available', rating: 4.8, completedDispatches: 102 },
+    { id: 'dispatcher-2', name: 'Sarah Lance', avatarUrl: findImage('rider-avatar-2'), vehicle: 'Bicycle', location: 'Uptown', status: 'available', rating: 4.9, completedDispatches: 250 },
+    { id: 'dispatcher-3', name: 'Peter Pan', avatarUrl: findImage('user-avatar-1'), vehicle: 'Motorcycle', location: 'Midtown', status: 'unavailable', rating: 4.5, completedDispatches: 55 },
+    { id: 'dispatcher-4', name: 'Wendy Darling', avatarUrl: findImage('user-avatar-2'), vehicle: 'Motorcycle', location: 'Downtown', status: 'on-delivery', rating: 4.7, completedDispatches: 89 },
 ];
 
 export const products: Product[] = [
@@ -81,7 +81,7 @@ export const orders: any[] = [ // Using any for seeding simplicity
         status: 'delivered',
         deliveryAddress: '456 Oak Ave, Calabar, Nigeria',
         createdAt: new Date(Date.now() - 3600000 * 25).toISOString(),
-        rider: riders[1],
+        dispatcher: dispatchers[1],
         subtotal: 10.48,
         deliveryFee: 4.50,
         total: 14.98,
@@ -94,7 +94,7 @@ export const orders: any[] = [ // Using any for seeding simplicity
         status: 'delivered',
         deliveryAddress: '789 Pine Ln, Calabar, Nigeria',
         createdAt: new Date(Date.now() - 3600000 * 72).toISOString(),
-        rider: riders[0],
+        dispatcher: dispatchers[0],
         subtotal: 23.98,
         deliveryFee: 5.00,
         total: 28.98,
@@ -159,7 +159,7 @@ export async function getOrderById(id: string): Promise<Order | null> {
     // Fetch related documents
     const user = await fetchDocumentById<User>('users', orderData.userId);
     const vendor = await fetchDocumentById<Omit<Vendor, 'products'>>('vendors', orderData.vendorId);
-    const rider = orderData.riderId ? await fetchDocumentById<Rider>('riders', orderData.riderId) : undefined;
+    const dispatcher = orderData.dispatcherId ? await fetchDocumentById<Dispatcher>('dispatchers', orderData.dispatcherId) : undefined;
     
     if (!user || !vendor) return null; // or handle error appropriately
 
@@ -175,7 +175,7 @@ export async function getOrderById(id: string): Promise<Order | null> {
         id: orderData.id,
         user,
         vendor: { ...vendor, products: [] },
-        rider,
+        dispatcher,
         items,
         status: orderData.status as OrderStatus,
     } as Order;
@@ -184,7 +184,7 @@ export async function getOrderById(id: string): Promise<Order | null> {
 
 export const getProductById = async (id: string) => await fetchDocumentById<Product>('products', id);
 export const getUserById = async (id: string) => await fetchDocumentById<User>('users', id);
-export const getRiders = async () => await fetchCollection<Rider>('riders');
+export const getDispatchers = async () => await fetchCollection<Dispatcher>('dispatchers');
 export const getUsers = async () => await fetchCollection<User>('users');
 export const getAllOrders = async (): Promise<Order[]> => {
     const ordersData = await fetchCollection<any>('orders');

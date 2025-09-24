@@ -1,6 +1,6 @@
 
-import { getRiders } from "@/lib/data";
-import type { Rider } from "@/lib/types";
+import { getDispatchers } from "@/lib/data";
+import type { Dispatcher } from "@/lib/types";
 import {
   Table,
   TableBody,
@@ -18,11 +18,11 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { RiderActions } from "./_components/rider-actions";
+import { DispatcherActions } from "./_components/rider-actions";
 import { cn } from "@/lib/utils";
 import { Star } from "lucide-react";
 
-const getStatusColor = (status: Rider['status']) => {
+const getStatusColor = (status: Dispatcher['status']) => {
     switch (status) {
         case 'available':
             return 'bg-green-500 hover:bg-green-600';
@@ -35,32 +35,32 @@ const getStatusColor = (status: Rider['status']) => {
     }
 }
 
-export default async function AdminRidersPage() {
-  const riders = await getRiders();
+export default async function AdminDispatchersPage() {
+  const dispatchers = await getDispatchers();
 
   return (
     <div className="space-y-8">
         <div className="flex items-center justify-between">
             <div>
-                <h1 className="text-3xl font-headline font-bold">Delivery Riders</h1>
-                <p className="text-muted-foreground">Manage all delivery riders in the system.</p>
+                <h1 className="text-3xl font-headline font-bold">Delivery Dispatchers</h1>
+                <p className="text-muted-foreground">Manage all delivery dispatchers in the system.</p>
             </div>
-            <RiderActions />
+            <DispatcherActions />
         </div>
       
         <Card>
             <CardHeader>
-                <CardTitle>All Riders ({riders.length})</CardTitle>
-                <CardDescription>A list of all registered delivery riders.</CardDescription>
+                <CardTitle>All Dispatchers ({dispatchers.length})</CardTitle>
+                <CardDescription>A list of all registered delivery dispatchers.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Rider</TableHead>
+                        <TableHead>Dispatcher</TableHead>
                         <TableHead>Vehicle</TableHead>
                         <TableHead>Current Location</TableHead>
-                        <TableHead>Completed Rides</TableHead>
+                        <TableHead>Completed Dispatches</TableHead>
                         <TableHead>Rating</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>
@@ -69,42 +69,42 @@ export default async function AdminRidersPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {riders.map((rider: Rider) => (
-                    <TableRow key={rider.id}>
+                    {dispatchers.map((dispatcher: Dispatcher) => (
+                    <TableRow key={dispatcher.id}>
                         <TableCell>
                             <div className="flex items-center gap-3">
                                 <Avatar>
-                                    <AvatarImage src={rider.avatarUrl} alt={rider.name} />
-                                    <AvatarFallback>{rider.name ? rider.name[0] : 'R'}</AvatarFallback>
+                                    <AvatarImage src={dispatcher.avatarUrl} alt={dispatcher.name} />
+                                    <AvatarFallback>{dispatcher.name ? dispatcher.name[0] : 'D'}</AvatarFallback>
                                 </Avatar>
                                 <div className="font-medium">
-                                    <p>{rider.name}</p>
+                                    <p>{dispatcher.name}</p>
                                 </div>
                             </div>
                         </TableCell>
                         <TableCell>
-                           {rider.vehicle}
+                           {dispatcher.vehicle}
                         </TableCell>
                         <TableCell>
-                           {rider.location}
+                           {dispatcher.location}
                         </TableCell>
                          <TableCell>
-                           {rider.completedRides}
+                           {dispatcher.completedDispatches}
                         </TableCell>
                          <TableCell>
                             <div className="flex items-center gap-1">
                                 <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                {rider.rating.toFixed(1)}
+                                {dispatcher.rating.toFixed(1)}
                             </div>
                         </TableCell>
                         <TableCell>
-                            <Badge className={cn("capitalize text-white", getStatusColor(rider.status))}>
-                                {rider.status.replace('-', ' ')}
+                            <Badge className={cn("capitalize text-white", getStatusColor(dispatcher.status))}>
+                                {dispatcher.status.replace('-', ' ')}
                             </Badge>
                         </TableCell>
                         <TableCell>
                             <div className="flex justify-end">
-                                <RiderActions rider={rider} />
+                                <DispatcherActions dispatcher={dispatcher} />
                             </div>
                         </TableCell>
                     </TableRow>

@@ -31,60 +31,60 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import type { Rider, RiderStatus } from '@/lib/types';
-import { createRider, updateRider } from '@/lib/actions';
+import type { Dispatcher, DispatcherStatus } from '@/lib/types';
+import { createDispatcher, updateDispatcher } from '@/lib/actions';
 import { placeholderImages } from '@/lib/placeholder-images';
 
-const riderFormSchema = z.object({
+const dispatcherFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   vehicle: z.string().min(2, 'Vehicle type must be specified.'),
   location: z.string().min(2, 'Location is required.'),
   status: z.enum(['available', 'unavailable', 'on-delivery']),
-  completedRides: z.coerce.number().min(0, 'Completed rides must be a positive number.'),
+  completedDispatches: z.coerce.number().min(0, 'Completed dispatches must be a positive number.'),
   rating: z.coerce.number().min(0).max(5, 'Rating must be between 0 and 5.'),
 });
 
-type RiderFormValues = z.infer<typeof riderFormSchema>;
+type DispatcherFormValues = z.infer<typeof dispatcherFormSchema>;
 
-interface RiderFormProps {
-  rider?: Rider;
+interface DispatcherFormProps {
+  dispatcher?: Dispatcher;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
 }
 
-export function RiderForm({ rider, isOpen, onOpenChange }: RiderFormProps) {
+export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherFormProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
-  const form = useForm<RiderFormValues>({
-    resolver: zodResolver(riderFormSchema),
-    defaultValues: rider ? { 
-        name: rider.name,
-        vehicle: rider.vehicle,
-        location: rider.location,
-        status: rider.status,
-        completedRides: rider.completedRides,
-        rating: rider.rating,
+  const form = useForm<DispatcherFormValues>({
+    resolver: zodResolver(dispatcherFormSchema),
+    defaultValues: dispatcher ? { 
+        name: dispatcher.name,
+        vehicle: dispatcher.vehicle,
+        location: dispatcher.location,
+        status: dispatcher.status,
+        completedDispatches: dispatcher.completedDispatches,
+        rating: dispatcher.rating,
     } : {
         name: '',
         vehicle: 'Motorcycle',
         location: '',
         status: 'available',
-        completedRides: 0,
+        completedDispatches: 0,
         rating: 5,
     },
   });
 
-  const onSubmit = (values: RiderFormValues) => {
+  const onSubmit = (values: DispatcherFormValues) => {
     startTransition(async () => {
-      const riderData: Omit<Rider, 'id'> = {
+      const dispatcherData: Omit<Dispatcher, 'id'> = {
         ...values,
-        avatarUrl: rider?.avatarUrl || placeholderImages.find(p => p.id === 'rider-avatar-1')?.imageUrl || '',
+        avatarUrl: dispatcher?.avatarUrl || placeholderImages.find(p => p.id === 'rider-avatar-1')?.imageUrl || '',
       };
 
-      const result = rider
-        ? await updateRider(rider.id, riderData)
-        : await createRider(riderData);
+      const result = dispatcher
+        ? await updateDispatcher(dispatcher.id, dispatcherData)
+        : await createDispatcher(dispatcherData);
 
       if (result.success) {
         toast({ title: 'Success', description: result.message });
@@ -100,9 +100,9 @@ export function RiderForm({ rider, isOpen, onOpenChange }: RiderFormProps) {
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{rider ? 'Edit Rider' : 'Add New Rider'}</DialogTitle>
+          <DialogTitle>{dispatcher ? 'Edit Dispatcher' : 'Add New Dispatcher'}</DialogTitle>
           <DialogDescription>
-            {rider ? "Update the rider's details below." : "Enter the details for the new rider."}
+            {dispatcher ? "Update the dispatcher's details below." : "Enter the details for the new dispatcher."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -162,10 +162,10 @@ export function RiderForm({ rider, isOpen, onOpenChange }: RiderFormProps) {
                 />
                 <FormField
                 control={form.control}
-                name="completedRides"
+                name="completedDispatches"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Completed Rides</FormLabel>
+                    <FormLabel>Completed Dispatches</FormLabel>
                     <FormControl>
                         <Input type="number" {...field} />
                     </FormControl>
@@ -201,7 +201,7 @@ export function RiderForm({ rider, isOpen, onOpenChange }: RiderFormProps) {
                 Cancel
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? 'Saving...' : 'Save Rider'}
+                {isPending ? 'Saving...' : 'Save Dispatcher'}
               </Button>
             </DialogFooter>
           </form>

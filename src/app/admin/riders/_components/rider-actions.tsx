@@ -22,23 +22,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import type { Rider } from '@/lib/types';
-import { deleteRider } from '@/lib/actions';
+import type { Dispatcher } from '@/lib/types';
+import { deleteDispatcher } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-import { RiderForm } from './rider-form';
+import { DispatcherForm } from './rider-form';
 
-export function RiderActions({ rider }: { rider?: Rider }) {
+export function DispatcherActions({ dispatcher }: { dispatcher?: Dispatcher }) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
   const handleDelete = () => {
-    if (!rider) return;
+    if (!dispatcher) return;
     startTransition(async () => {
-      const result = await deleteRider(rider.id);
+      const result = await deleteDispatcher(dispatcher.id);
       if (result.success) {
-        toast({ title: 'Success', description: 'Rider deleted successfully.' });
+        toast({ title: 'Success', description: 'Dispatcher deleted successfully.' });
         setIsConfirmOpen(false);
       } else {
         toast({ title: 'Error', description: result.error, variant: 'destructive' });
@@ -46,24 +46,24 @@ export function RiderActions({ rider }: { rider?: Rider }) {
     });
   };
 
-  if (!rider) {
+  if (!dispatcher) {
     return (
       <>
-        <RiderForm isOpen={isFormOpen} onOpenChange={setIsFormOpen} />
-        <Button onClick={() => setIsFormOpen(true)}>Add Rider</Button>
+        <DispatcherForm isOpen={isFormOpen} onOpenChange={setIsFormOpen} />
+        <Button onClick={() => setIsFormOpen(true)}>Add Dispatcher</Button>
       </>
     );
   }
 
   return (
     <>
-      <RiderForm rider={rider} isOpen={isFormOpen} onOpenChange={setIsFormOpen} />
+      <DispatcherForm dispatcher={dispatcher} isOpen={isFormOpen} onOpenChange={setIsFormOpen} />
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the rider's record.
+              This action cannot be undone. This will permanently delete the dispatcher's record.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

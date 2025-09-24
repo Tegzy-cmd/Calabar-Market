@@ -11,7 +11,7 @@ const menuItems = [
   { href: '/admin', label: 'Dashboard' },
   { href: '/admin/users', label: 'Users' },
   { href: '/admin/vendors', label: 'Vendors' },
-  { href: '/admin/riders', label: 'Riders' },
+  { href: '/admin/riders', label: 'Dispatchers' },
   { href: '/admin/seed', label: 'Seed Data' },
 ];
 
