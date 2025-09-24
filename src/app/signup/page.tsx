@@ -53,6 +53,9 @@ export default function SignupPage() {
       case 'vendor':
         router.push('/vendor');
         break;
+       case 'dispatcher':
+        router.push('/dispatcher');
+        break;
       default:
         router.push('/browse');
         break;

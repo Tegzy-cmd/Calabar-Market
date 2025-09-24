@@ -41,7 +41,19 @@ export default function LoginPage() {
     }
 
     // Set a cookie for server-side session retrieval
-    Cookies.set('session_user', JSON.stringify(user), { expires: 1 });
+    try {
+      const userString = JSON.stringify({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatarUrl: user.avatarUrl,
+      });
+       Cookies.set('session_user', userString, { expires: 1 });
+    } catch (e) {
+      console.error("Failed to stringify user for cookie", e);
+    }
+   
 
     if (redirectUrl) {
         router.push(redirectUrl);

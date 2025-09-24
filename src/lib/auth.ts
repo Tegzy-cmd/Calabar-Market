@@ -9,7 +9,7 @@ import { doc, getDoc } from 'firebase/firestore';
 // In a production app, you would use a library like next-auth or a custom solution with JWTs.
 
 type Session = {
-  user: User;
+  user: Omit<User, 'addresses' | 'phoneNumber'>;
   vendorId?: string;
   dispatcherId?: string;
 };
@@ -37,7 +37,10 @@ export async function getServerSession(): Promise<Session | null> {
       }
       
       if (user.role === 'dispatcher') {
-         session.dispatcherId = user.id; // Assuming the user ID is the dispatcher ID
+         const userDoc = await getDoc(doc(db, 'users', user.id));
+          if (userDoc.exists()) {
+             session.dispatcherId = user.id; 
+          }
       }
 
       return session;
