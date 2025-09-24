@@ -21,6 +21,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/use-auth';
 import type { User as AppUser } from '@/lib/types';
+import { GoogleIcon } from '@/components/shared/icons';
 
 export default function SignupPage() {
   const [firstName, setFirstName] = useState('');
@@ -135,61 +136,78 @@ export default function SignupPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleEmailSignUp} className="grid gap-4">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4">
+            <form onSubmit={handleEmailSignUp} className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="first-name">First name</Label>
+                  <Input 
+                      id="first-name" 
+                      placeholder="Max" 
+                      required 
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      disabled={isPending}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="last-name">Last name</Label>
+                  <Input 
+                      id="last-name" 
+                      placeholder="Robinson" 
+                      required 
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      disabled={isPending}
+                  />
+                </div>
+              </div>
               <div className="grid gap-2">
-                <Label htmlFor="first-name">First name</Label>
-                <Input 
-                    id="first-name" 
-                    placeholder="Max" 
-                    required 
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    disabled={isPending}
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isPending}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="last-name">Last name</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input 
-                    id="last-name" 
-                    placeholder="Robinson" 
-                    required 
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    disabled={isPending}
+                  id="password" 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isPending}
+                  required
                 />
               </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isPending}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isPending}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full font-bold" disabled={isPending}>
-              {isPending ? 'Creating account...' : 'Create an account'}
-            </Button>
+              <Button type="submit" className="w-full font-bold" disabled={isPending}>
+                {isPending ? 'Creating account...' : 'Create an account'}
+              </Button>
             </form>
-             <Button variant="outline" className="w-full" onClick={handleGoogleSignUp} disabled={isPending}>
-              {isPending ? 'Creating account...' : 'Sign up with Google'}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+            <Button variant="outline" className="w-full" onClick={handleGoogleSignUp} disabled={isPending}>
+                {isPending ? 'Creating account...' : (
+                  <>
+                    <GoogleIcon className="mr-2 h-5 w-5" />
+                    Sign up with Google
+                  </>
+                )}
             </Button>
+          </div>
           <div className="mt-4 text-center text-sm">
             Already have an account?{" "}
             <Link href="/login" className="underline text-primary font-medium">

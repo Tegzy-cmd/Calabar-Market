@@ -21,6 +21,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/use-auth';
 import type { User as AppUser } from '@/lib/types';
+import { GoogleIcon } from '@/components/shared/icons';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -129,45 +130,62 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleEmailLogin} className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isPending}
-              />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  href="#"
-                  className="ml-auto inline-block text-sm text-primary hover:underline"
-                >
-                  Forgot your password?
-                </Link>
+          <div className="grid gap-4">
+            <form onSubmit={handleEmailLogin} className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isPending}
+                />
               </div>
-              <Input 
-                id="password" 
-                type="password" 
-                required 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isPending}
-              />
-            </div>
-            <Button type="submit" className="w-full font-bold" disabled={isPending}>
-              {isPending ? 'Logging in...' : 'Login'}
-            </Button>
+              <div className="grid gap-2">
+                <div className="flex items-center">
+                  <Label htmlFor="password">Password</Label>
+                  <Link
+                    href="#"
+                    className="ml-auto inline-block text-sm text-primary hover:underline"
+                  >
+                    Forgot your password?
+                  </Link>
+                </div>
+                <Input 
+                  id="password" 
+                  type="password" 
+                  required 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isPending}
+                />
+              </div>
+              <Button type="submit" className="w-full font-bold" disabled={isPending}>
+                {isPending ? 'Logging in...' : 'Login'}
+              </Button>
             </form>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
+            </div>
             <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isPending}>
-              {isPending ? 'Logging in...' : 'Login with Google'}
+              {isPending ? ('Logging in...') : (
+                <>
+                  <GoogleIcon className="mr-2 h-5 w-5" />
+                  Login with Google
+                </>
+              )}
             </Button>
+          </div>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}
             <Link href="/signup" className="underline text-primary font-medium">
