@@ -2,7 +2,7 @@
 import type { User, Vendor, Product, Order, Dispatcher, OrderItem, OrderStatus } from './types';
 import { placeholderImages } from './placeholder-images';
 import { db } from './firebase';
-import { collection, getDocs, getDoc, doc, query, where } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, query, where, Timestamp } from 'firebase/firestore';
 
 const findImage = (id: string) => placeholderImages.find(p => p.id === id)?.imageUrl || '';
 
@@ -104,10 +104,20 @@ export const orders: any[] = [ // Using any for seeding simplicity
 
 // --- Firestore Data Fetching Functions ---
 
+// Helper to convert Firestore Timestamps
+function processDoc(doc: any) {
+    const data = doc.data();
+    if (data.createdAt && data.createdAt instanceof Timestamp) {
+        data.createdAt = data.createdAt.toDate().toISOString();
+    }
+    return { id: doc.id, ...data };
+}
+
+
 // Generic fetch all documents from a collection
 async function fetchCollection<T>(collectionName: string): Promise<T[]> {
   const querySnapshot = await getDocs(collection(db, collectionName));
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as T));
+  return querySnapshot.docs.map(doc => processDoc(doc) as T);
 }
 
 // Generic fetch a single document by ID
@@ -115,7 +125,7 @@ async function fetchDocumentById<T>(collectionName: string, id: string): Promise
   const docRef = doc(db, collectionName, id);
   const docSnap = await getDoc(docRef);
   if (docSnap.exists()) {
-    return { id: docSnap.id, ...docSnap.data() } as T;
+    return processDoc(docSnap) as T;
   }
   return null;
 }

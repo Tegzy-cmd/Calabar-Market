@@ -7,7 +7,7 @@ import {
   type AssignBestDeliveryDispatcherInput,
 } from '@/ai/flows/assign-best-delivery-rider';
 import { db } from './firebase';
-import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { users, vendors, products, dispatchers, orders } from './data';
 import type { User, Vendor, Dispatcher } from './types';
 import { revalidatePath } from 'next/cache';
@@ -61,12 +61,13 @@ export async function seedDatabase() {
     // Seed orders
     const ordersCollection = collection(db, 'orders');
     orders.forEach(orderData => {
-        const { user, vendor, items, dispatcher, ...restOfOrder } = orderData;
+        const { user, vendor, items, dispatcher, createdAt, ...restOfOrder } = orderData;
         const orderDoc = {
             ...restOfOrder,
             userId: user.id,
             vendorId: vendor.id,
             ...(dispatcher && { dispatcherId: dispatcher.id }),
+            createdAt: Timestamp.fromDate(new Date(createdAt)),
             items: items.map(item => ({
                 productId: item.product.id,
                 quantity: item.quantity,
