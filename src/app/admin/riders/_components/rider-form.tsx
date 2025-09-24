@@ -31,13 +31,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import type { Dispatcher, DispatcherStatus } from '@/lib/types';
+import type { Dispatcher, DispatcherStatus, DispatcherVehicle } from '@/lib/types';
 import { createDispatcher, updateDispatcher } from '@/lib/actions';
 import { placeholderImages } from '@/lib/placeholder-images';
 
+const vehicleTypes: DispatcherVehicle[] = ['bicycle', 'scooter', 'motorbike', 'car', 'van'];
+
 const dispatcherFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
-  vehicle: z.string().min(2, 'Vehicle type must be specified.'),
+  vehicle: z.enum(vehicleTypes),
   location: z.string().min(2, 'Location is required.'),
   status: z.enum(['available', 'unavailable', 'on-delivery']),
   completedDispatches: z.coerce.number().min(0, 'Completed dispatches must be a positive number.'),
@@ -67,7 +69,7 @@ export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherF
         rating: dispatcher.rating,
     } : {
         name: '',
-        vehicle: 'Motorcycle',
+        vehicle: 'motorbike',
         location: '',
         status: 'available',
         completedDispatches: 0,
@@ -126,9 +128,18 @@ export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherF
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Vehicle</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Motorcycle" {...field} />
-                  </FormControl>
+                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a vehicle type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {vehicleTypes.map(type => (
+                        <SelectItem key={type} value={type} className="capitalize">{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

@@ -51,11 +51,13 @@ export type Order = {
 
 export type DispatcherStatus = 'available' | 'unavailable' | 'on-delivery';
 
+export type DispatcherVehicle = 'bicycle' | 'scooter' | 'motorbike' | 'car' | 'van';
+
 export type Dispatcher = {
   id: string;
   name: string;
   avatarUrl: string;
-  vehicle: string;
+  vehicle: DispatcherVehicle;
   location: string;
   status: DispatcherStatus;
   completedDispatches: number;

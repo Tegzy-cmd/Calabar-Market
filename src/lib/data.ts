@@ -15,10 +15,10 @@ export const users: User[] = [
 ];
 
 export const dispatchers: Dispatcher[] = [
-    { id: 'dispatcher-1', name: 'Mike Ross', avatarUrl: findImage('rider-avatar-1'), vehicle: 'Motorcycle', location: 'Downtown', status: 'available', rating: 4.8, completedDispatches: 102 },
-    { id: 'dispatcher-2', name: 'Sarah Lance', avatarUrl: findImage('rider-avatar-2'), vehicle: 'Bicycle', location: 'Uptown', status: 'available', rating: 4.9, completedDispatches: 250 },
-    { id: 'dispatcher-3', name: 'Peter Pan', avatarUrl: findImage('user-avatar-1'), vehicle: 'Motorcycle', location: 'Midtown', status: 'unavailable', rating: 4.5, completedDispatches: 55 },
-    { id: 'dispatcher-4', name: 'Wendy Darling', avatarUrl: findImage('user-avatar-2'), vehicle: 'Motorcycle', location: 'Downtown', status: 'on-delivery', rating: 4.7, completedDispatches: 89 },
+    { id: 'dispatcher-1', name: 'Mike Ross', avatarUrl: findImage('rider-avatar-1'), vehicle: 'motorbike', location: 'Downtown', status: 'available', rating: 4.8, completedDispatches: 102 },
+    { id: 'dispatcher-2', name: 'Sarah Lance', avatarUrl: findImage('rider-avatar-2'), vehicle: 'bicycle', location: 'Uptown', status: 'available', rating: 4.9, completedDispatches: 250 },
+    { id: 'dispatcher-3', name: 'Peter Pan', avatarUrl: findImage('user-avatar-1'), vehicle: 'motorbike', location: 'Midtown', status: 'unavailable', rating: 4.5, completedDispatches: 55 },
+    { id: 'dispatcher-4', name: 'Wendy Darling', avatarUrl: findImage('user-avatar-2'), vehicle: 'motorbike', location: 'Downtown', status: 'on-delivery', rating: 4.7, completedDispatches: 89 },
 ];
 
 export const products: Product[] = [
