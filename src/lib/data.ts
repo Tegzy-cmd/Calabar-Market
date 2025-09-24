@@ -258,35 +258,40 @@ export const getProductById = async (id: string) => await fetchDocumentById<Prod
 export const getUserById = async (id: string) => await fetchDocumentById<User>('users', id);
 export const getDispatchers = async () => await fetchCollection<Dispatcher>('dispatchers');
 export const getUsers = async () => await fetchCollection<User>('users');
-export const getAllOrders = async (): Promise<Order[]> => {
-    const ordersData = await fetchCollection<any>('orders');
+
+const processOrderDoc = async (orderDoc: any): Promise<Order> => {
+    const orderData = processDoc(orderDoc);
+    const user = await fetchDocumentById<User>('users', orderData.userId);
+    const vendor = await fetchDocumentById<Omit<Vendor, 'products'>>('vendors', orderData.vendorId);
     
-    const orders: Order[] = await Promise.all(ordersData.map(async orderData => {
-        const user = await fetchDocumentById<User>('users', orderData.userId);
-        const vendor = await fetchDocumentById<Omit<Vendor, 'products'>>('vendors', orderData.vendorId);
-        
-        const items: OrderItem[] = await Promise.all(
-            orderData.items.map(async (item: { productId: string; quantity: number, price: number }) => {
-                const product = await fetchDocumentById<Product>('products', item.productId);
-                // Important: Use the price from the order item if available, otherwise fallback to product price
-                return { 
-                    product: { ...product!, price: item.price || product!.price }, 
-                    quantity: item.quantity 
-                };
-            })
-        );
-        
-        return {
-            ...orderData,
-            user: user!,
-            vendor: vendor!,
-            items: items,
-        } as Order;
-    }));
+    const items: OrderItem[] = await Promise.all(
+        orderData.items.map(async (item: { productId: string; quantity: number, price: number }) => {
+            const product = await fetchDocumentById<Product>('products', item.productId);
+            return { 
+                product: { ...product!, price: item.price || product!.price }, 
+                quantity: item.quantity 
+            };
+        })
+    );
     
-    return orders;
+    return {
+        ...orderData,
+        user: user!,
+        vendor: vendor!,
+        items: items,
+    } as Order;
 }
 
+export const getAllOrders = async (): Promise<Order[]> => {
+    const querySnapshot = await getDocs(collection(db, 'orders'));
+    return Promise.all(querySnapshot.docs.map(processOrderDoc));
+}
+
+export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
+    const q = query(collection(db, 'orders'), where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+    return Promise.all(querySnapshot.docs.map(processOrderDoc));
+}
     
 
     
