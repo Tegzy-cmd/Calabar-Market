@@ -77,9 +77,9 @@ export default function CheckoutPage() {
   }
   
   const deliveryInfo = {
-    name: appUser.name || 'John Doe',
-    email: appUser.email || 'john.doe@example.com',
-    phone: appUser.phoneNumber || '+234 801 234 5678'
+    name: appUser.name || '',
+    email: appUser.email || '',
+    phone: appUser.phoneNumber || ''
   };
 
 

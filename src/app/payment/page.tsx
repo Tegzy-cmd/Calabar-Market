@@ -26,18 +26,29 @@ export default function PaymentPage() {
     // Simulate payment processing
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // Simulate a random error
-    if (Math.random() > 0.8) {
-        setError("Your card was declined. Please check your details and try again.");
-        setIsProcessing(false);
-    } else {
-        clearCart();
-        // In a real app, you would redirect to an order confirmation page
-        router.push('/?payment=success');
-    }
+    // Simulate a successful payment
+    clearCart();
+    // In a real app, you would create the order in the database and redirect to a confirmation page
+    // For this mock, we redirect to the homepage with a success query param
+    router.push('/?payment=success');
   };
 
-  const grandTotal = total + 500.00; // Including delivery fee
+  const grandTotal = total > 0 ? total + 500.00 : 0; // Including delivery fee
+
+  if (grandTotal === 0) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <AppHeader />
+        <main className="flex-1 container mx-auto px-4 md:px-6 py-8">
+            <div className="max-w-md mx-auto text-center">
+                 <h1 className="text-2xl font-bold mb-4">Your cart is empty</h1>
+                 <p className="text-muted-foreground mb-6">Add items to your cart before proceeding to payment.</p>
+                 <Button onClick={() => router.push('/browse')}>Start Shopping</Button>
+            </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
