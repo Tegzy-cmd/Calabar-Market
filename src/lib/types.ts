@@ -10,8 +10,6 @@ export type User = {
   addresses?: string[];
   vendorId?: string; // Link to vendor profile
   dispatcherId?: string;
-  // Embed dispatcher data for easier access on dispatcher dashboard
-  dispatcher?: Dispatcher; 
 };
 
 export type Product = {
@@ -52,6 +50,7 @@ export type Order = {
   deliveryAddress: string;
   createdAt: string;
   dispatcher?: Dispatcher;
+  dispatcherId?: string;
   subtotal: number;
   deliveryFee: number;
   total: number;

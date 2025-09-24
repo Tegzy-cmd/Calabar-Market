@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from "react";
@@ -45,10 +46,10 @@ export default function DispatcherDashboardPage() {
         }
 
         // Ensure we have the dispatcher ID before setting up the listener
-        if (!appUser.dispatcher?.id) return;
+        if (!appUser.dispatcherId) return;
 
         const ordersRef = collection(db, 'orders');
-        const q = query(ordersRef, where('dispatcherId', '==', appUser.dispatcher.id), where('status', '!=', 'cancelled'));
+        const q = query(ordersRef, where('dispatcherId', '==', appUser.dispatcherId), where('status', '!=', 'cancelled'));
 
         const unsubscribe = onSnapshot(q, async (snapshot) => {
             const fetchedOrders: Order[] = await Promise.all(
@@ -62,7 +63,7 @@ export default function DispatcherDashboardPage() {
     }, [appUser, loading]);
 
 
-    if (loading || !appUser || !appUser.dispatcher) {
+    if (loading || !appUser || !appUser.dispatcherId) {
         return <p>Loading dashboard...</p>
     }
 
@@ -70,6 +71,8 @@ export default function DispatcherDashboardPage() {
     const completedOrders = orders.filter(o => o.status === 'delivered');
     const completedToday = completedOrders.filter(o => isToday(parseISO(o.createdAt))).length;
     const earningsToday = completedToday * 300; // Assume ₦300 per delivery
+    const rating = orders.length > 0 ? (orders.reduce((acc, o) => acc + (o.dispatcher?.rating || 5), 0) / orders.length) : 5;
+
 
     return (
         <div className="space-y-8">
@@ -96,7 +99,7 @@ export default function DispatcherDashboardPage() {
                 />
                 <StatCard 
                     title="Your Rating"
-                    value={appUser.dispatcher?.rating.toFixed(1) || 'N/A'}
+                    value={rating.toFixed(1)}
                     icon={<Star className="h-4 w-4 text-muted-foreground" />}
                     description="Your current average customer rating."
                 />

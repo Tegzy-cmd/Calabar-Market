@@ -241,7 +241,6 @@ export async function getOrderById(id: string): Promise<Order | null> {
     // Fetch related documents
     const user = await fetchDocumentById<User>('users', orderData.userId);
     const vendor = await fetchDocumentById<Omit<Vendor, 'products'>>('vendors', orderData.vendorId);
-    const dispatcher = orderData.dispatcherId ? await fetchDocumentById<Dispatcher>('dispatchers', orderData.dispatcherId) : undefined;
     
     if (!user || !vendor) return null; // or handle error appropriately
 
@@ -251,6 +250,8 @@ export async function getOrderById(id: string): Promise<Order | null> {
             return { product: product!, quantity: item.quantity };
         })
     );
+    
+    const dispatcher = orderData.dispatcherId ? await fetchDocumentById<Dispatcher>('dispatchers', orderData.dispatcherId) : undefined;
     
     return {
         ...orderData,
@@ -328,6 +329,7 @@ export const getOrdersByDispatcherId = async (dispatcherId: string): Promise<Ord
     
 
     
+
 
 
 
