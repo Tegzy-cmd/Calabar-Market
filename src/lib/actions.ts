@@ -130,7 +130,7 @@ async function fetchDocumentById<T>(collectionName: string, id: string): Promise
 
 export async function getOrCreateUser(
   id: string,
-  data: Omit<User, 'id' | 'role'>
+  data: Omit<User, 'id' | 'role' | 'dispatcher'>
 ): Promise<{ success: boolean; data?: User; error?: string }> {
   try {
     const userRef = doc(db, 'users', id);
@@ -138,11 +138,16 @@ export async function getOrCreateUser(
 
     if (userSnap.exists()) {
       let user = { id: userSnap.id, ...userSnap.data() } as User;
-      // If user is a dispatcher, embed dispatcher data
+      
+      // If user is a dispatcher, ensure full dispatcher data is embedded
       if (user.role === 'dispatcher' && user.dispatcherId) {
         const dispatcherData = await fetchDocumentById<Dispatcher>('dispatchers', user.dispatcherId);
         if (dispatcherData) {
             user.dispatcher = dispatcherData;
+        } else {
+            // This case should ideally not happen if data is consistent
+            console.warn(`Dispatcher document ${user.dispatcherId} not found for user ${user.id}`);
+            // Fallback or error handling might be needed here
         }
       }
       return { success: true, data: user };

@@ -11,7 +11,7 @@ export type User = {
   vendorId?: string; // Link to vendor profile
   dispatcherId?: string;
   // Embed dispatcher data for easier access on dispatcher dashboard
-  dispatcher?: Partial<Dispatcher>; 
+  dispatcher?: Dispatcher; 
 };
 
 export type Product = {

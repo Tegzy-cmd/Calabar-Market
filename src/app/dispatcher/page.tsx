@@ -39,13 +39,16 @@ export default function DispatcherDashboardPage() {
     useEffect(() => {
         if (loading) return;
 
-        if (!appUser || appUser.role !== 'dispatcher' || !appUser.dispatcherId) {
+        if (!appUser || appUser.role !== 'dispatcher') {
             redirect('/login');
             return;
         }
 
+        // Ensure we have the dispatcher ID before setting up the listener
+        if (!appUser.dispatcher?.id) return;
+
         const ordersRef = collection(db, 'orders');
-        const q = query(ordersRef, where('dispatcherId', '==', appUser.dispatcherId), where('status', '!=', 'cancelled'));
+        const q = query(ordersRef, where('dispatcherId', '==', appUser.dispatcher.id), where('status', '!=', 'cancelled'));
 
         const unsubscribe = onSnapshot(q, async (snapshot) => {
             const fetchedOrders: Order[] = await Promise.all(
@@ -59,7 +62,7 @@ export default function DispatcherDashboardPage() {
     }, [appUser, loading]);
 
 
-    if (loading || !appUser) {
+    if (loading || !appUser || !appUser.dispatcher) {
         return <p>Loading dashboard...</p>
     }
 
