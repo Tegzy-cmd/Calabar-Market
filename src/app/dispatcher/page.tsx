@@ -60,7 +60,7 @@ export default function DispatcherDashboardPage() {
         const q = query(
             ordersRef, 
             where('dispatcherId', '==', appUser.dispatcherId),
-            where('status', 'in', ['preparing', 'dispatched', 'placed', 'awaiting-confirmation'])
+            where('status', 'in', ['preparing', 'dispatched', 'placed', 'awaiting-confirmation', 'delivered'])
         );
 
         const unsubscribe = onSnapshot(q, async (snapshot) => {
