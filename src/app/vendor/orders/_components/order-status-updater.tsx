@@ -51,11 +51,6 @@ export function OrderStatusUpdater({ order, role }: OrderStatusUpdaterProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {role === 'vendor' && (
-            <DropdownMenuItem asChild>
-                <Link href={`/vendor/orders/${order.id}`}>View Details</Link>
-            </DropdownMenuItem>
-        )}
         {availableActions.map(action => (
           <DropdownMenuItem key={action.status} onClick={() => handleUpdateStatus(action.status)} disabled={isPending}>
             {action.icon}
