@@ -7,7 +7,7 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Phone, Clock, Truck, Store, CheckCircle, Package, CircleDot, MessageSquare } from "lucide-react";
+import { User, MapPin, Phone, Clock, Truck, Store, CheckCircle, Package, CircleDot, MessageSquare, Star } from "lucide-react";
 import { AppHeader } from "@/components/shared/header";
 import { cn } from "@/lib/utils";
 import type { OrderStatus, Order as OrderType } from "@/lib/types";
@@ -45,8 +45,10 @@ export default function OrderDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const [order, setOrder] = useState<OrderType | null>(null);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const { hasUnread, resetUnread } = useUnreadMessages(id, 'user');
+  const [isVendorChatOpen, setIsVendorChatOpen] = useState(false);
+  const [isDispatcherChatOpen, setIsDispatcherChatOpen] = useState(false);
+  const { hasUnread: hasUnreadVendor, resetUnread: resetUnreadVendor } = useUnreadMessages(id, 'user');
+  const { hasUnread: hasUnreadDispatcher, resetUnread: resetUnreadDispatcher } = useUnreadMessages(id, 'user');
   
   useEffect(() => {
     if (id) {
@@ -54,9 +56,14 @@ export default function OrderDetailPage() {
     }
   }, [id]);
 
-  const handleOpenChat = () => {
-    setIsChatOpen(true);
-    resetUnread();
+  const handleOpenVendorChat = () => {
+    setIsVendorChatOpen(true);
+    resetUnreadVendor();
+  }
+
+  const handleOpenDispatcherChat = () => {
+    setIsDispatcherChatOpen(true);
+    resetUnreadDispatcher();
   }
 
   if (!order) {
@@ -72,10 +79,19 @@ export default function OrderDetailPage() {
        <ChatRoom 
         orderId={order.id}
         userRole="user"
-        isOpen={isChatOpen}
-        onOpenChange={setIsChatOpen}
+        isOpen={isVendorChatOpen}
+        onOpenChange={setIsVendorChatOpen}
         title={`Chat with ${order.vendor.name}`}
       />
+      {order.dispatcher && (
+        <ChatRoom 
+            orderId={order.id}
+            userRole="dispatcher"
+            isOpen={isDispatcherChatOpen}
+            onOpenChange={setIsDispatcherChatOpen}
+            title={`Chat with ${order.dispatcher.name}`}
+        />
+      )}
       <main className="flex-1 container mx-auto px-4 md:px-6 py-8">
       <div className="space-y-8">
         <div className="flex justify-between items-start">
@@ -86,8 +102,8 @@ export default function OrderDetailPage() {
             </p>
             </div>
             <div className="flex items-center gap-4">
-                 <Button variant="outline" onClick={handleOpenChat} className="relative">
-                    {hasUnread && (
+                 <Button variant="outline" onClick={handleOpenVendorChat} className="relative">
+                    {hasUnreadVendor && (
                         <span className="absolute -top-1 -right-1 flex h-3 w-3">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
@@ -96,6 +112,18 @@ export default function OrderDetailPage() {
                     <MessageSquare className="mr-2 h-4 w-4" />
                     Chat with Vendor
                 </Button>
+                {order.status === 'dispatched' && order.dispatcher && (
+                    <Button variant="outline" onClick={handleOpenDispatcherChat} className="relative">
+                        {hasUnreadDispatcher && (
+                            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                            </span>
+                        )}
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        Chat with Dispatcher
+                    </Button>
+                )}
                 <Badge className={cn("capitalize text-lg py-1 px-4 text-white", getStatusColor(order.status))}>{order.status}</Badge>
             </div>
         </div>
@@ -198,14 +226,26 @@ export default function OrderDetailPage() {
                 {order.dispatcher && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Dispatcher</CardTitle>
+                            <CardTitle>Your Dispatcher</CardTitle>
                         </CardHeader>
-                        <CardContent className="flex items-center gap-4">
-                            <Image src={order.dispatcher.avatarUrl} alt={order.dispatcher.name} width={50} height={50} className="rounded-full" />
-                            <div>
-                                <p className="font-bold">{order.dispatcher.name}</p>
-                                <p className="text-sm text-muted-foreground">{order.dispatcher.vehicle}</p>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center gap-4">
+                                <Image src={order.dispatcher.avatarUrl} alt={order.dispatcher.name} width={60} height={60} className="rounded-full border-2 border-primary" />
+                                <div className="flex-1">
+                                    <p className="font-bold text-lg">{order.dispatcher.name}</p>
+                                    <p className="text-sm text-muted-foreground capitalize">{order.dispatcher.vehicle}</p>
+                                </div>
+                                <div className="flex items-center gap-1 text-yellow-500">
+                                    <Star className="w-5 h-5 fill-current" />
+                                    <span className="font-bold text-base">{order.dispatcher.rating.toFixed(1)}</span>
+                                </div>
                             </div>
+                            {order.dispatcher.phoneNumber && (
+                                <div className="flex items-center gap-3 pt-2 border-t mt-4">
+                                    <Phone className="w-5 h-5 text-muted-foreground"/>
+                                    <a href={`tel:${order.dispatcher.phoneNumber}`} className="text-sm text-primary hover:underline">{order.dispatcher.phoneNumber}</a>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 )}

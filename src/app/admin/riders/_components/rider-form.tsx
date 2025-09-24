@@ -31,6 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const dispatcherFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
+  phoneNumber: z.string().min(10, 'A valid phone number is required.'),
   vehicle: z.enum(['bicycle', 'scooter', 'motorbike', 'car', 'van']),
   location: z.string().min(2, 'Location is required.'),
   status: z.enum(['available', 'on-delivery', 'unavailable']),
@@ -66,11 +67,13 @@ export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherF
     resolver: zodResolver(dispatcherFormSchema),
     defaultValues: dispatcher ? {
         name: dispatcher.name,
+        phoneNumber: dispatcher.phoneNumber,
         vehicle: dispatcher.vehicle,
         location: dispatcher.location,
         status: dispatcher.status,
     } : {
         name: '',
+        phoneNumber: '',
         vehicle: 'motorbike',
         location: '',
         status: 'available',
@@ -119,6 +122,19 @@ export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherF
                   <FormLabel>Full Name</FormLabel>
                   <FormControl>
                     <Input placeholder="John Doe" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phoneNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="+234 801 234 5678" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -42,6 +42,7 @@ const dispatcherSignUpSchema = z.object({
   name: z.string().min(2, 'Your name is required.'),
   email: z.string().email('Invalid email address.'),
   password: z.string().min(6, 'Password must be at least 6 characters.'),
+  phoneNumber: z.string().min(10, 'A valid phone number is required.'),
   vehicle: z.enum(['bicycle', 'scooter', 'motorbike', 'car', 'van'], { required_error: 'Please select a vehicle.'}),
 });
 
@@ -66,6 +67,7 @@ export default function DispatcherSignUpPage() {
       name: '',
       email: '',
       password: '',
+      phoneNumber: '',
       vehicle: undefined,
     },
   });
@@ -154,6 +156,19 @@ export default function DispatcherSignUpPage() {
                         )}
                     />
                  </div>
+                 <FormField
+                      control={form.control}
+                      name="phoneNumber"
+                      render={({ field }) => (
+                          <FormItem>
+                          <FormLabel>Phone Number</FormLabel>
+                          <FormControl>
+                              <Input placeholder="+234 801 234 5678" {...field} disabled={isPending} />
+                          </FormControl>
+                          <FormMessage />
+                          </FormItem>
+                      )}
+                  />
               </fieldset>
 
               <fieldset className="space-y-4 border p-4 rounded-md">

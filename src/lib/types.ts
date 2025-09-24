@@ -69,6 +69,7 @@ export type Dispatcher = {
   status: DispatcherStatus;
   completedDispatches: number;
   rating: number;
+  phoneNumber?: string;
 };
 
 export type ChatMessage = {
@@ -76,6 +77,6 @@ export type ChatMessage = {
     text: string;
     senderId: string;
     senderName: string;
-    senderRole: 'user' | 'vendor';
+    senderRole: 'user' | 'vendor' | 'dispatcher';
     timestamp: string;
 }

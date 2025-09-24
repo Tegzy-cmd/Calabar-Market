@@ -24,7 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 interface ChatRoomProps {
   orderId: string;
-  userRole: 'user' | 'vendor';
+  userRole: 'user' | 'vendor' | 'dispatcher';
   title: string;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;

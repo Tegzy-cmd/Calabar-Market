@@ -5,12 +5,11 @@
 import { auth, db } from './firebase';
 import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp, collectionGroup, getDocs as getDocsFromFirestore, query, where, orderBy } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { users, vendors, products, dispatchers as mockDispatchers, orders, getDispatchers as getAllDispatchersFromData, getAllOrders as getAllOrdersFromData } from './data';
+import { users, vendors, products, dispatchers as mockDispatchers, orders } from './data';
 import type { User, Vendor, Dispatcher, Product, OrderStatus, ChatMessage, DispatcherVehicle, Order } from './types';
 import { revalidatePath } from 'next/cache';
 import { placeholderImages } from './placeholder-images';
 import { getServerSession } from './auth';
-import { getDispatchers } from './data';
 
 type CreateOrderData = {
     userId: string;
@@ -245,6 +244,7 @@ export async function createDispatcherAndUser(data: {
     name: string;
     email: string;
     password: string;
+    phoneNumber: string;
     vehicle: DispatcherVehicle;
 }) {
     let uid;
@@ -257,6 +257,7 @@ export async function createDispatcherAndUser(data: {
         // 2. Create Dispatcher document (using UID as doc ID)
         const dispatcherData: Omit<Dispatcher, 'id'> = {
             name: data.name,
+            phoneNumber: data.phoneNumber,
             vehicle: data.vehicle,
             status: 'unavailable',
             location: 'Not Available',
@@ -304,9 +305,24 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus, di
         
         let updateData: { status: OrderStatus; dispatcherId?: string } = { status };
 
-        // If a dispatcher is being assigned, add it to the update.
-        if (status === 'preparing' && dispatcherId) {
-            updateData.dispatcherId = dispatcherId;
+        // Handle dispatcher assignment when moving to 'preparing'
+        if (status === 'preparing') {
+             if (dispatcherId) {
+                updateData.dispatcherId = dispatcherId;
+            } else {
+                // Fetch available dispatchers and assign one randomly
+                const q = query(collection(db, 'dispatchers'), where('status', '==', 'available'));
+                const querySnapshot = await getDocsFromFirestore(q);
+                const availableDispatchers = querySnapshot.docs.map(d => d.id);
+
+                if (availableDispatchers.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * availableDispatchers.length);
+                    updateData.dispatcherId = availableDispatchers[randomIndex];
+                } else {
+                    console.warn('No available dispatchers to assign.');
+                    // Don't assign a dispatcher if none are available
+                }
+            }
         }
         
         await updateDoc(orderRef, updateData);
@@ -430,7 +446,7 @@ type SendMessageData = {
     text: string;
     senderId: string;
     senderName: string;
-    senderRole: 'user' | 'vendor';
+    senderRole: 'user' | 'vendor' | 'dispatcher';
 }
 
 export async function sendMessage(data: SendMessageData) {

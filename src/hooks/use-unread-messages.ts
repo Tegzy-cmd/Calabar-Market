@@ -7,7 +7,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import type { ChatMessage } from '@/lib/types';
 
-export function useUnreadMessages(orderId: string, currentUserRole: 'user' | 'vendor') {
+export function useUnreadMessages(orderId: string, currentUserRole: 'user' | 'vendor' | 'dispatcher') {
   const [hasUnread, setHasUnread] = useState(false);
   const { appUser } = useAuth();
   

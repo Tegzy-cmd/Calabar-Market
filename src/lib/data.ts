@@ -13,19 +13,19 @@ export const users: User[] = [
   { id: 'user-2', name: 'Jane Smith', email: 'jane.smith@example.com', role: 'user', avatarUrl: findImage('user-avatar-2'), phoneNumber: '+2348012345679', addresses: ['456 Oak Ave, Calabar, Nigeria', '789 Pine Ln, Calabar, Nigeria'] },
   { id: 'vendor-admin-1', name: 'Burger Queen Admin', email: 'admin@burgerqueen.com', role: 'vendor', avatarUrl: findImage('vendor-logo-1'), vendorId: 'vendor-1' },
   { id: 'admin-1', name: 'App Admin', email: 'admin@calabarmarket.com', role: 'admin', avatarUrl: findImage('user-avatar-1') },
-  { id: 'dispatcher-1', name: 'Mike Ross', email: 'mike.ross@example.com', role: 'dispatcher', dispatcherId: 'dispatcher-1', avatarUrl: findImage('rider-avatar-1') },
-  { id: 'dispatcher-2', name: 'Sarah Lance', email: 'sarah.lance@example.com', role: 'dispatcher', dispatcherId: 'dispatcher-2', avatarUrl: findImage('rider-avatar-2') },
-  { id: 'dispatcher-3', name: 'Peter Pan', email: 'peter.pan@example.com', role: 'dispatcher', dispatcherId: 'dispatcher-3', avatarUrl: findImage('user-avatar-1') },
-  { id: 'dispatcher-4', name: 'Wendy Darling', email: 'wendy.darling@example.com', role: 'dispatcher', dispatcherId: 'dispatcher-4', avatarUrl: findImage('user-avatar-2') },
+  { id: 'dispatcher-1-uid', name: 'Mike Ross', email: 'mike.ross@example.com', role: 'dispatcher', dispatcherId: 'dispatcher-1', avatarUrl: findImage('rider-avatar-1') },
+  { id: 'dispatcher-2-uid', name: 'Sarah Lance', email: 'sarah.lance@example.com', role: 'dispatcher', dispatcherId: 'dispatcher-2', avatarUrl: findImage('rider-avatar-2') },
+  { id: 'dispatcher-3-uid', name: 'Peter Pan', email: 'peter.pan@example.com', role: 'dispatcher', dispatcherId: 'dispatcher-3', avatarUrl: findImage('user-avatar-1') },
+  { id: 'dispatcher-4-uid', name: 'Wendy Darling', email: 'wendy.darling@example.com', role: 'dispatcher', dispatcherId: 'dispatcher-4', avatarUrl: findImage('user-avatar-2') },
   { id: 'bill-james-user', name: 'Bill James', email: 'omorakabenjamin1@gmail.com', role: 'dispatcher', dispatcherId: 'bill-james-dispatcher', avatarUrl: findImage('user-avatar-1') },
 ];
 
 export const dispatchers: Dispatcher[] = [
-    { id: 'dispatcher-1', name: 'Mike Ross', avatarUrl: findImage('rider-avatar-1'), vehicle: 'motorbike', location: 'Downtown', status: 'available', rating: 4.8, completedDispatches: 102 },
-    { id: 'dispatcher-2', name: 'Sarah Lance', avatarUrl: findImage('rider-avatar-2'), vehicle: 'bicycle', location: 'Uptown', status: 'available', rating: 4.9, completedDispatches: 250 },
-    { id: 'dispatcher-3', name: 'Peter Pan', avatarUrl: findImage('user-avatar-1'), vehicle: 'motorbike', location: 'Midtown', status: 'unavailable', rating: 4.5, completedDispatches: 55 },
-    { id: 'dispatcher-4', name: 'Wendy Darling', avatarUrl: findImage('user-avatar-2'), vehicle: 'motorbike', location: 'Downtown', status: 'on-delivery', rating: 4.7, completedDispatches: 89 },
-    { id: 'bill-james-dispatcher', name: 'Bill James', avatarUrl: findImage('user-avatar-1'), vehicle: 'car', location: 'City Center', status: 'available', rating: 5.0, completedDispatches: 0 },
+    { id: 'dispatcher-1', name: 'Mike Ross', avatarUrl: findImage('rider-avatar-1'), vehicle: 'motorbike', location: 'Downtown', status: 'available', rating: 4.8, completedDispatches: 102, phoneNumber: '+2348022222222' },
+    { id: 'dispatcher-2', name: 'Sarah Lance', avatarUrl: findImage('rider-avatar-2'), vehicle: 'bicycle', location: 'Uptown', status: 'available', rating: 4.9, completedDispatches: 250, phoneNumber: '+2348033333333' },
+    { id: 'dispatcher-3', name: 'Peter Pan', avatarUrl: findImage('user-avatar-1'), vehicle: 'motorbike', location: 'Midtown', status: 'unavailable', rating: 4.5, completedDispatches: 55, phoneNumber: '+2348044444444' },
+    { id: 'dispatcher-4', name: 'Wendy Darling', avatarUrl: findImage('user-avatar-2'), vehicle: 'motorbike', location: 'Downtown', status: 'on-delivery', rating: 4.7, completedDispatches: 89, phoneNumber: '+2348055555555' },
+    { id: 'bill-james-dispatcher', name: 'Bill James', avatarUrl: findImage('user-avatar-1'), vehicle: 'car', location: 'City Center', status: 'available', rating: 5.0, completedDispatches: 0, phoneNumber: '+2348011111111' },
 ];
 
 export const products: Product[] = [
@@ -344,6 +344,7 @@ export const getOrdersByDispatcherId = async (dispatcherId: string): Promise<Ord
     
 
     
+
 
 
 
