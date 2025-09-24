@@ -59,18 +59,18 @@ export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherF
   const form = useForm<DispatcherFormValues>({
     resolver: zodResolver(dispatcherFormSchema),
     defaultValues: dispatcher
-      ? {
-          name: dispatcher.name,
-          vehicle: dispatcher.vehicle,
-          location: dispatcher.location,
-          status: dispatcher.status,
-        }
-      : {
-          name: '',
-          vehicle: 'motorbike',
-          location: '',
-          status: 'available',
-        },
+    ? {
+        name: dispatcher.name,
+        vehicle: dispatcher.vehicle,
+        location: dispatcher.location,
+        status: dispatcher.status,
+      }
+    : {
+        name: '',
+        vehicle: 'motorbike' as DispatcherVehicle,
+        location: '',
+        status: 'available' as const,
+      },
   });
 
   const onSubmit = (values: DispatcherFormValues) => {
