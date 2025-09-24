@@ -15,6 +15,8 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChatRoom } from "@/components/shared/chat-room";
+import { useUnreadMessages } from "@/hooks/use-unread-messages";
+
 
 const getStatusColor = (status: OrderStatus) => {
     switch (status) {
@@ -38,12 +40,18 @@ export default function VendorOrderDetailPage() {
   const id = params.id as string;
   const [order, setOrder] = useState<OrderType | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const { hasUnread, resetUnread } = useUnreadMessages(id, 'vendor');
   
   useEffect(() => {
     if (id) {
         getOrderById(id).then(setOrder);
     }
   }, [id]);
+
+  const handleOpenChat = () => {
+    setIsChatOpen(true);
+    resetUnread();
+  }
 
   if (!order) {
     return <div>Loading...</div>;
@@ -66,7 +74,13 @@ export default function VendorOrderDetailPage() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-             <Button variant="outline" onClick={() => setIsChatOpen(true)}>
+             <Button variant="outline" onClick={handleOpenChat} className="relative">
+                {hasUnread && (
+                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                    </span>
+                )}
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Chat with Customer
             </Button>
