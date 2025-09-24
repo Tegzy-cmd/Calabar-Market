@@ -21,6 +21,7 @@ import { getOrdersByVendorId } from "@/lib/data";
 import type { Order, OrderStatus, Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { redirect } from "next/navigation";
+import { SalesOverview } from "@/app/admin/_components/sales-overview";
 
 function StatCard({ title, value, icon, description }: { title: string, value: string, icon: React.ReactNode, description?: string }) {
     return (
@@ -124,7 +125,35 @@ export default async function VendorDashboardPage() {
       </div>
 
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="lg:col-span-4">
+        <SalesOverview orders={orders} />
+        
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle>Top Products</CardTitle>
+            <CardDescription>Your best-selling products by units sold.</CardDescription>
+          </CardHeader>
+          <CardContent>
+             <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Product</TableHead>
+                        <TableHead className="text-right">Units Sold</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {topProducts.map((product) => (
+                        <TableRow key={product.name}>
+                            <TableCell className="font-medium">{product.name}</TableCell>
+                            <TableCell className="text-right">{product.quantity}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
           <CardHeader>
             <CardTitle>Recent Orders</CardTitle>
             <CardDescription>Your 5 most recent orders.</CardDescription>
@@ -161,33 +190,6 @@ export default async function VendorDashboardPage() {
             </Table>
           </CardContent>
         </Card>
-        
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Top Products</CardTitle>
-            <CardDescription>Your best-selling products by units sold.</CardDescription>
-          </CardHeader>
-          <CardContent>
-             <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Product</TableHead>
-                        <TableHead className="text-right">Units Sold</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {topProducts.map((product) => (
-                        <TableRow key={product.name}>
-                            <TableCell className="font-medium">{product.name}</TableCell>
-                            <TableCell className="text-right">{product.quantity}</TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
-
     </div>
   );
 }
