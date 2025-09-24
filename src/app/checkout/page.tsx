@@ -28,7 +28,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function CheckoutPage() {
   const { items, total, setDeliveryAddress } = useCart();
-  const { user: authUser, loading, appUser: initialAppUser } = useAuth();
+  const { user: authUser, loading, appUser: initialAppUser, syncUser } = useAuth();
   const [appUser, setAppUser] = useState<User | null>(initialAppUser);
   const [selectedAddress, setSelectedAddress] = useState<string>('');
   const [name, setName] = useState('');
@@ -83,6 +83,10 @@ export default function CheckoutPage() {
         const result = await updateUser(appUser.id, userData);
 
         if (result.success) {
+            if (authUser) {
+                // re-sync the user to update the appUser state locally
+               await syncUser(authUser);
+            }
             setDeliveryAddress(selectedAddress);
             router.push('/payment');
         } else {
@@ -142,7 +146,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="address">Delivery Address</Label>
-                    {(appUser.addresses && appUser.addresses.length > 0) ? (
+                    {(appUser.addresses && appUser.addresses.length > 0 && appUser.addresses[0]) ? (
                         <Select value={selectedAddress} onValueChange={setSelectedAddress}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select an address" />
@@ -168,7 +172,7 @@ export default function CheckoutPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Order Summary</CardTitle>
-              </CardHeader>
+              </Header>
               <CardContent className="space-y-3">
                 <ul className="space-y-2 text-sm text-muted-foreground">
                     {items.map(item => (
