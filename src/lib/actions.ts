@@ -96,7 +96,7 @@ export async function createUser(data: Omit<User, 'id'>) {
         revalidatePath('/admin/users');
         revalidatePath('/checkout');
         return { success: true, message: 'User created successfully.' };
-    } catch (e: any) => {
+    } catch (e: any) {
         return { success: false, error: e.message };
     }
 }
@@ -148,7 +148,7 @@ export async function deleteUser(id: string) {
         revalidatePath('/admin/users');
         revalidatePath('/checkout');
         return { success: true, message: 'User deleted successfully.' };
-    } catch (e: any) => {
+    } catch (e: any) {
         return { success: false, error: e.message };
     }
 }
@@ -159,7 +159,7 @@ export async function createVendor(data: Omit<Vendor, 'id' | 'products'>) {
         await addDoc(collection(db, 'vendors'), data);
         revalidatePath('/admin/vendors');
         return { success: true, message: 'Vendor created successfully.' };
-    } catch (e: any) => {
+    } catch (e: any) {
         return { success: false, error: e.message };
     }
 }
@@ -193,7 +193,7 @@ export async function createDispatcher(data: Omit<Dispatcher, 'id'>) {
         await addDoc(collection(db, 'dispatchers'), data);
         revalidatePath('/admin/riders');
         return { success: true, message: 'Dispatcher created successfully.' };
-    } catch (e: any) => {
+    } catch (e: any) {
         return { success: false, error: e.message };
     }
 }
@@ -203,7 +203,7 @@ export async function updateDispatcher(id: string, data: Partial<Omit<Dispatcher
         await updateDoc(doc(db, 'dispatchers', id), data);
         revalidatePath('/admin/riders');
         return { success: true, message: 'Dispatcher updated successfully.' };
-    } catch (e: any) => {
+    } catch (e: any) {
         return { success: false, error: e.message };
     }
 }
@@ -213,7 +213,7 @@ export async function deleteDispatcher(id: string) {
         await deleteDoc(doc(db, 'dispatchers', id));
         revalidatePath('/admin/riders');
         return { success: true, message: 'Dispatcher deleted successfully.' };
-    } catch (e: any) => {
+    } catch (e: any) {
         return { success: false, error: e.message };
     }
 }
