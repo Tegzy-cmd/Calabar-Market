@@ -42,8 +42,6 @@ const dispatcherFormSchema = z.object({
   vehicle: z.enum(vehicleTypes),
   location: z.string().min(2, 'Location is required.'),
   status: z.enum(['available', 'unavailable', 'on-delivery']),
-  completedDispatches: z.coerce.number().min(0, 'Completed dispatches must be a positive number.'),
-  rating: z.coerce.number().min(0).max(5, 'Rating must be between 0 and 5.'),
 });
 
 type DispatcherFormValues = z.infer<typeof dispatcherFormSchema>;
@@ -65,28 +63,24 @@ export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherF
         vehicle: dispatcher.vehicle,
         location: dispatcher.location,
         status: dispatcher.status,
-        completedDispatches: dispatcher.completedDispatches,
-        rating: dispatcher.rating,
     } : {
         name: '',
         vehicle: 'motorbike',
         location: '',
         status: 'available',
-        completedDispatches: 0,
-        rating: 5,
     },
   });
 
   const onSubmit = (values: DispatcherFormValues) => {
     startTransition(async () => {
-      const dispatcherData: Omit<Dispatcher, 'id'> = {
-        ...values,
-        avatarUrl: dispatcher?.avatarUrl || placeholderImages.find(p => p.id === 'rider-avatar-1')?.imageUrl || '',
-      };
-
       const result = dispatcher
-        ? await updateDispatcher(dispatcher.id, dispatcherData)
-        : await createDispatcher(dispatcherData);
+        ? await updateDispatcher(dispatcher.id, values)
+        : await createDispatcher({
+            ...values,
+            avatarUrl: placeholderImages.find(p => p.id === 'rider-avatar-1')?.imageUrl || '',
+            completedDispatches: 0,
+            rating: 5,
+        });
 
       if (result.success) {
         toast({ title: 'Success', description: result.message });
@@ -157,34 +151,6 @@ export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherF
                 </FormItem>
               )}
             />
-             <div className="grid grid-cols-2 gap-4">
-                <FormField
-                control={form.control}
-                name="rating"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Rating</FormLabel>
-                    <FormControl>
-                        <Input type="number" step="0.1" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-                <FormField
-                control={form.control}
-                name="completedDispatches"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Completed Dispatches</FormLabel>
-                    <FormControl>
-                        <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-            </div>
             <FormField
               control={form.control}
               name="status"
@@ -195,7 +161,7 @@ export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherF
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a status" />
-                      </SelectTrigger>
+                      </Trigger>
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="available">Available</SelectItem>

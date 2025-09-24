@@ -165,7 +165,7 @@ export async function createDispatcher(data: Omit<Dispatcher, 'id'>) {
     }
 }
 
-export async function updateDispatcher(id: string, data: Partial<Dispatcher>) {
+export async function updateDispatcher(id: string, data: Partial<Omit<Dispatcher, 'id'>>) {
     try {
         await updateDoc(doc(db, 'dispatchers', id), data);
         revalidatePath('/admin/riders');
