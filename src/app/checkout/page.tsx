@@ -28,7 +28,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function CheckoutPage() {
   const { items, total, setDeliveryAddress } = useCart();
-  const { user: authUser, loading, appUser: initialAppUser, syncUser } = useAuth();
+  const { user: authUser, loading, appUser: initialAppUser } = useAuth();
   const [appUser, setAppUser] = useState<User | null>(initialAppUser);
   const [selectedAddress, setSelectedAddress] = useState<string>('');
   const [name, setName] = useState('');
@@ -83,10 +83,6 @@ export default function CheckoutPage() {
         const result = await updateUser(appUser.id, userData);
 
         if (result.success) {
-            if (authUser) {
-                // re-sync the user to update the appUser state locally
-               await syncUser(authUser);
-            }
             setDeliveryAddress(selectedAddress);
             router.push('/payment');
         } else {
