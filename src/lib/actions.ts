@@ -304,7 +304,7 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
             // Hardcode assignment to Bill James for now
             const assignedDispatcherId = 'bill-james-user';
             
-            await updateDoc(orderRef, { status: 'dispatched', dispatcherId: assignedDispatcherId });
+            await updateDoc(orderRef, { status: 'preparing', dispatcherId: assignedDispatcherId });
 
         } else {
             // For all other status updates
@@ -476,4 +476,5 @@ export async function getMessages(orderId: string): Promise<ChatMessage[]> {
         return [];
     }
 }
+
 
