@@ -54,6 +54,7 @@ export const vendors: Omit<Vendor, 'products'>[] = [
     name: 'Burger Queen',
     description: 'The best burgers in town.',
     category: 'food',
+    address: '100 Burger Lane, Calabar',
     logoUrl: findImage('vendor-logo-1'),
     bannerUrl: findImage('vendor-banner-1'),
   },
@@ -62,6 +63,7 @@ export const vendors: Omit<Vendor, 'products'>[] = [
     name: 'Pizza Palace',
     description: 'Authentic Italian pizza.',
     category: 'food',
+    address: '200 Pizza Plaza, Calabar',
     logoUrl: findImage('vendor-logo-2'),
     bannerUrl: findImage('vendor-banner-2'),
   },
@@ -70,6 +72,7 @@ export const vendors: Omit<Vendor, 'products'>[] = [
     name: 'Green Grocer',
     description: 'Fresh and organic groceries.',
     category: 'groceries',
+    address: '300 Farm Road, Calabar',
     logoUrl: findImage('vendor-logo-3'),
     bannerUrl: findImage('vendor-banner-3'),
   },
@@ -78,6 +81,7 @@ export const vendors: Omit<Vendor, 'products'>[] = [
     name: 'Sushi Spot',
     description: 'Fresh and delicious sushi.',
     category: 'food',
+    address: '400 Ocean View, Calabar',
     logoUrl: "https://picsum.photos/seed/sushilogo/100/100",
     bannerUrl: "https://picsum.photos/seed/sushibanner/600/400",
   },
@@ -86,6 +90,7 @@ export const vendors: Omit<Vendor, 'products'>[] = [
     name: 'Taco Town',
     description: 'Your favorite Mexican street food.',
     category: 'food',
+    address: '500 Fiesta Way, Calabar',
     logoUrl: "https://picsum.photos/seed/tacologo/100/100",
     bannerUrl: "https://picsum.photos/seed/tacobanner/600/400",
   },
@@ -212,9 +217,7 @@ export async function getVendors(category?: 'food' | 'groceries', includeProduct
   const vendors = await Promise.all(vendorsData.map(async (vendor) => {
     let products: Product[] = [];
     if (includeProducts) {
-        const productsQuery = query(collection(db, 'products'), where('vendorId', '==', vendor.id));
-        const productsSnapshot = await getDocs(productsQuery);
-        products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+        products = await getProductsByVendorId(vendor.id);
     }
     return { ...vendor, products };
   }))
@@ -226,9 +229,7 @@ export async function getVendorById(id: string): Promise<Vendor | null> {
     const vendor = await fetchDocumentById<Omit<Vendor, 'products'>>('vendors', id);
     if (!vendor) return null;
 
-    const productsQuery = query(collection(db, 'products'), where('vendorId', '==', id));
-    const productsSnapshot = await getDocs(productsQuery);
-    const vendorProducts = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+    const vendorProducts = await getProductsByVendorId(id);
 
     return { ...vendor, products: vendorProducts };
 };
@@ -309,6 +310,12 @@ export const getOrdersByVendorId = async (vendorId: string): Promise<Order[]> =>
     const q = query(collection(db, 'orders'), where('vendorId', '==', vendorId));
     const querySnapshot = await getDocs(q);
     return Promise.all(querySnapshot.docs.map(processOrderDoc));
+}
+
+export const getProductsByVendorId = async (vendorId: string): Promise<Product[]> => {
+    const q = query(collection(db, 'products'), where('vendorId', '==', vendorId));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
 }
 
 export const getOrdersByDispatcherId = async (dispatcherId: string): Promise<Order[]> => {

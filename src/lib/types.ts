@@ -23,6 +23,7 @@ export type Vendor = {
   name: string;
   description: string;
   category: 'food' | 'groceries';
+  address: string;
   logoUrl: string;
   bannerUrl: string;
   products: Product[];

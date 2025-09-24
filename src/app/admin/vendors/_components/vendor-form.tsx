@@ -39,6 +39,7 @@ import { placeholderImages } from '@/lib/placeholder-images';
 const vendorFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   description: z.string().min(10, 'Description must be at least 10 characters.'),
+  address: z.string().min(10, 'Address must be at least 10 characters.'),
   category: z.enum(['food', 'groceries']),
   logoUrl: z.string().url('Must be a valid URL.'),
   bannerUrl: z.string().url('Must be a valid URL.'),
@@ -61,12 +62,14 @@ export function VendorForm({ vendor, isOpen, onOpenChange }: VendorFormProps) {
     defaultValues: vendor ? { 
         name: vendor.name, 
         description: vendor.description,
+        address: vendor.address,
         category: vendor.category,
         logoUrl: vendor.logoUrl,
         bannerUrl: vendor.bannerUrl,
     } : {
         name: '',
         description: '',
+        address: '',
         category: 'food',
         logoUrl: placeholderImages.find(p => p.id === 'vendor-logo-1')?.imageUrl,
         bannerUrl: placeholderImages.find(p => p.id === 'vendor-banner-1')?.imageUrl,
@@ -121,6 +124,19 @@ export function VendorForm({ vendor, isOpen, onOpenChange }: VendorFormProps) {
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea placeholder="The best burgers in town." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="123 Food Street, Calabar" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

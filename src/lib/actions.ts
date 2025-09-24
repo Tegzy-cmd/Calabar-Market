@@ -9,7 +9,7 @@ import {
 import { db } from './firebase';
 import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { users, vendors, products, dispatchers, orders } from './data';
-import type { User, Vendor, Dispatcher } from './types';
+import type { User, Vendor, Dispatcher, Product } from './types';
 import { revalidatePath } from 'next/cache';
 import { placeholderImages } from './placeholder-images';
 
@@ -170,6 +170,7 @@ export async function updateVendor(id: string, data: Partial<Omit<Vendor, 'id' |
         await updateDoc(doc(db, 'vendors', id), data);
         revalidatePath('/admin/vendors');
         revalidatePath(`/browse/vendors/${id}`);
+        revalidatePath('/vendor/settings');
         return { success: true, message: 'Vendor updated successfully.' };
     } catch (e: any) {
         return { success: false, error: e.message };
@@ -214,6 +215,37 @@ export async function deleteDispatcher(id: string) {
         await deleteDoc(doc(db, 'dispatchers', id));
         revalidatePath('/admin/riders');
         return { success: true, message: 'Dispatcher deleted successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+// Product Actions
+export async function createProduct(data: Omit<Product, 'id'>) {
+    try {
+        await addDoc(collection(db, 'products'), data);
+        revalidatePath('/vendor/products');
+        return { success: true, message: 'Product created successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function updateProduct(id: string, data: Partial<Omit<Product, 'id'>>) {
+    try {
+        await updateDoc(doc(db, 'products', id), data);
+        revalidatePath('/vendor/products');
+        return { success: true, message: 'Product updated successfully.' };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function deleteProduct(id: string) {
+    try {
+        await deleteDoc(doc(db, 'products', id));
+        revalidatePath('/vendor/products');
+        return { success: true, message: 'Product deleted successfully.' };
     } catch (e: any) {
         return { success: false, error: e.message };
     }

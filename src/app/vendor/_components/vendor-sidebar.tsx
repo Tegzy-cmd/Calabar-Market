@@ -58,9 +58,11 @@ export function VendorSidebar() {
       <SidebarFooter>
         <SidebarMenu>
             <SidebarMenuItem>
-                 <SidebarMenuButton icon={<Settings />} tooltip="Settings">
+                <Link href="/vendor/settings">
+                 <SidebarMenuButton icon={<Settings />} tooltip="Settings" isActive={pathname === '/vendor/settings'}>
                     Settings
                 </SidebarMenuButton>
+                </Link>
             </SidebarMenuItem>
             <SidebarMenuItem>
                 <UserNav />
