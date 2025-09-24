@@ -270,7 +270,7 @@ export const getDispatcherById = async (id: string) => await fetchDocumentById<D
 export const getDispatchers = async () => await fetchCollection<Dispatcher>('dispatchers');
 export const getUsers = async () => await fetchCollection<User>('users');
 
-const processOrderDoc = async (orderDoc: any): Promise<Order> => {
+export const processOrderDoc = async (orderDoc: any): Promise<Order> => {
     const orderData = processDoc(orderDoc);
     const user = await fetchDocumentById<User>('users', orderData.userId);
     const vendor = await fetchDocumentById<Omit<Vendor, 'products'>>('vendors', orderData.vendorId);
@@ -328,5 +328,6 @@ export const getOrdersByDispatcherId = async (dispatcherId: string): Promise<Ord
     
 
     
+
 
 

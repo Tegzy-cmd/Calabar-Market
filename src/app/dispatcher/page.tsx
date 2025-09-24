@@ -1,4 +1,6 @@
 
+'use client';
+
 import { getServerSession } from "@/lib/auth";
 import { getOrdersByDispatcherId } from "@/lib/data";
 import { redirect } from "next/navigation";
@@ -9,6 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { MapPin, Store } from "lucide-react";
 import { OrderStatusUpdater } from "../vendor/orders/_components/order-status-updater";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { db, onSnapshot, query, where, collection, processOrderDoc } from "@/lib/firebase";
+
 
 const getStatusColor = (status: OrderStatus) => {
     switch (status) {
@@ -27,14 +33,37 @@ const getStatusColor = (status: OrderStatus) => {
     }
 }
 
-export default async function DispatcherDashboardPage() {
-    const session = await getServerSession();
+export default function DispatcherDashboardPage() {
+    const { appUser, loading } = useAuth();
+    const [orders, setOrders] = useState<Order[]>([]);
 
-    if (!session || session.user.role !== 'dispatcher' || !session.dispatcherId) {
-        redirect('/login');
+    useEffect(() => {
+        if (loading) return;
+
+        if (!appUser || appUser.role !== 'dispatcher' || !appUser.dispatcherId) {
+            redirect('/login');
+            return;
+        }
+
+        const ordersRef = collection(db, 'orders');
+        const q = query(ordersRef, where('dispatcherId', '==', appUser.dispatcherId));
+
+        const unsubscribe = onSnapshot(q, async (snapshot) => {
+            const fetchedOrders: Order[] = await Promise.all(
+                snapshot.docs.map(doc => processOrderDoc(doc))
+            );
+            setOrders(fetchedOrders);
+        });
+
+        // Cleanup subscription on unmount
+        return () => unsubscribe();
+    }, [appUser, loading]);
+
+
+    if (loading) {
+        return <p>Loading dashboard...</p>
     }
 
-    const orders = await getOrdersByDispatcherId(session.dispatcherId);
     const activeOrders = orders.filter(o => o.status === 'dispatched' || o.status === 'preparing' || o.status === 'placed');
 
     return (

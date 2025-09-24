@@ -298,7 +298,7 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
                 allActiveOrders
                     .filter(o => o.status === 'dispatched' || o.status === 'preparing')
                     .map(o => o.dispatcher?.id)
-                    .filter(id => id)
+                    .filter((id): id is string => !!id)
             );
 
             const availableDispatchers = allDispatchers.filter(
@@ -484,4 +484,5 @@ export async function getMessages(orderId: string): Promise<ChatMessage[]> {
         return [];
     }
 }
+
 
