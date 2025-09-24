@@ -13,12 +13,11 @@ import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { ChatRoom } from "@/components/shared/chat-room";
 import { useUnreadMessages } from '@/hooks/use-unread-messages';
-import { db, onSnapshot, doc } from '@/lib/firebase';
+import { db, onSnapshot, doc, getDoc } from '@/lib/firebase';
 import type { Product, Dispatcher, User as UserType, Vendor } from '@/lib/types';
 import { DispatcherRating } from "@/components/shared/dispatcher-rating";
 import { updateOrderStatus } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
-import { getDoc } from 'firebase/firestore';
 
 
 const getStatusColor = (status: OrderStatus) => {
@@ -386,5 +385,3 @@ export default function OrderDetailPage() {
     </div>
   );
 }
-
-    
