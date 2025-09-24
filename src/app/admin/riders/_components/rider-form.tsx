@@ -23,25 +23,17 @@ import {
 } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import type { Dispatcher, DispatcherVehicle } from '@/lib/types';
+import type { Dispatcher } from '@/lib/types';
 import { createDispatcher, updateDispatcher } from '@/lib/actions';
 import { placeholderImages } from '@/lib/placeholder-images';
-
-const vehicleTypes: DispatcherVehicle[] = ['bicycle', 'scooter', 'motorbike', 'car', 'van'];
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const dispatcherFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
-  vehicle: z.enum(vehicleTypes),
+  vehicle: z.enum(['bicycle', 'scooter', 'motorbike', 'car', 'van']),
   location: z.string().min(2, 'Location is required.'),
-  status: z.enum(['available', 'unavailable', 'on-delivery']),
+  status: z.enum(['available', 'on-delivery', 'unavailable']),
 });
 
 type DispatcherFormValues = z.infer<typeof dispatcherFormSchema>;
@@ -52,37 +44,51 @@ interface DispatcherFormProps {
   onOpenChange: (isOpen: boolean) => void;
 }
 
+const statusOptions = [
+  { value: "available", label: "Available" },
+  { value: "on-delivery", label: "On Delivery" },
+  { value: "unavailable", label: "Unavailable" },
+] as const;
+
+const vehicleOptions = [
+    { value: 'bicycle', label: 'Bicycle' },
+    { value: 'scooter', label: 'Scooter' },
+    { value: 'motorbike', label: 'Motorbike' },
+    { value: 'car', label: 'Car' },
+    { value: 'van', label: 'Van' },
+] as const;
+
 export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherFormProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
   const form = useForm<DispatcherFormValues>({
     resolver: zodResolver(dispatcherFormSchema),
-    defaultValues: dispatcher
-    ? {
+    defaultValues: dispatcher ? {
         name: dispatcher.name,
         vehicle: dispatcher.vehicle,
         location: dispatcher.location,
         status: dispatcher.status,
-      }
-    : {
+    } : {
         name: '',
-        vehicle: 'motorbike' as DispatcherVehicle,
+        vehicle: 'motorbike',
         location: '',
-        status: 'available' as const,
-      },
+        status: 'available',
+    },
   });
 
   const onSubmit = (values: DispatcherFormValues) => {
     startTransition(async () => {
-      const result = dispatcher
-        ? await updateDispatcher(dispatcher.id, values)
-        : await createDispatcher({
+        const dispatcherData = {
             ...values,
-            avatarUrl: placeholderImages.find(p => p.id === 'rider-avatar-1')?.imageUrl || '',
-            completedDispatches: 0,
-            rating: 5,
-        });
+            avatarUrl: dispatcher?.avatarUrl || placeholderImages.find(p => p.id === 'rider-avatar-1')?.imageUrl || '',
+            rating: dispatcher?.rating || 5,
+            completedDispatches: dispatcher?.completedDispatches || 0
+        };
+
+      const result = dispatcher
+        ? await updateDispatcher(dispatcher.id, dispatcherData)
+        : await createDispatcher(dispatcherData as Omit<Dispatcher, 'id'>);
 
       if (result.success) {
         toast({ title: 'Success', description: result.message });
@@ -112,7 +118,7 @@ export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherF
                 <FormItem>
                   <FormLabel>Full Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Mike Ross" {...field} />
+                    <Input placeholder="John Doe" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -123,16 +129,18 @@ export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherF
               name="vehicle"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Vehicle</FormLabel>
-                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormLabel>Vehicle Type</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a vehicle type" />
+                        <SelectValue placeholder="Select a vehicle" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {vehicleTypes.map(type => (
-                        <SelectItem key={type} value={type} className="capitalize">{type}</SelectItem>
+                      {vehicleOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -145,9 +153,9 @@ export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherF
               name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Location</FormLabel>
+                  <FormLabel>Current Location</FormLabel>
                   <FormControl>
-                    <Input placeholder="Downtown" {...field} />
+                    <Input placeholder="e.g., Downtown" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -163,12 +171,14 @@ export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherF
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a status" />
-                      </Trigger>
+                      </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="available">Available</SelectItem>
-                      <SelectItem value="on-delivery">On Delivery</SelectItem>
-                      <SelectItem value="unavailable">Unavailable</SelectItem>
+                      {statusOptions.map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          {status.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
