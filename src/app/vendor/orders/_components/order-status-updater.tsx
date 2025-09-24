@@ -23,7 +23,7 @@ export function OrderStatusUpdater({ order, role }: OrderStatusUpdaterProps) {
     startTransition(async () => {
       const result = await updateOrderStatus(order.id, status);
       if (result.success) {
-        toast({ title: 'Success', description: result.message });
+        toast({ title: 'Success', description: `Order status updated to ${status}.` });
       } else {
         toast({ title: 'Error', description: result.error, variant: 'destructive' });
       }
@@ -47,7 +47,7 @@ export function OrderStatusUpdater({ order, role }: OrderStatusUpdaterProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button size="icon" variant="ghost" disabled={isPending}>
-          <MoreHorizontal className="h-4 w-4" />
+          {isPending ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div> : <MoreHorizontal className="h-4 w-4" />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -59,13 +59,13 @@ export function OrderStatusUpdater({ order, role }: OrderStatusUpdaterProps) {
         {availableActions.map(action => (
           <DropdownMenuItem key={action.status} onClick={() => handleUpdateStatus(action.status)} disabled={isPending}>
             {action.icon}
-            {isPending ? 'Updating...' : action.label}
+            <span>{action.label}</span>
           </DropdownMenuItem>
         ))}
          {role === 'vendor' && order.status === 'preparing' && !order.dispatcher && (
             <DropdownMenuItem disabled>
                 <Send className="mr-2 h-4 w-4" />
-                <span>Assign a dispatcher first</span>
+                <span>Dispatcher being assigned...</span>
             </DropdownMenuItem>
         )}
       </DropdownMenuContent>

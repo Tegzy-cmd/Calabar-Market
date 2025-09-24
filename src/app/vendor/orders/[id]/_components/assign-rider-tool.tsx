@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { handleAssignDispatcher, confirmDispatcherAssignment } from '@/lib/actions';
 import type { Order, Dispatcher } from "@/lib/types";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Sparkles, Bot, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Bot, CheckCircle2, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -77,7 +77,7 @@ export function AssignDispatcherTool({ order, allDispatchers }: { order: Order, 
   
   const assignedDispatcher = result ? allDispatchers.find(r => r.id === result.dispatcherId) : order.dispatcher;
 
-  if (order.dispatcher || order.status !== 'placed') {
+  if (order.dispatcher) {
     return (
       <Card>
         <CardHeader>
@@ -87,30 +87,28 @@ export function AssignDispatcherTool({ order, allDispatchers }: { order: Order, 
           </CardTitle>
         </CardHeader>
         <CardContent className="flex items-center gap-4">
-            {order.dispatcher ? (
-                 <>
-                    <Image src={order.dispatcher.avatarUrl} alt={order.dispatcher.name} width={50} height={50} className="rounded-full" />
-                    <div>
-                        <p className="font-bold">{order.dispatcher.name}</p>
-                        <p className="text-sm text-muted-foreground">{order.dispatcher.vehicle}</p>
-                    </div>
-                </>
-            ) : (
-                <p className="text-muted-foreground">Order is being prepared.</p>
-            )}
+             <Image src={order.dispatcher.avatarUrl} alt={order.dispatcher.name} width={50} height={50} className="rounded-full" />
+            <div>
+                <p className="font-bold">{order.dispatcher.name}</p>
+                <p className="text-sm text-muted-foreground">{order.dispatcher.vehicle}</p>
+            </div>
         </CardContent>
       </Card>
     )
+  }
+  
+  if (order.status !== 'placed') {
+      return null;
   }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Sparkles className="text-primary" /> Assign Dispatcher
+          <Sparkles className="text-primary" /> Manual Dispatcher Assignment
         </CardTitle>
         <CardDescription>
-          Select eligible dispatchers and let AI choose the best one for this order.
+          Automatic assignment may have failed. Select eligible dispatchers and let AI choose the best one.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -125,17 +123,16 @@ export function AssignDispatcherTool({ order, allDispatchers }: { order: Order, 
                     <FormLabel className="text-base">Available Dispatchers</FormLabel>
                   </div>
                   <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
-                  {allDispatchers.map((dispatcher) => (
+                  {allDispatchers.filter(d => d.status === 'available').map((dispatcher) => (
                     <FormField
                       key={dispatcher.id}
                       control={form.control}
                       name="dispatcherIds"
                       render={({ field }) => {
-                        const isDisabled = dispatcher.status !== 'available';
                         return (
                           <FormItem
                             key={dispatcher.id}
-                            className={`flex flex-row items-center space-x-3 space-y-0 rounded-md border p-3 ${isDisabled ? 'opacity-50 bg-muted' : ''}`}
+                            className={`flex flex-row items-center space-x-3 space-y-0 rounded-md border p-3`}
                           >
                             <FormControl>
                               <Checkbox
@@ -149,7 +146,6 @@ export function AssignDispatcherTool({ order, allDispatchers }: { order: Order, 
                                         )
                                       );
                                 }}
-                                disabled={isDisabled}
                               />
                             </FormControl>
                             <div className="flex items-center gap-3 flex-1">
@@ -159,18 +155,25 @@ export function AssignDispatcherTool({ order, allDispatchers }: { order: Order, 
                                     <p className="text-sm text-muted-foreground">{dispatcher.vehicle} - {dispatcher.location}</p>
                                 </div>
                             </div>
-                            <Badge variant={dispatcher.status === 'available' ? 'default' : 'secondary'} className="capitalize bg-green-500 text-white">{dispatcher.status}</Badge>
+                            <Badge variant={'default'} className="capitalize bg-green-500 text-white">{dispatcher.status}</Badge>
                           </FormItem>
                         );
                       }}
                     />
                   ))}
+                   {allDispatchers.filter(d => d.status === 'available').length === 0 && (
+                       <Alert variant="destructive">
+                           <AlertCircle className="h-4 w-4" />
+                           <AlertTitle>No Dispatchers Available</AlertTitle>
+                           <AlertDescription>There are currently no dispatchers available for assignment.</AlertDescription>
+                       </Alert>
+                   )}
                   </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isAIPending}>
+            <Button type="submit" className="w-full" disabled={isAIPending || allDispatchers.filter(d => d.status === 'available').length === 0}>
               {isAIPending ? "Analyzing..." : "Find Best Dispatcher"}
             </Button>
           </form>

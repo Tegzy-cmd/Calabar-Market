@@ -8,11 +8,48 @@ import {
 import { auth, db } from './firebase';
 import { collection, writeBatch, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp, collectionGroup, getDocs as getDocsFromFirestore } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { users, vendors, products, dispatchers, orders } from './data';
+import { users, vendors, products, dispatchers, orders, getDispatchers } from './data';
 import type { User, Vendor, Dispatcher, Product, OrderStatus } from './types';
 import { revalidatePath } from 'next/cache';
 import { placeholderImages } from './placeholder-images';
 import { getServerSession } from './auth';
+
+type CreateOrderData = {
+    userId: string;
+    items: { productId: string; quantity: number; price: number }[];
+    subtotal: number;
+    deliveryFee: number;
+    total: number;
+    deliveryAddress: string;
+    vendorId: string;
+}
+
+export async function createOrder(orderData: CreateOrderData) {
+    try {
+        const session = await getServerSession();
+        if (!session || session.user.id !== orderData.userId) {
+            return { success: false, error: 'Unauthorized' };
+        }
+
+        const newOrder = {
+            ...orderData,
+            status: 'placed' as OrderStatus,
+            createdAt: Timestamp.now(),
+        };
+
+        const docRef = await addDoc(collection(db, 'orders'), newOrder);
+
+        revalidatePath('/orders');
+        revalidatePath(`/orders/${docRef.id}`);
+        revalidatePath('/admin');
+        revalidatePath(`/vendor/orders`);
+
+        return { success: true, orderId: docRef.id };
+    } catch (e: any) {
+        console.error("Error creating order:", e);
+        return { success: false, error: e.message || 'An unexpected error occurred.' };
+    }
+}
 
 
 export async function handleAssignDispatcher(input: AssignBestDeliveryDispatcherInput) {
@@ -28,13 +65,12 @@ export async function handleAssignDispatcher(input: AssignBestDeliveryDispatcher
 export async function confirmDispatcherAssignment(orderId: string, dispatcherId: string) {
     try {
         const session = await getServerSession();
-        if (!session || session.user.role !== 'vendor') {
+        if (!session || (session.user.role !== 'vendor' && session.user.role !== 'admin')) {
             return { success: false, error: 'Unauthorized' };
         }
 
         await updateDoc(doc(db, 'orders', orderId), {
             dispatcherId,
-            status: 'preparing'
         });
 
         revalidatePath(`/vendor/orders/${orderId}`);
@@ -182,6 +218,8 @@ export async function createVendorAndUser(data: {
     shopAddress: string;
     shopCategory: 'food' | 'groceries';
 }) {
+    // This is a temporary admin auth instance.
+    // In a real app, this should be handled by a secure backend service, not directly in the client.
     let uid;
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
@@ -231,19 +269,37 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
             return { success: false, error: 'Unauthorized' };
         }
 
-        const { role } = session.user;
-        const validTransitions: Record<string, OrderStatus[]> = {
-            vendor: ['preparing', 'cancelled'],
-            dispatcher: ['dispatched', 'delivered', 'cancelled'],
-            admin: ['placed', 'preparing', 'dispatched', 'delivered', 'cancelled'],
-        };
-        
-        const allowedStatuses = validTransitions[role];
-        if (!allowedStatuses || !allowedStatuses.includes(status)) {
-            return { success: false, error: 'You do not have permission to set this status.' };
+        const orderRef = doc(db, 'orders', orderId);
+        const orderSnap = await getDoc(orderRef);
+        if (!orderSnap.exists()) {
+             return { success: false, error: 'Order not found.' };
         }
+        const orderData = orderSnap.data();
 
-        await updateDoc(doc(db, 'orders', orderId), { status });
+        // Automatic dispatcher assignment logic
+        if (status === 'preparing' && session.user.role === 'vendor' && !orderData.dispatcherId) {
+            const allDispatchers = await getDispatchers();
+            const availableDispatchers = allDispatchers.filter(d => d.status === 'available');
+
+            if (availableDispatchers.length > 0) {
+                const assignmentResult = await assignBestDeliveryDispatcher({
+                    orderId: orderId,
+                    vendorId: orderData.vendorId,
+                    deliveryLocation: orderData.deliveryAddress,
+                    eligibleDispatcherIds: availableDispatchers.map(d => d.id),
+                });
+                
+                if (assignmentResult.dispatcherId) {
+                    await updateDoc(orderRef, { status, dispatcherId: assignmentResult.dispatcherId });
+                } else {
+                     await updateDoc(orderRef, { status });
+                }
+            } else {
+                 await updateDoc(orderRef, { status });
+            }
+        } else {
+            await updateDoc(orderRef, { status });
+        }
         
         revalidatePath(`/vendor/orders`);
         revalidatePath(`/vendor/orders/${orderId}`);

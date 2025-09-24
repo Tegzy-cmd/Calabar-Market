@@ -11,31 +11,54 @@ import { Label } from '@/components/ui/label';
 import { useCart } from '@/hooks/use-cart';
 import { CreditCard, Lock, Calendar, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useAuth } from '@/hooks/use-auth';
+import { createOrder } from '@/lib/actions';
 
 export default function PaymentPage() {
-  const { total, clearCart } = useCart();
+  const { items, total, clearCart } = useCart();
+  const { appUser } = useAuth();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const grandTotal = total > 0 ? total + 500.00 : 0; // Including delivery fee
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!appUser || items.length === 0) {
+        setError("User not authenticated or cart is empty.");
+        return;
+    }
+
     setIsProcessing(true);
     setError(null);
 
     // Simulate payment processing
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // Simulate a successful payment
-    clearCart();
-    // In a real app, you would create the order in the database and redirect to a confirmation page
-    // For this mock, we redirect to the homepage with a success query param
-    router.push('/?payment=success');
+    const orderData = {
+        userId: appUser.id,
+        items: items.map(item => ({ productId: item.id, quantity: item.quantity, price: item.price })),
+        subtotal: total,
+        deliveryFee: 500.00,
+        total: grandTotal,
+        deliveryAddress: appUser.addresses?.[0] || '123 Main St, Calabar', // TEMP
+        vendorId: items[0].vendorId,
+    }
+
+    const result = await createOrder(orderData);
+
+    if (result.success && result.orderId) {
+        clearCart();
+        router.push(`/orders/${result.orderId}`);
+    } else {
+        setError(result.error || 'Failed to create order.');
+        setIsProcessing(false);
+    }
   };
 
-  const grandTotal = total > 0 ? total + 500.00 : 0; // Including delivery fee
 
-  if (grandTotal === 0) {
+  if (grandTotal === 0 && !isProcessing) {
     return (
       <div className="flex flex-col min-h-screen">
         <AppHeader />
