@@ -83,6 +83,19 @@ export function OrderStatusUpdater({ order, role }: OrderStatusUpdaterProps) {
     );
   }
 
+  if (availableActions.length === 0 && role === 'dispatcher' && order.status !== 'delivered') {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button size="icon" variant="ghost" disabled>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+      </DropdownMenu>
+    );
+  }
+
+
   return (
     <>
       {role === 'vendor' && <OrderActions order={order} isOpen={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen} />}

@@ -11,11 +11,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { MapPin, Store, Check, Bike, Star, Wallet } from "lucide-react";
+import { MapPin, Store, Check, Bike, Star, Wallet, MessageSquare } from "lucide-react";
 import { OrderStatusUpdater } from "../vendor/orders/_components/order-status-updater";
 import { isToday, parseISO } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { useUnreadMessages } from "@/hooks/use-unread-messages";
+import { ChatRoom } from "@/components/shared/chat-room";
 
 const getStatusColor = (status: OrderStatus) => {
     switch (status) {
@@ -37,6 +40,7 @@ const getStatusColor = (status: OrderStatus) => {
 export default function DispatcherDashboardPage() {
     const { appUser, loading } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
+    const [chatOrder, setChatOrder] = useState<Order | null>(null);
     const { toast } = useToast();
     const [isInitialLoad, setIsInitialLoad] = useState(true);
 
@@ -100,6 +104,16 @@ export default function DispatcherDashboardPage() {
 
     return (
         <div className="space-y-8">
+            {chatOrder && (
+                <ChatRoom 
+                    orderId={chatOrder.id}
+                    currentUserRole="dispatcher"
+                    otherUserRole="user"
+                    isOpen={!!chatOrder}
+                    onOpenChange={() => setChatOrder(null)}
+                    title={`Chat with ${chatOrder.user.name}`}
+                />
+            )}
             <h1 className="text-3xl font-headline font-bold">My Dashboard</h1>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -142,7 +156,7 @@ export default function DispatcherDashboardPage() {
                         </CardHeader>
                         <CardContent>
                            {activeOrders.length > 0 ? (
-                             <OrderTable orders={activeOrders} />
+                             <OrderTable orders={activeOrders} onChatOpen={setChatOrder} />
                            ) : (
                             <div className="text-center py-12 text-muted-foreground">
                                 <p>You have no active deliveries at the moment.</p>
@@ -159,7 +173,7 @@ export default function DispatcherDashboardPage() {
                         </CardHeader>
                         <CardContent>
                            {completedOrders.length > 0 ? (
-                             <OrderTable orders={completedOrders} />
+                             <OrderTable orders={completedOrders} onChatOpen={setChatOrder} />
                            ) : (
                             <div className="text-center py-12 text-muted-foreground">
                                 <p>You have not completed any deliveries yet.</p>
@@ -174,12 +188,13 @@ export default function DispatcherDashboardPage() {
 }
 
 
-function OrderTable({ orders }: { orders: Order[] }) {
+function OrderTable({ orders, onChatOpen }: { orders: Order[], onChatOpen: (order: Order) => void }) {
     return (
         <Table>
             <TableHeader>
                 <TableRow>
                     <TableHead>Order ID</TableHead>
+                    <TableHead>Customer</TableHead>
                     <TableHead>Vendor</TableHead>
                     <TableHead>Delivery Address</TableHead>
                     <TableHead>Status</TableHead>
@@ -188,33 +203,59 @@ function OrderTable({ orders }: { orders: Order[] }) {
             </TableHeader>
             <TableBody>
                 {orders.map((order: Order) => (
-                    <TableRow key={order.id}>
-                        <TableCell className="font-medium">#{order.id.substring(0, 7)}</TableCell>
-                        <TableCell>
-                            <div className="flex items-center gap-2">
-                                <Store className="w-4 h-4 text-muted-foreground" />
-                                {order.vendor.name}
-                            </div>
-                        </TableCell>
-                        <TableCell>
-                            <div className="flex items-center gap-2">
-                                <MapPin className="w-4 h-4 text-muted-foreground" />
-                                {order.deliveryAddress}
-                            </div>
-                        </TableCell>
-                        <TableCell>
-                            <Badge className={cn("capitalize text-white", getStatusColor(order.status))}>
-                                {order.status}
-                            </Badge>
-                        </TableCell>
-                         <TableCell className="text-right">
-                             {order.status !== 'delivered' && <OrderStatusUpdater order={order} role="dispatcher" />}
-                        </TableCell>
-                    </TableRow>
+                    <OrderTableRow key={order.id} order={order} onChatOpen={onChatOpen} />
                 ))}
             </TableBody>
         </Table>
     )
+}
+
+function OrderTableRow({ order, onChatOpen }: { order: Order, onChatOpen: (order: Order) => void }) {
+    const { hasUnread, resetUnread } = useUnreadMessages(order.id, 'user');
+
+    const handleOpenChat = () => {
+        onChatOpen(order);
+        resetUnread();
+    }
+    
+    return (
+        <TableRow>
+            <TableCell className="font-medium">#{order.id.substring(0, 7)}</TableCell>
+            <TableCell>{order.user.name}</TableCell>
+            <TableCell>
+                <div className="flex items-center gap-2">
+                    <Store className="w-4 h-4 text-muted-foreground" />
+                    {order.vendor.name}
+                </div>
+            </TableCell>
+            <TableCell>
+                <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-muted-foreground" />
+                    {order.deliveryAddress}
+                </div>
+            </TableCell>
+            <TableCell>
+                <Badge className={cn("capitalize text-white", getStatusColor(order.status))}>
+                    {order.status}
+                </Badge>
+            </TableCell>
+                <TableCell className="text-right flex items-center justify-end space-x-2">
+                {order.status === 'dispatched' && (
+                    <Button variant="outline" size="sm" onClick={handleOpenChat} className="relative">
+                        {hasUnread && (
+                            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                            </span>
+                        )}
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        Chat
+                    </Button>
+                )}
+                <OrderStatusUpdater order={order} role="dispatcher" />
+            </TableCell>
+        </TableRow>
+    );
 }
 
 function StatCard({ title, value, icon, description }: { title: string, value: string | number, icon: React.ReactNode, description: string }) {
