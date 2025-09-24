@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import type { Dispatcher, DispatcherStatus, DispatcherVehicle } from '@/lib/types';
+import type { Dispatcher, DispatcherVehicle } from '@/lib/types';
 import { createDispatcher, updateDispatcher } from '@/lib/actions';
 import { placeholderImages } from '@/lib/placeholder-images';
 
@@ -58,17 +58,19 @@ export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherF
 
   const form = useForm<DispatcherFormValues>({
     resolver: zodResolver(dispatcherFormSchema),
-    defaultValues: dispatcher ? { 
-        name: dispatcher.name,
-        vehicle: dispatcher.vehicle,
-        location: dispatcher.location,
-        status: dispatcher.status,
-    } : {
-        name: '',
-        vehicle: 'motorbike',
-        location: '',
-        status: 'available',
-    },
+    defaultValues: dispatcher
+      ? {
+          name: dispatcher.name,
+          vehicle: dispatcher.vehicle,
+          location: dispatcher.location,
+          status: dispatcher.status,
+        }
+      : {
+          name: '',
+          vehicle: 'motorbike',
+          location: '',
+          status: 'available',
+        },
   });
 
   const onSubmit = (values: DispatcherFormValues) => {
