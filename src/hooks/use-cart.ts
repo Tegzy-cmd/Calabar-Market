@@ -12,10 +12,12 @@ export type CartItem = Product & {
 type CartState = {
   items: CartItem[];
   total: number;
+  deliveryAddress: string | null;
   addToCart: (product: Product) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
+  setDeliveryAddress: (address: string) => void;
 };
 
 export const useCart = create<CartState>()(
@@ -23,6 +25,7 @@ export const useCart = create<CartState>()(
     (set, get) => ({
       items: [],
       total: 0,
+      deliveryAddress: null,
       addToCart: (product: Product) => {
         const currentItems = get().items;
         const existingItem = currentItems.find((item) => item.id === product.id);
@@ -60,7 +63,8 @@ export const useCart = create<CartState>()(
 
         set({ items: updatedItems, total: newTotal });
       },
-      clearCart: () => set({ items: [], total: 0 }),
+      clearCart: () => set({ items: [], total: 0, deliveryAddress: null }),
+      setDeliveryAddress: (address: string) => set({ deliveryAddress: address }),
     }),
     {
       name: 'cart-storage',

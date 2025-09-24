@@ -15,7 +15,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { createOrder } from '@/lib/actions';
 
 export default function PaymentPage() {
-  const { items, total, clearCart } = useCart();
+  const { items, total, clearCart, deliveryAddress } = useCart();
   const { appUser } = useAuth();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -30,6 +30,12 @@ export default function PaymentPage() {
         return;
     }
 
+    if (!deliveryAddress) {
+        setError("No delivery address selected. Please go back to checkout.");
+        return;
+    }
+
+
     setIsProcessing(true);
     setError(null);
 
@@ -42,7 +48,7 @@ export default function PaymentPage() {
         subtotal: total,
         deliveryFee: 500.00,
         total: grandTotal,
-        deliveryAddress: appUser.addresses?.[0] || '123 Main St, Calabar', // TEMP
+        deliveryAddress: deliveryAddress,
         vendorId: items[0].vendorId,
     }
 

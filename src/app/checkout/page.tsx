@@ -25,10 +25,13 @@ import type { User } from '@/lib/types';
 
 
 export default function CheckoutPage() {
-  const { items, total } = useCart();
+  const { items, total, setDeliveryAddress } = useCart();
   const { user: authUser, loading } = useAuth();
   const [appUser, setAppUser] = useState<User | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<string>('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const router = useRouter();
   
   useEffect(() => {
@@ -40,14 +43,24 @@ export default function CheckoutPage() {
         const fetchUser = async () => {
             const user = await getUserById(authUser.uid);
             setAppUser(user);
-            if (user?.addresses && user.addresses.length > 0) {
-                setSelectedAddress(user.addresses[0]);
+            if (user) {
+                setName(user.name || '');
+                setEmail(user.email || '');
+                setPhone(user.phoneNumber || '');
+                if (user.addresses && user.addresses.length > 0) {
+                    setSelectedAddress(user.addresses[0]);
+                }
             }
         }
         fetchUser();
     }
 
   }, [authUser, loading, router]);
+  
+  const handleProceedToPayment = () => {
+      setDeliveryAddress(selectedAddress);
+      router.push('/payment');
+  }
 
 
   if (loading || !authUser || !appUser) {
@@ -75,13 +88,6 @@ export default function CheckoutPage() {
         </div>
     )
   }
-  
-  const deliveryInfo = {
-    name: appUser.name || '',
-    email: appUser.email || '',
-    phone: appUser.phoneNumber || ''
-  };
-
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -98,11 +104,11 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="name">Full Name</Label>
-                        <Input id="name" defaultValue={deliveryInfo.name} />
+                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
-                        <Input id="email" type="email" defaultValue={deliveryInfo.email} />
+                        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
                     </div>
                 </div>
                 <div className="space-y-2">
@@ -119,12 +125,12 @@ export default function CheckoutPage() {
                             </SelectContent>
                         </Select>
                     ) : (
-                         <Input id="address" placeholder="123 Main St, Calabar, Nigeria" />
+                         <Input id="address" placeholder="123 Main St, Calabar, Nigeria" value={selectedAddress} onChange={(e) => setSelectedAddress(e.target.value)} />
                     )}
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" type="tel" defaultValue={deliveryInfo.phone} />
+                    <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
                 </div>
               </CardContent>
             </Card>
@@ -159,8 +165,8 @@ export default function CheckoutPage() {
                   </div>
               </CardContent>
             </Card>
-            <Button className="w-full" size="lg" asChild>
-              <Link href="/payment">Proceed to Payment</Link>
+            <Button className="w-full" size="lg" onClick={handleProceedToPayment}>
+              Proceed to Payment
             </Button>
           </div>
         </div>
