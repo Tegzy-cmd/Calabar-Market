@@ -2,26 +2,17 @@
 import { getVendors } from "@/lib/data";
 import type { Vendor } from "@/lib/types";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
     Card,
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { VendorActions } from "./_components/vendor-actions";
+import { VendorTable } from "./_components/vendor-table";
 
 export default async function AdminVendorsPage() {
-  const vendors = await getVendors();
+  const vendors = await getVendors(undefined, true);
 
   return (
     <div className="space-y-8">
@@ -36,45 +27,10 @@ export default async function AdminVendorsPage() {
         <Card>
             <CardHeader>
                 <CardTitle>All Vendors ({vendors.length})</CardTitle>
-                <CardDescription>A list of all vendors in the system.</CardDescription>
+                <CardDescription>A list of all vendors in the system. Click a row to see its products.</CardDescription>
             </CardHeader>
             <CardContent>
-                <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Vendor</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>
-                            <span className="sr-only">Actions</span>
-                        </TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {vendors.map((vendor: Vendor) => (
-                    <TableRow key={vendor.id}>
-                        <TableCell>
-                            <div className="flex items-center gap-3">
-                                <Avatar>
-                                    <AvatarImage src={vendor.logoUrl} alt={vendor.name} />
-                                    <AvatarFallback>{vendor.name ? vendor.name[0] : 'V'}</AvatarFallback>
-                                </Avatar>
-                                <div className="font-medium">
-                                    <p>{vendor.name}</p>
-                                </div>
-                            </div>
-                        </TableCell>
-                        <TableCell>
-                           <Badge variant="outline" className="capitalize">{vendor.category}</Badge>
-                        </TableCell>
-                        <TableCell>
-                            <div className="flex justify-end">
-                                <VendorActions vendor={vendor} />
-                            </div>
-                        </TableCell>
-                    </TableRow>
-                    ))}
-                </TableBody>
-                </Table>
+                <VendorTable vendors={vendors} />
             </CardContent>
         </Card>
     </div>

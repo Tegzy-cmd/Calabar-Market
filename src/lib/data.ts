@@ -1,3 +1,4 @@
+
 import type { User, Vendor, Product, Order, Rider, OrderItem, OrderStatus } from './types';
 import { placeholderImages } from './placeholder-images';
 import { db } from './firebase';
@@ -119,13 +120,24 @@ async function fetchDocumentById<T>(collectionName: string, id: string): Promise
   return null;
 }
 
-export async function getVendors(category?: 'food' | 'groceries'): Promise<Vendor[]> {
+export async function getVendors(category?: 'food' | 'groceries', includeProducts = false): Promise<Vendor[]> {
   let q = query(collection(db, 'vendors'));
   if (category) {
     q = query(collection(db, 'vendors'), where('category', '==', category));
   }
   const querySnapshot = await getDocs(q);
-  const vendors = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), products:[] } as Vendor));
+  const vendorsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Omit<Vendor, 'products'>));
+  
+  const vendors = await Promise.all(vendorsData.map(async (vendor) => {
+    let products: Product[] = [];
+    if (includeProducts) {
+        const productsQuery = query(collection(db, 'products'), where('vendorId', '==', vendor.id));
+        const productsSnapshot = await getDocs(productsQuery);
+        products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+    }
+    return { ...vendor, products };
+  }))
+
   return vendors;
 };
 
