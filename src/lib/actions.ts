@@ -130,7 +130,7 @@ async function fetchDocumentById<T>(collectionName: string, id: string): Promise
 
 export async function getOrCreateUser(
   id: string,
-  data: Omit<User, 'id' | 'role' | 'dispatcherId'>
+  data: Omit<User, 'id' | 'role' | 'vendorId' | 'dispatcherId'>
 ): Promise<{ success: boolean; data?: User; error?: string }> {
   try {
     const userRef = doc(db, 'users', id);
@@ -391,9 +391,11 @@ export async function deleteVendor(id: string) {
 // Dispatcher Actions
 export async function createDispatcher(data: Omit<Dispatcher, 'id'>) {
     try {
-        await addDoc(collection(db, 'dispatchers'), data);
+        // In a real app, you might want to create an associated user account.
+        // For now, this just creates the dispatcher profile.
+        const docRef = await addDoc(collection(db, 'dispatchers'), data);
         revalidatePath('/admin/riders');
-        return { success: true, message: 'Dispatcher created successfully.' };
+        return { success: true, message: 'Dispatcher created successfully.', dispatcherId: docRef.id };
     } catch (e: any) {
         return { success: false, error: e.message };
     }

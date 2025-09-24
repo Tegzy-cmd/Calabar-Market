@@ -11,8 +11,13 @@ const findImage = (id: string) => placeholderImages.find(p => p.id === id)?.imag
 export const users: User[] = [
   { id: 'user-1', name: 'John Doe', email: 'john.doe@example.com', role: 'user', avatarUrl: findImage('user-avatar-1'), phoneNumber: '+2348012345678', addresses: ['123 Main St, Calabar, Nigeria'] },
   { id: 'user-2', name: 'Jane Smith', email: 'jane.smith@example.com', role: 'user', avatarUrl: findImage('user-avatar-2'), phoneNumber: '+2348012345679', addresses: ['456 Oak Ave, Calabar, Nigeria', '789 Pine Ln, Calabar, Nigeria'] },
-  { id: 'vendor-admin-1', name: 'Burger Queen Admin', email: 'admin@burgerqueen.com', role: 'vendor', avatarUrl: findImage('vendor-logo-1') },
+  { id: 'vendor-admin-1', name: 'Burger Queen Admin', email: 'admin@burgerqueen.com', role: 'vendor', avatarUrl: findImage('vendor-logo-1'), vendorId: 'vendor-1' },
   { id: 'admin-1', name: 'App Admin', email: 'admin@calabarmarket.com', role: 'admin', avatarUrl: findImage('user-avatar-1') },
+  { id: 'dispatcher-1', name: 'Mike Ross', email: 'mike.ross@example.com', role: 'dispatcher', dispatcherId: 'dispatcher-1', avatarUrl: findImage('rider-avatar-1') },
+  { id: 'dispatcher-2', name: 'Sarah Lance', email: 'sarah.lance@example.com', role: 'dispatcher', dispatcherId: 'dispatcher-2', avatarUrl: findImage('rider-avatar-2') },
+  { id: 'dispatcher-3', name: 'Peter Pan', email: 'peter.pan@example.com', role: 'dispatcher', dispatcherId: 'dispatcher-3', avatarUrl: findImage('user-avatar-1') },
+  { id: 'dispatcher-4', name: 'Wendy Darling', email: 'wendy.darling@example.com', role: 'dispatcher', dispatcherId: 'dispatcher-4', avatarUrl: findImage('user-avatar-2') },
+  { id: 'bill-james-user', name: 'Bill James', email: 'omorakabenjamin1@gmail.com', role: 'dispatcher', dispatcherId: 'bill-james-dispatcher', avatarUrl: findImage('user-avatar-1') },
 ];
 
 export const dispatchers: Dispatcher[] = [
@@ -20,6 +25,7 @@ export const dispatchers: Dispatcher[] = [
     { id: 'dispatcher-2', name: 'Sarah Lance', avatarUrl: findImage('rider-avatar-2'), vehicle: 'bicycle', location: 'Uptown', status: 'available', rating: 4.9, completedDispatches: 250 },
     { id: 'dispatcher-3', name: 'Peter Pan', avatarUrl: findImage('user-avatar-1'), vehicle: 'motorbike', location: 'Midtown', status: 'unavailable', rating: 4.5, completedDispatches: 55 },
     { id: 'dispatcher-4', name: 'Wendy Darling', avatarUrl: findImage('user-avatar-2'), vehicle: 'motorbike', location: 'Downtown', status: 'on-delivery', rating: 4.7, completedDispatches: 89 },
+    { id: 'bill-james-dispatcher', name: 'Bill James', avatarUrl: findImage('user-avatar-1'), vehicle: 'car', location: 'City Center', status: 'available', rating: 5.0, completedDispatches: 0 },
 ];
 
 export const products: Product[] = [
@@ -99,7 +105,7 @@ export const vendors: Omit<Vendor, 'products'>[] = [
 export const orders: any[] = [ // Using any for seeding simplicity
     {
         id: 'order-placed-1',
-        user: users[0],
+        user: users.find(u => u.id === 'user-1'),
         vendor: vendors[0],
         items: [{ product: products[0], quantity: 1 }],
         status: 'placed',
@@ -111,7 +117,7 @@ export const orders: any[] = [ // Using any for seeding simplicity
     },
     {
         id: 'order-preparing-1',
-        user: users[1],
+        user: users.find(u => u.id === 'user-2'),
         vendor: vendors[1],
         items: [{ product: products[2], quantity: 2 }],
         status: 'preparing',
@@ -123,33 +129,33 @@ export const orders: any[] = [ // Using any for seeding simplicity
     },
      {
         id: 'order-dispatched-1',
-        user: users[0],
+        user: users.find(u => u.id === 'user-1'),
         vendor: vendors[4],
         items: [{ product: products[9], quantity: 1 }, { product: products[8], quantity: 2 }],
         status: 'dispatched',
         deliveryAddress: '123 Main St, Calabar, Nigeria',
         createdAt: new Date(Date.now() - 3600000 * 1.2).toISOString(),
-        dispatcher: dispatchers[3],
+        dispatcher: dispatchers.find(d => d.id === 'dispatcher-4'),
         subtotal: 42.97,
         deliveryFee: 5.00,
         total: 47.97,
     },
     {
         id: 'order-delivered-1',
-        user: users[1],
+        user: users.find(u => u.id === 'user-2'),
         vendor: vendors[3],
         items: [{ product: products[6], quantity: 2 }, { product: products[7], quantity: 1 }],
         status: 'delivered',
         deliveryAddress: '456 Oak Ave, Calabar, Nigeria',
         createdAt: new Date(Date.now() - 3600000 * 25).toISOString(),
-        dispatcher: dispatchers[1],
+        dispatcher: dispatchers.find(d => d.id === 'dispatcher-2'),
         subtotal: 38.97,
         deliveryFee: 4.50,
         total: 43.47,
     },
     {
         id: 'order-cancelled-1',
-        user: users[0],
+        user: users.find(u => u.id === 'user-1'),
         vendor: vendors[2],
         items: [{ product: products[4], quantity: 10 }],
         status: 'cancelled',
@@ -161,13 +167,13 @@ export const orders: any[] = [ // Using any for seeding simplicity
     },
     {
         id: 'order-delivered-2',
-        user: users[0],
+        user: users.find(u => u.id === 'user-1'),
         vendor: vendors[1],
         items: [{ product: products[2], quantity: 1 }, { product: products[3], quantity: 1 }],
         status: 'delivered',
         deliveryAddress: '789 Pine Ln, Calabar, Nigeria',
         createdAt: new Date(Date.now() - 3600000 * 72).toISOString(),
-        dispatcher: dispatchers[0],
+        dispatcher: dispatchers.find(d => d.id === 'dispatcher-1'),
         subtotal: 23.98,
         deliveryFee: 5.00,
         total: 28.98,
@@ -279,12 +285,21 @@ export const processOrderDoc = async (orderDoc: any): Promise<Order> => {
     const items: OrderItem[] = await Promise.all(
         orderData.items.map(async (item: { productId: string; quantity: number, price: number }) => {
             const product = await fetchDocumentById<Product>('products', item.productId);
+            // Ensure product is not null before proceeding
+            if (!product) {
+                // Handle case where product is not found, maybe skip or log an error
+                console.error(`Product with ID ${item.productId} not found for order ${orderData.id}`);
+                return null;
+            }
             return { 
-                product: { ...product!, price: item.price || product!.price }, 
+                product: { ...product, price: item.price || product.price }, 
                 quantity: item.quantity 
             };
         })
     );
+
+    // Filter out any null items that resulted from a product not being found
+    const validItems = items.filter(item => item !== null) as OrderItem[];
     
     const dispatcher = orderData.dispatcherId ? await fetchDocumentById<Dispatcher>('dispatchers', orderData.dispatcherId) : undefined;
     
@@ -293,7 +308,7 @@ export const processOrderDoc = async (orderDoc: any): Promise<Order> => {
         user: user!,
         vendor: vendor!,
         dispatcher,
-        items: items,
+        items: validItems,
     } as Order;
 }
 
@@ -329,6 +344,7 @@ export const getOrdersByDispatcherId = async (dispatcherId: string): Promise<Ord
     
 
     
+
 
 
 
