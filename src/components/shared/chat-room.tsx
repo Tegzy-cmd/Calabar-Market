@@ -37,9 +37,13 @@ export function ChatRoom({ orderId, userRole, title, isOpen, onOpenChange }: Cha
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const isInitialLoad = useRef(true);
 
   useEffect(() => {
-    if (!isOpen || !orderId) return;
+    if (!isOpen || !orderId) {
+        isInitialLoad.current = true;
+        return;
+    };
 
     const messagesCol = collection(db, `orders/${orderId}/messages`);
     const q = query(messagesCol, orderBy('timestamp', 'asc'));
@@ -54,11 +58,29 @@ export function ChatRoom({ orderId, userRole, title, isOpen, onOpenChange }: Cha
                 timestamp: data.timestamp?.toDate()?.toISOString() || new Date().toISOString(),
             } as ChatMessage);
         });
+
+        if (!isInitialLoad.current && newMessages.length > messages.length) {
+            const latestMessage = newMessages[newMessages.length - 1];
+            if (latestMessage.senderId !== appUser?.id) {
+                toast({
+                    title: `New message from ${latestMessage.senderName}`,
+                    description: latestMessage.text,
+                });
+            }
+        }
+        
         setMessages(newMessages);
+        
+        if (isInitialLoad.current) {
+            isInitialLoad.current = false;
+        }
     });
 
-    return () => unsubscribe();
-  }, [isOpen, orderId]);
+    return () => {
+        unsubscribe();
+        isInitialLoad.current = true;
+    }
+  }, [isOpen, orderId, appUser?.id, toast, messages.length]);
 
   useEffect(() => {
     // Auto-scroll to bottom
