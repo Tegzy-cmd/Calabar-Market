@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { auth, db } from './firebase';
@@ -136,11 +137,16 @@ export async function getOrCreateUser(
     const userSnap = await getDoc(userRef);
 
     if (userSnap.exists()) {
-      let user = { id: userSnap.id, ...userSnap.data() } as User;
-       if (user.role === 'dispatcher' && user.dispatcherId) {
+      const user = { id: userSnap.id, ...userSnap.data() } as User;
+      
+      if (user.role === 'vendor' && user.vendorId) {
+        const vendorProfile = await fetchDocumentById<Vendor>('vendors', user.vendorId);
+        if (vendorProfile) {
+          user.vendorId = vendorProfile.id;
+        }
+      } else if (user.role === 'dispatcher' && user.dispatcherId) {
         const dispatcherProfile = await fetchDocumentById<Dispatcher>('dispatchers', user.dispatcherId);
         if (dispatcherProfile) {
-          // This part is for client-side context, not how it's stored in DB
           (user as any).dispatcher = dispatcherProfile;
         }
       }
@@ -465,12 +471,8 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus, di
             const order = orderSnap.data() as Order;
             if (order.dispatcherId) {
                  const dispatcherRef = doc(db, 'dispatchers', order.dispatcherId);
-                 // Only update if dispatcher is not busy with another order.
-                 // This is a simplification; a real app would need more robust logic
-                 // to track multiple concurrent deliveries.
                  await updateDoc(dispatcherRef, { status: 'available' });
                  
-                 // Increment completed dispatches only on 'delivered'
                  if (status === 'delivered') {
                     const dispatcherSnap = await getDoc(dispatcherRef);
                     if (dispatcherSnap.exists()) {
