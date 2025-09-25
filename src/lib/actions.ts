@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import { auth, db } from './firebase';
@@ -8,7 +7,7 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { users, vendors, products, dispatchers as mockDispatchers, orders } from './data';
 import type { User, Vendor, Dispatcher, Product, OrderStatus, ChatMessage, DispatcherVehicle, Order } from './types';
 import { revalidatePath } from 'next/cache';
-import { placeholderImages } from './placeholder-images';
+import { getPlaceholderImage } from './placeholder-images';
 import { getServerSession } from './auth';
 
 type CreateOrderData = {
@@ -155,7 +154,7 @@ export async function getOrCreateUser(
       const newUser: Omit<User, 'id'> = {
         ...data,
         role: 'user',
-        avatarUrl: data.avatarUrl || placeholderImages.find(p => p.id === 'user-avatar-1')?.imageUrl || '',
+        avatarUrl: data.avatarUrl || getPlaceholderImage('user-avatar-1'),
         addresses: [],
       };
       await setDoc(userRef, newUser);
@@ -214,8 +213,8 @@ export async function createVendorAndUser(data: {
             description: `A great place for ${data.shopCategory}.`,
             category: data.shopCategory,
             address: data.shopAddress,
-            logoUrl: placeholderImages.find(p => p.id === 'vendor-logo-1')?.imageUrl || '',
-            bannerUrl: placeholderImages.find(p => p.id === 'vendor-banner-1')?.imageUrl || '',
+            logoUrl: getPlaceholderImage('vendor-logo-1'),
+            bannerUrl: getPlaceholderImage('vendor-banner-1'),
             ownerId: uid,
         };
         const vendorDocRef = await addDoc(collection(db, 'vendors'), vendorData);
@@ -224,7 +223,7 @@ export async function createVendorAndUser(data: {
             name: data.name,
             email: data.email,
             role: 'vendor',
-            avatarUrl: placeholderImages.find(p => p.id === 'user-avatar-1')?.imageUrl || '',
+            avatarUrl: getPlaceholderImage('user-avatar-1'),
             vendorId: vendorDocRef.id,
         };
         await setDoc(doc(db, "users", uid), userData);
@@ -268,7 +267,7 @@ export async function createDispatcherAndUser(data: {
             location: 'Not Available',
             rating: 5,
             completedDispatches: 0,
-            avatarUrl: placeholderImages.find(p => p.id === 'rider-avatar-1')?.imageUrl || '',
+            avatarUrl: getPlaceholderImage('rider-avatar-1'),
         };
         await setDoc(doc(db, 'dispatchers', uid), dispatcherData);
 
@@ -471,14 +470,18 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus, di
             const order = orderSnap.data() as Order;
             if (order.dispatcherId) {
                  const dispatcherRef = doc(db, 'dispatchers', order.dispatcherId);
-                 await updateDoc(dispatcherRef, { status: 'available' });
                  
                  if (status === 'delivered') {
                     const dispatcherSnap = await getDoc(dispatcherRef);
                     if (dispatcherSnap.exists()) {
                         const dispatcherData = dispatcherSnap.data() as Dispatcher;
-                        await updateDoc(dispatcherRef, { completedDispatches: (dispatcherData.completedDispatches || 0) + 1 });
+                        await updateDoc(dispatcherRef, { 
+                            status: 'available',
+                            completedDispatches: (dispatcherData.completedDispatches || 0) + 1 
+                        });
                     }
+                 } else {
+                     await updateDoc(dispatcherRef, { status: 'available' });
                  }
                  revalidatePath('/admin/riders');
             }

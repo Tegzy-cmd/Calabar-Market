@@ -27,7 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import type { Product } from '@/lib/types';
 import { createProduct, updateProduct } from '@/lib/actions';
-import { placeholderImages } from '@/lib/placeholder-images';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { ImageUploader } from '@/components/shared/image-uploader';
 
 const productFormSchema = z.object({
@@ -64,7 +64,7 @@ export function ProductForm({ product, vendorId, isOpen, onOpenChange }: Product
         description: '',
         price: 0,
         stock: 0,
-        imageUrl: placeholderImages.find(p => p.id === 'product-pizza')?.imageUrl || '',
+        imageUrl: getPlaceholderImage('product-pizza'),
     },
   });
 

@@ -1,11 +1,10 @@
 
-
 import type { User, Vendor, Product, Order, Dispatcher, OrderItem, OrderStatus } from './types';
-import { placeholderImages } from './placeholder-images';
+import { getPlaceholderImage } from './placeholder-images';
 import { db } from './firebase';
 import { collection, getDocs, getDoc, doc, query, where, Timestamp } from 'firebase/firestore';
 
-const findImage = (id: string) => placeholderImages.find(p => p.id === id)?.imageUrl || '';
+const findImage = (id: string) => getPlaceholderImage(id);
 
 // --- Mock Data (for seeding) ---
 export const users: User[] = [
@@ -344,6 +343,7 @@ export const getOrdersByDispatcherId = async (dispatcherId: string): Promise<Ord
     
 
     
+
 
 
 

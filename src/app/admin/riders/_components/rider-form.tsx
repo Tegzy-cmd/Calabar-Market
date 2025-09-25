@@ -26,7 +26,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import type { Dispatcher } from '@/lib/types';
 import { createDispatcher, updateDispatcher } from '@/lib/actions';
-import { placeholderImages } from '@/lib/placeholder-images';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const dispatcherFormSchema = z.object({
@@ -84,7 +84,7 @@ export function DispatcherForm({ dispatcher, isOpen, onOpenChange }: DispatcherF
     startTransition(async () => {
         const dispatcherData = {
             ...values,
-            avatarUrl: dispatcher?.avatarUrl || placeholderImages.find(p => p.id === 'rider-avatar-1')?.imageUrl || '',
+            avatarUrl: dispatcher?.avatarUrl || getPlaceholderImage('rider-avatar-1'),
             rating: dispatcher?.rating || 5,
             completedDispatches: dispatcher?.completedDispatches || 0
         };

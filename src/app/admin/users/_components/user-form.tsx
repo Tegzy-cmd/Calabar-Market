@@ -26,7 +26,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
 import { createUser, updateUser } from '@/lib/actions';
-import { placeholderImages } from '@/lib/placeholder-images';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 const userFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -67,7 +67,7 @@ export function UserForm({ user, isOpen, onOpenChange }: UserFormProps) {
         const userData: Partial<User> = {
             ...values,
             role: 'user' as const,
-            avatarUrl: user?.avatarUrl || placeholderImages.find(p => p.id === 'user-avatar-1')?.imageUrl || '',
+            avatarUrl: user?.avatarUrl || getPlaceholderImage('user-avatar-1'),
             addresses: values.address ? [values.address] : [],
         }
         

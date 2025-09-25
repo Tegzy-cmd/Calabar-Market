@@ -5,11 +5,11 @@ import Image from "next/image";
 import { ArrowRight, Utensils, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { placeholderImages } from "@/lib/placeholder-images";
+import { getPlaceholderImageObject } from "@/lib/placeholder-images";
 import { AppHeader } from "@/components/shared/header";
 
 export default function LandingPage() {
-  const heroImage = placeholderImages.find(p => p.id === "hero-image-1");
+  const heroImage = getPlaceholderImageObject("hero-image-1");
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -63,14 +63,14 @@ export default function LandingPage() {
                 description="Order food from the best restaurants in Calabar."
                 icon={<Utensils className="h-12 w-12 text-primary" />}
                 href="/browse?category=food"
-                image={placeholderImages.find(p => p.id === "category-food")}
+                image={getPlaceholderImageObject("category-food")}
               />
               <CategoryCard
                 title="Grocery Stores"
                 description="Get fresh groceries delivered to you in minutes."
                 icon={<ShoppingCart className="h-12 w-12 text-primary" />}
                 href="/browse?category=groceries"
-                image={placeholderImages.find(p => p.id === "category-groceries")}
+                image={getPlaceholderImageObject("category-groceries")}
               />
             </div>
           </div>

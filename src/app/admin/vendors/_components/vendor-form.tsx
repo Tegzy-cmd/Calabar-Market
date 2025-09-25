@@ -34,7 +34,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import type { Vendor } from '@/lib/types';
 import { createVendor, updateVendor } from '@/lib/actions';
-import { placeholderImages } from '@/lib/placeholder-images';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { ImageUploader } from '@/components/shared/image-uploader';
 
 const vendorFormSchema = z.object({
@@ -72,8 +72,8 @@ export function VendorForm({ vendor, isOpen, onOpenChange }: VendorFormProps) {
         description: '',
         address: '',
         category: 'food',
-        logoUrl: placeholderImages.find(p => p.id === 'vendor-logo-1')?.imageUrl,
-        bannerUrl: placeholderImages.find(p => p.id === 'vendor-banner-1')?.imageUrl,
+        logoUrl: getPlaceholderImage('vendor-logo-1'),
+        bannerUrl: getPlaceholderImage('vendor-banner-1'),
     },
   });
 
