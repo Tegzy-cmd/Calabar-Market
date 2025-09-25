@@ -64,7 +64,7 @@ export function ProductForm({ product, vendorId, isOpen, onOpenChange }: Product
         description: '',
         price: 0,
         stock: 0,
-        imageUrl: placeholderImages.find(p => p.id === 'product-burger')?.imageUrl,
+        imageUrl: placeholderImages.find(p => p.id === 'product-pizza')?.imageUrl || '',
     },
   });
 
