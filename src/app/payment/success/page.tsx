@@ -2,7 +2,7 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getOrderById } from '@/lib/data';
 import type { Order } from '@/lib/types';
@@ -14,10 +14,9 @@ import { CheckCircle2, Home } from 'lucide-react';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 
-function SuccessPageContent() {
-  const searchParams = useSearchParams();
+function SuccessPageContent({ searchParams }: { searchParams: { orderId?: string }}) {
   const router = useRouter();
-  const orderId = searchParams.get('orderId');
+  const orderId = searchParams.orderId;
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -170,14 +169,14 @@ function InvoiceSkeleton() {
     )
 }
 
-export default function PaymentSuccessPage() {
+export default function PaymentSuccessPage({ searchParams }: { searchParams: { orderId?: string }}) {
     return (
         <div className="flex flex-col min-h-screen">
             <AppHeader />
             <main className="flex-1 bg-muted/40 py-8 sm:py-12 md:py-16">
                 <div className="container">
                     <Suspense fallback={<InvoiceSkeleton />}>
-                        <SuccessPageContent />
+                        <SuccessPageContent searchParams={searchParams} />
                     </Suspense>
                 </div>
             </main>

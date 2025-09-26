@@ -22,7 +22,7 @@ import { useAuth } from '@/hooks/use-auth';
 import type { User as AppUser } from '@/lib/types';
 import { GoogleIcon } from '@/components/shared/icons';
 
-export default function SignupPage({ redirectUrl }: { redirectUrl: string }) {
+export default function SignupPage({ redirectUrl }: { redirectUrl?: string }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');

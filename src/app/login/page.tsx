@@ -18,22 +18,21 @@ import { Logo } from "@/components/shared/logo";
 import { ArrowLeft } from "lucide-react";
 import { auth } from '@/lib/firebase';
 import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/use-auth';
 import type { User as AppUser } from '@/lib/types';
 import { GoogleIcon } from '@/components/shared/icons';
 import Cookies from 'js-cookie';
 
-export default function LoginPage() {
+export default function LoginPage({ searchParams }: { searchParams: { redirect?: string } }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPending, setIsPending] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { syncUser } = useAuth();
   const { toast } = useToast();
-  const redirectUrl = searchParams.get('redirect') || '';
+  const redirectUrl = searchParams?.redirect || '';
 
   const handleRedirect = (user: AppUser | null) => {
     if (!user) {
