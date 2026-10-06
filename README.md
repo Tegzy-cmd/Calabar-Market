@@ -1,112 +1,229 @@
-
-# Calabar Eats: Food & Grocery Delivery Platform
-
-![Calabar Eats Hero](https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)
-
-**Developed by: Benjamin Oghenetega Omoraka**
-
+# Calabar Eats
+A full-stack food and grocery delivery platform prototype built with
+Next.js, TypeScript, Firebase, and Firestore.
+The project models a multi-role marketplace connecting customers, vendors,
+dispatchers, and administrators, with authentication, role-based access,
+real-time order workflows, and server-side business logic.
+> This is a high-fidelity prototype developed to explore multi-user
+> application architecture, real-time data flows, and complex business
+> workflows.
 ---
-
-## 📖 About The Project
-
-**Calabar Eats** is a modern, full-stack, and real-time multi-tenant food and grocery delivery platform. It serves as a centralized marketplace connecting consumers, vendors, and dispatch riders, providing a seamless e-commerce experience for the local Calabar market.
-
-The application is engineered to solve the fragmentation in the on-demand delivery sector by creating a unified ecosystem where users can browse various stores, vendors can manage their operations, and dispatchers can efficiently handle deliveries.
-
-This project is a high-fidelity prototype built with a robust and scalable technology stack, showcasing modern web architecture, real-time database integration, and a complex multi-user software system.
-
+## Overview
+Calabar Eats is designed as a centralized marketplace for food and grocery
+delivery.
+The platform supports different workflows for:
+- Customers browsing vendors and placing orders
+- Vendors managing products and orders
+- Dispatchers managing assigned deliveries
+- Administrators overseeing users, vendors, dispatchers, and platform data
+The application uses Firebase Authentication for identity and Firestore for
+real-time application data.
 ---
-
-## ✨ Key Features
-
-- **Multi-Role Architecture:** Four distinct user roles, each with a purpose-built dashboard and permissions.
-    - **👤 Admin:** System-wide oversight with dashboards for managing users, vendors, and dispatchers, complete with data visualizations for revenue and sales analytics.
-    - **🏪 Vendor:** A comprehensive dashboard for product management, real-time order tracking, and status updates.
-    - **🏍️ Dispatcher:** A focused interface for managing assigned delivery tasks, updating order statuses, and tracking earnings.
-    - **🧑‍🍳 Customer:** A smooth and intuitive experience for browsing vendors, adding items to a cart, and tracking orders from placement to delivery.
-- **Real-Time Functionality:** Powered by Firestore, the platform offers:
-    - **Live Order Tracking:** Status updates are reflected instantly across all relevant dashboards.
-    - **Live Chat:** Seamless communication between customers and vendors, and customers and dispatchers, within the context of an order.
-    - **Two-Way Delivery Confirmation:** A secure handoff process where dispatchers mark an order as arrived, and customers confirm receipt.
-- **Dispatcher Rating System:** Customers can rate their delivery experience, providing valuable feedback and ensuring service quality.
-- **Secure Authentication:** Robust user sign-up, login, and session management handled by Firebase Authentication, with role-based access control.
-- **Dynamic Frontend:** A fully responsive and interactive UI built with Next.js, React, and ShadCN/UI.
-
+## Key Features
+### Multi-Role Architecture
+The application supports four primary roles:
+- **Admin** — platform-wide management and operational dashboards
+- **Vendor** — product management and order processing
+- **Dispatcher** — assigned delivery management and status updates
+- **Customer** — vendor browsing, cart management, ordering, and delivery
+  tracking
+### Authentication & Authorization
+- Firebase Authentication
+- User session management
+- Role-based access control
+- Role-specific application workflows and dashboards
+### Real-Time Workflows
+Firestore is used to support real-time application behaviour, including:
+- Live order status updates
+- Order-specific chat
+- Delivery status changes
+- Customer delivery confirmation
+### Order & Delivery Workflow
+The application models an order workflow across customers, vendors, and
+dispatchers.
+Dispatchers can update delivery status, while customers can confirm receipt
+of completed deliveries.
+### Dispatcher Ratings
+Customers can submit ratings based on their delivery experience.
+### Database Seeding
+The application includes an admin-facing seed workflow for populating
+Firestore with mock:
+- Users
+- Vendors
+- Products
+- Orders
 ---
-
-## 🛠️ Technology Stack
-
-The project leverages a modern, serverless-first technology stack chosen for its scalability, real-time capabilities, and excellent developer experience.
-
-- **Framework:** [Next.js](https://nextjs.org/) (with App Router)
-- **Language:** [TypeScript](https://www.typescriptlang.org/)
-- **Backend & Database:** [Firebase](https://firebase.google.com/)
-    - **Firestore:** For the real-time NoSQL database.
-    - **Firebase Authentication:** For user and session management.
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/) with [ShadCN/UI](https://ui.shadcn.com/) for the component library.
-- **State Management:** [Zustand](https://zustand-demo.pmnd.rs/) for lightweight client-side state (e.g., shopping cart).
-- **Server-Side Logic:** Next.js Server Actions for secure and centralized business logic.
-- **Icons:** [Lucide React](https://lucide.dev/)
-
+## Technology Stack
+- **Framework:** Next.js with App Router
+- **Language:** TypeScript
+- **Authentication:** Firebase Authentication
+- **Database:** Cloud Firestore
+- **Server-side logic:** Next.js Server Actions
+- **UI:** React
+- **Styling:** Tailwind CSS
+- **Component library:** shadcn/ui
+- **State management:** Zustand
+- **Icons:** Lucide React
 ---
+## Architecture
+The application uses a serverless-oriented architecture built around
+Next.js and Firebase.
 
-## ⚙️ Getting Started
+                    ┌─────────────────────┐
+                    │      Next.js UI     │
+                    │  React + App Router │
+                    └──────────┬──────────┘
+                               │
+              ┌────────────────┴────────────────┐
+              │                                 │
+              ▼                                 ▼
+       Firebase Auth                    Server Actions
+              │                                 │
+              │                                 ▼
+              │                         Application Logic
+              │                                 │
+              └────────────────┬────────────────┘
+                               ▼
+                         Cloud Firestore
+                               │
+                ┌──────────────┼──────────────┐
+                ▼              ▼              ▼
+              Users         Products         Orders
 
-Follow these steps to get a local copy of the project up and running.
+⸻
+        
+Project Structure
 
-### Prerequisites
+src/
+├── app/
+│   ├── admin/
+│   ├── vendor/
+│   ├── dispatcher/
+│   ├── cart/
+│   ├── checkout/
+│   └── orders/
+│
+├── components/
+│   └── Shared React and UI components
+│
+├── hooks/
+│   └── Custom React hooks
+│
+└── lib/
+    ├── actions.ts
+    ├── data.ts
+    ├── firebase.ts
+    └── types.ts
 
-- [Node.js](https://nodejs.org/) (version 20.x or higher)
-- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+Core Application Logic
 
-### Installation
+src/lib/actions.ts
 
-1.  **Clone the repository:**
-    ```sh
-    git clone https://github.com/your-username/calabar-eats.git
-    cd calabar-eats
-    ```
+Contains server-side actions responsible for database mutations and
+business logic.
 
-2.  **Install NPM packages:**
-    ```sh
-    npm install
-    ```
+src/lib/data.ts
 
-3.  **Set up Firebase:**
-    a. Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
-    b. In your project, go to **Project settings** and add a new web app.
-    c. Firebase will provide you with a `firebaseConfig` object. Copy this object.
-    d. In the root of this project, navigate to `src/lib/firebase.ts`.
-    e. **Replace the placeholder `firebaseConfig` object** with the one from your Firebase project.
+Contains functions used to retrieve application data from Firestore.
 
-4.  **Run the development server:**
-    ```sh
-    npm run dev
-    ```
-    The application will be available at `http://localhost:9002`.
+src/lib/firebase.ts
 
-### Seeding the Database
+Initializes and configures Firebase.
 
-To get started with mock data, you can seed your Firestore database.
+src/lib/types.ts
 
-1.  After starting the application, log in as an admin user.
-    *   **Note:** You can manually create an admin user in your Firebase Authentication console and then create a corresponding document in your `users` collection in Firestore with the `role` field set to `'admin'`.
-2.  Navigate to the Admin Dashboard and go to the **Seed Data** page (`/admin/seed`).
-3.  Click the "Seed Database" button. This will populate your database with mock vendors, products, users, and orders.
+Contains TypeScript type definitions used throughout the application.
 
----
+⸻
 
-## 🚀 Project Structure
+Getting Started
 
-- **`src/app/`**: Contains all routes and pages, organized by role (admin, vendor, dispatcher) and feature (cart, checkout, orders).
-- **`src/components/`**: Shared and UI components built with React and ShadCN/UI.
-- **`src/lib/`**: Core application logic.
-    - **`actions.ts`**: Server Actions for all database mutations and business logic.
-    - **`data.ts`**: Functions for fetching data from Firestore.
-    - **`firebase.ts`**: Firebase initialization and configuration.
-    - **`types.ts`**: All TypeScript type definitions for the project.
-- **`src/hooks/`**: Custom React hooks for managing state like authentication and the shopping cart.
+Prerequisites
 
----
+* Node.js 20.x or higher
+* npm or Yarn
+* A Firebase project
 
-This README provides a comprehensive guide to understanding, setting up, and exploring the Calabar Eats application.
+1. Clone the repository
+
+git clone https://github.com/Tegzy-cmd/Calabar-Market.git
+cd Calabar-Market
+
+2. Install dependencies
+
+npm install
+
+3. Configure Firebase
+
+Create a Firebase project and add a web application.
+
+Configure the Firebase credentials required by the application in:
+
+src/lib/firebase.ts
+
+Do not commit private credentials, service-account keys, or other secrets to
+the repository.
+
+4. Start the development server
+
+npm run dev
+
+The application runs locally on:
+
+http://localhost:9002
+
+⸻
+
+Database Seeding
+
+The application includes a database seeding workflow for generating mock
+application data.
+
+To use it:
+
+1. Create an administrator account through Firebase Authentication.
+2. Create the corresponding user document in Firestore with the appropriate
+    admin role.
+3. Start the application.
+4. Open the Admin Dashboard.
+5. Navigate to the Seed Data page.
+6. Run the database seed operation.
+
+The seed workflow populates mock vendors, products, users, and orders.
+
+⸻
+
+Engineering Concepts Demonstrated
+
+This project provided practical experience with:
+
+* TypeScript application architecture
+* Next.js App Router
+* Server-side business logic
+* Server Actions
+* Firebase Authentication
+* Role-based access control
+* Firestore data modelling
+* Real-time data flows
+* Multi-role application design
+* Order and delivery workflows
+* Client-side state management
+* Component-based UI architecture
+* Type-safe application development
+
+⸻
+
+Project Status
+
+High-fidelity prototype.
+
+The project was built to explore the architecture and implementation of a
+multi-role, real-time marketplace application and to strengthen practical
+experience with TypeScript, Next.js, Firebase, and complex application
+workflows.
+
+⸻
+
+Live Demo
+
+⁠Calabar Market : https://calabar-market-nine.vercel.app
